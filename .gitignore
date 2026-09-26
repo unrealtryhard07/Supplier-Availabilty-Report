@@ -3,3 +3,4 @@ dist/
 reports/
 node_modules/
 __pycache__/
+tableau/

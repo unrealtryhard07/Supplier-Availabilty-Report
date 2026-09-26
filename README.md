@@ -102,3 +102,21 @@ data. `dist/` (the filled-in copy) and `reports/` (rendered images) are in
 `.gitignore` because they contain every supplier's stock position. Never send
 the filled-in HTML or its link to a supplier: it contains all suppliers. Send
 the exported images.
+
+## Tableau version
+
+`tools/build_tableau_workbook.py` generates the same report as a Tableau
+workbook on the published data source "Supplier's Availability Data": a
+**Supplier Report** dashboard (the one-image summary) and a **Detail**
+dashboard (category grid and full out-of-stock list), with a supplier picker.
+It is published on Tableau Cloud as *Supplier Availability Report* in the
+Commercial Department project. To rebuild it:
+
+```sh
+TABLEAU_SERVER=<pod>.online.tableau.com TABLEAU_SITE=<site> \
+DEFAULT_SUPPLIER="<supplier to open on>" python3 tools/build_tableau_workbook.py
+```
+
+The output goes to `tableau/` (git-ignored) and is published with Tableau's
+REST API or the Tableau MCP publish tool. Target %, critical % and delivery
+days are workbook parameters.
