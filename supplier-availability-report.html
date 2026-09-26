@@ -1351,13 +1351,33 @@ function dataUrlToBlob(url) {
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   return new Blob([bytes], { type: head.slice(5, head.indexOf(';')) });
 }
-function saveBlob(blob, filename) {
+// Inside the claude.ai viewer, files are offered through its downloads
+// capability (the viewer confirms each save). Opened as a local file there is
+// no window.claude, so a normal browser download is used instead.
+const downloadsCap = window.claude && typeof window.claude.use === 'function'
+  ? window.claude.use('downloads').catch(() => null)
+  : Promise.resolve(null);
+async function saveBlob(blob, filename) {
+  const cap = await downloadsCap;
+  if (cap) {
+    try { await cap.save({ filename, data: blob }); return true; }
+    catch (err) {
+      const code = err && err.code;
+      if (code === 'declined') return false;
+      if (code === 'rate_limited') throw new Error('Another save is still waiting for your answer. Finish that one first.');
+      if (code === 'extension_not_enabled' || code === 'rejected_extension') throw new Error(`${filename.split('.').pop().toUpperCase()} files can’t be saved in this view. Download the images one by one instead.`);
+      if (code === 'too_large') throw new Error('That file is too large to save here. Export fewer suppliers at a time.');
+      // Any other code means saves are unavailable here: use a plain download.
+    }
+  }
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = filename;
   document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 30000);
+  return true;
 }
+const exportError = (err) => showMsg($('#export-msg'), 'err', esc(err.message || String(err)));
 
 let fontCSS = null;
 async function pageToPng(page) {
@@ -1371,7 +1391,7 @@ function addShot(shot) {
   exportShots.push(shot);
   const card = h(`<figure class="shot" style="margin:0"><img alt="${esc(shot.file)}"><figcaption class="shot-meta"><b>${esc(shot.file)}</b><div><button class="btn small" type="button" data-dl>Download</button><button class="btn small" type="button" data-copy>Copy</button></div></figcaption></figure>`);
   card.querySelector('img').src = shot.url;
-  card.querySelector('[data-dl]').addEventListener('click', () => saveBlob(dataUrlToBlob(shot.url), shot.file));
+  card.querySelector('[data-dl]').addEventListener('click', () => saveBlob(dataUrlToBlob(shot.url), shot.file).catch(exportError));
   card.querySelector('[data-copy]').addEventListener('click', async (e) => {
     const b = e.currentTarget;
     try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': dataUrlToBlob(shot.url) })]); b.textContent = 'Copied'; }
@@ -1431,14 +1451,19 @@ dlgExport.addEventListener('close', () => { exportRun++; });
 $('#btn-export-all').addEventListener('click', async () => {
   const ymd = (kuwaitParts(DATA.asOf) || {}).ymd || 'report';
   const multi = new Set(exportShots.map((s) => s.acct)).size > 1;
-  if (multi && window.JSZip) {
-    const zip = new window.JSZip();
-    const root = zip.folder(`Supplier availability ${ymd}`);
-    for (const s of exportShots) root.file(s.file, s.url.split(',')[1], { base64: true });
-    saveBlob(await zip.generateAsync({ type: 'blob' }), `Supplier availability ${ymd}.zip`);
-  } else {
-    for (const s of exportShots) { saveBlob(dataUrlToBlob(s.url), s.file); await new Promise((r) => setTimeout(r, 250)); }
-  }
+  try {
+    if (multi && window.JSZip) {
+      const zip = new window.JSZip();
+      const root = zip.folder(`Supplier availability ${ymd}`);
+      for (const s of exportShots) root.file(s.file, s.url.split(',')[1], { base64: true });
+      await saveBlob(await zip.generateAsync({ type: 'blob' }), `Supplier availability ${ymd}.zip`);
+    } else {
+      for (const s of exportShots) {
+        if (!(await saveBlob(dataUrlToBlob(s.url), s.file))) break;   // viewer declined: stop asking
+        await new Promise((r) => setTimeout(r, 250));
+      }
+    }
+  } catch (err) { exportError(err); }
 });
 
 /* ================= Boot + automation API ================= */
