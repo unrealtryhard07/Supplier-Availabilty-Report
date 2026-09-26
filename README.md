@@ -6,15 +6,20 @@ stock, pick a supplier, and export the pages as PNG files.
 
 ## What a supplier receives
 
-Page 1 is the summary. Further pages appear only when needed.
+At most two images per supplier: page 1 is a complete summary, page 2 the
+detail. Every export also includes the complete out-of-stock list as a CSV
+file the supplier can open in Excel. (Settings can switch to all pages.)
 
 - **Verdict band** in red (Critical), amber (Below target) or green
   (On target), with one plain sentence, e.g. *"84 of your 480 store listings
   are out of stock right now. Restock 60 listings to reach the 95% target."*
 - **Overall availability**: the headline figure, with a bar against the target.
-- **Six key figures**: active SKUs, store listings, out-of-stock listings,
-  SKUs missing in every store ("customers can't buy"), best-seller (T1)
-  availability, and the supplier's rank among all suppliers.
+- **What we need from you**: a delivery deadline and your contact details
+  (set once in Settings).
+- **Six key figures** in plain words: products, products with gaps, products
+  missing everywhere, empty shelves, top sellers in stock, and rank.
+- **Where you are losing**: categories as bars against the target.
+- **Restock these first**: the eight most urgent products, top sellers first.
 - **Availability by store**: one card per store. Each square is one listing
   and red squares are empty shelves.
 - **Availability by category and store**: the same grid as the old Excel report.
