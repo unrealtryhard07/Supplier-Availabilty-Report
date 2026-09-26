@@ -1,0 +1,11 @@
+{
+  "name": "supplier-availability-report",
+  "private": true,
+  "description": "Daily supplier availability report: HTML app plus a batch PNG renderer",
+  "scripts": {
+    "render": "node tools/render-reports.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1"
+  }
+}

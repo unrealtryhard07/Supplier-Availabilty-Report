@@ -1,0 +1,5 @@
+# Filled-in report and rendered images contain internal supplier data.
+dist/
+reports/
+node_modules/
+__pycache__/

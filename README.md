@@ -1,1 +1,99 @@
-# Supplier-Availabilty-Report
+# Supplier Availability Report
+
+A daily availability report for each supplier, built to be sent as images.
+Open `supplier-availability-report.html` in Chrome or Edge, load today's
+stock, pick a supplier, and export the pages as PNG files.
+
+## What a supplier receives
+
+Page 1 is the summary. Further pages appear only when needed.
+
+- **Verdict band** in red (Critical), amber (Below target) or green
+  (On target), with one plain sentence, e.g. *"84 of your 480 store listings
+  are out of stock right now. Restock 60 listings to reach the 95% target."*
+- **Overall availability**: the headline figure, with a bar against the target.
+- **Six key figures**: active SKUs, store listings, out-of-stock listings,
+  SKUs missing in every store ("customers can't buy"), best-seller (T1)
+  availability, and the supplier's rank among all suppliers.
+- **Availability by store**: one card per store. Each square is one listing
+  and red squares are empty shelves.
+- **Availability by category and store**: the same grid as the old Excel report.
+  Category and sub-category come from the Google Sheet. Cells are colored by
+  status and show `% available` and `in stock / listed`.
+- **Out-of-stock action list**: every SKU that is out somewhere. SKUs missing
+  in every store come first, then best-selling tiers first. `OUT` marks the
+  exact stores to restock.
+
+Pages are 1080 px wide (exported at 2160 px) and never taller than 1620 px, so
+they stay readable on a phone. Large suppliers get extra pages, and table
+headers repeat on every page.
+
+## How the numbers work
+
+- **Listing** = one SKU in one store. **Availability** = listings in stock ÷
+  active listings. A listing is in stock when the store holds at least one unit.
+- Items tiered **TD** or **TP/TS** in the Google Sheet are left out.
+  Change this under Settings.
+- **Stores with no stock anywhere are hidden automatically.** Qibla has
+  listings but zero stock across the whole network, so it is not counted yet.
+  It appears on its own once it starts holding stock.
+- Suppliers are grouped by **Supplier Account**. Where the sheet spells one
+  account two ways (e.g. `Co` and `CO.`), both share one report under the
+  most used spelling.
+- Percentages are rounded **down**, so 94.96% shows as 94.9% (amber), never
+  as a green 95%.
+- Defaults: target 95%, critical below 80% (your old red line). Both are
+  under Settings.
+
+## Daily routine
+
+1. In Tableau, open any unfiltered view built on **Supplier's Availability
+   Data**, choose **Download → Data**, open the **Full data** tab with all
+   fields shown, and download it as CSV. The fields used are Store, Item Code,
+   Item Name, Items in Stock, Items in Book, Supplier Account, Supplier Name,
+   Rank, Category (Sheet1) and Sub-Category (Sheet1). Or skip Tableau and load
+   both source reports together: the SQL stock report plus the Google Sheet
+   item master (CSV or Excel).
+2. Open `supplier-availability-report.html`, click **Load data** and drop the
+   file(s). Check the **Stock position** time; it is printed on every page.
+3. The sidebar lists every supplier, worst first. Click one to preview it.
+4. Click **Export images** for the supplier on screen. To do several at once,
+   tick them in the sidebar and use **Export selected**, which saves one ZIP.
+   Ticks are remembered for tomorrow.
+
+Files are read inside the browser and never uploaded anywhere. The export
+buttons load a small image library from the internet, so they need a
+connection.
+
+## Batch rendering (optional)
+
+For automation, `tools/render-reports.js` drives the same page in headless
+Chromium:
+
+```sh
+npm install && npx playwright install chromium
+node tools/render-reports.js --csv tableau-export.csv --all
+node tools/render-reports.js --csv stock.csv --csv item-master.csv --supplier "Dairy" --supplier 200123
+```
+
+Images go to `reports/<stock date>/`.
+
+## Refreshing the built-in snapshot from Tableau
+
+`tools/tableau-query.json` is the VizQL Data Service query that pulls one row
+per supplier item from the published data source. Save its JSON result, then:
+
+```sh
+python3 tools/build_snapshot.py result.json --as-of 2026-09-24T12:21:04Z
+```
+
+This writes `dist/supplier-availability-report.html` with the data inside,
+so it opens ready to use with no file to load.
+
+## Keep supplier data out of this repository
+
+This repository is public. `supplier-availability-report.html` here holds no
+data. `dist/` (the filled-in copy) and `reports/` (rendered images) are in
+`.gitignore` because they contain every supplier's stock position. Never send
+the filled-in HTML or its link to a supplier: it contains all suppliers. Send
+the exported images.
