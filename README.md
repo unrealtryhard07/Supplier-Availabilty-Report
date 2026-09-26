@@ -109,6 +109,9 @@ the exported images.
 workbook on the published data source "Supplier's Availability Data": a
 **Supplier Report** dashboard (the one-image summary) and a **Detail**
 dashboard (category grid and full out-of-stock list), with a supplier picker.
+Page 1 lists the 15 most urgent products; the Detail page has all of them.
+To send a supplier their report, pick them in the Supplier box, then use
+**Download → Image** (or PDF) on each dashboard.
 It is published on Tableau Cloud as *Supplier Availability Report* in the
 Commercial Department project. To rebuild it:
 
