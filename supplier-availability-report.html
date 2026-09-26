@@ -340,6 +340,18 @@ dialog::backdrop{background:rgba(8,14,24,.55)}
 .oos tr.div .dv span{font-weight:600;letter-spacing:0;text-transform:none;color:var(--p-ink-3);font-size:12.5px}
 .oos tr.all td{background:#FFF8F7}
 
+.cb{display:grid;gap:7px}
+.cb-row{display:grid;grid-template-columns:230px minmax(0,1fr) 128px;align-items:center;gap:16px}
+.cb-lab{font-size:13.5px;font-weight:600;overflow-wrap:anywhere;line-height:1.2}
+.cb-track{position:relative;height:18px;background:var(--p-wash);border-radius:0 4px 4px 0}
+.cb-track i{position:absolute;left:0;top:0;bottom:0;border-radius:0 4px 4px 0}
+.cb-track i.crit{background:var(--crit)}.cb-track i.warn{background:var(--warn)}.cb-track i.good{background:var(--good)}
+.cb-track b{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--p-ink)}
+.cb-val{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-variant-numeric:tabular-nums}
+.cb-val strong{font-size:15px;font-weight:700}
+.cb-val span{font-size:12px;color:var(--p-ink-3)}
+.cb-more{margin-top:8px!important;font-size:12.5px;color:var(--p-ink-3)}
+.cb-key{display:inline-block;width:2px;height:12px;background:var(--p-ink);vertical-align:-2px}
 .r-good{margin:8px 40px 10px;border:1px solid var(--good-track);background:var(--good-tint);border-radius:6px;padding:18px 20px;display:flex;align-items:center;gap:14px;color:var(--good-ink);font-size:15px;font-weight:600}
 .r-good svg{width:26px;height:26px;flex:none}
 
@@ -848,6 +860,38 @@ function oosSpec(m) {
   };
 }
 
+function categoryChart(m) {
+  if (m.cats.length < 2) return null;
+  const MAX = 8;
+  const sorted = [...m.cats].sort((a, b) => a.y / a.l - b.y / b.l || (b.l - b.y) - (a.l - a.y));
+  const shown = sorted.slice(0, MAX);
+  const t = settings.target;
+  const rows = shown.map((c) => {
+    const r = c.y / c.l, st = status(r), out = c.l - c.y;
+    return `<div class="cb-row"><div class="cb-lab">${esc(c.name)}</div>
+      <div class="cb-track"><i class="${st}" style="width:${(r * 100).toFixed(2)}%"></i><b style="left:${t}%"></b></div>
+      <div class="cb-val"><strong>${pct0(r)}%</strong><span>${out ? `${fmtN(out)} out` : 'all in'}</span></div></div>`;
+  }).join('');
+  const more = sorted.length > MAX ? `<p class="cb-more">+ ${sorted.length - MAX} more ${plural(sorted.length - MAX, 'category', 'categories')} in the detail table</p>` : '';
+  return h(`<div class="r-sec"><div class="r-sec-head"><h3>Where you are losing</h3><p class="r-note">Categories, weakest first · <span class="cb-key"></span> ${t}% target</p></div>
+    <div class="cb">${rows}</div>${more}</div>`);
+}
+
+function priorityBlock(m) {
+  if (!m.oos.length) return null;
+  const top = m.oos.slice(0, 8);
+  const rows = top.map((o, i) => {
+    const t = o.it.tier || '';
+    const cells = o.marks.map((c) => (c === 'N' ? '<td class="c"><span class="out">OUT</span></td>' : c === 'Y' ? `<td class="c">${ICON.check}</td>` : '<td class="c na">—</td>')).join('');
+    return `<tr class="${o.allOut ? 'all' : ''}"><td class="n">${i + 1}</td><td class="code">${esc(o.it.code)}</td><td class="it">${esc(o.it.name)}</td><td>${t ? `<span class="tier ${t === 'T1' ? 't1' : t === 'T2' ? 't2' : ''}">${esc(t)}</span>` : ''}</td>${cells}</tr>`;
+  }).join('');
+  const n = m.stores.length;
+  const rest = m.oos.length - top.length;
+  return h(`<div class="r-sec"><div class="r-sec-head"><h3>Restock these first</h3><p class="r-note">${rest > 0 ? `Top ${top.length} of ${fmtN(m.oos.length)} SKUs · full list on the next pages` : 'Every SKU that is out somewhere'}</p></div>
+    <table class="r-table oos pri"><colgroup><col style="width:34px"><col style="width:76px"><col><col style="width:46px">${m.stores.map(() => `<col style="width:${n >= 5 ? 64 : 76}px">`).join('')}</colgroup>
+    <thead><tr><th class="c">#</th><th>Code</th><th>Item</th><th>Tier</th>${m.stores.map((s) => `<th class="c">${esc(s.name)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`);
+}
+
 function footer() {
   const tiers = settings.excludedTiers.length ? ` Items tiered ${settings.excludedTiers.map(esc).join(' or ')} are not counted.` : '';
   return h(`<footer class="r-foot"><p>Availability = listings in stock ÷ active listings. One listing is one SKU in one store; a listing counts as in stock when the store holds at least one unit.${tiers} Tier and category come from the item master.</p><p class="pg" data-pg></p></footer>`);
@@ -871,8 +915,16 @@ function paginate(m, host) {
 
   newPage(true);
   body.append(verdict(m), hero(m), storesBlock(m));
-
-  flow(matrixSpec(m));
+  // Page 1 is a complete summary on its own; the detail starts on page 2
+  // unless all of it fits here (small suppliers get a single image).
+  const summary = [categoryChart(m), priorityBlock(m)].filter(Boolean);
+  const mSpec = matrixSpec(m);
+  if (summary.length && !fitsWhole(mSpec)) {
+    body.append(...summary);
+    if (!fits()) { summary.forEach((b) => b.remove()); body.append(summary[0]); if (!fits()) summary[0].remove(); }
+    newPage(false);
+  }
+  flow(mSpec);
   if (m.oos.length) flow(oosSpec(m));
   else {
     const ok = h(`<div class="r-good">${ICON.good}<span>Every active listing is in stock in every store. Nothing to restock today.</span></div>`);
@@ -887,6 +939,18 @@ function paginate(m, host) {
     if (mini) mini.textContent = label;
   });
   return pages;
+
+  function fitsWhole(spec) {
+    const probe = spec.section(false);
+    const tb = probe.querySelector('tbody');
+    spec.rows.forEach((r) => tb.append(r.el.cloneNode(true)));
+    body.append(probe);
+    if (spec.tail) body.append(spec.tail.cloneNode(true));
+    const ok = fits();
+    probe.remove();
+    if (spec.tail) body.lastElementChild.remove();
+    return ok;
+  }
 
   function flow(spec) {
     let sec = null, tbody = null, shown = 0;
