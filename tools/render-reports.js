@@ -107,7 +107,9 @@ const safeName = (s) => String(s).replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g,
         await pages[i].screenshot({ path: file });
         images++;
       }
-      console.log(`${(s.pct * 100).toFixed(1).padStart(5)}%  ${s.name}  (${n} ${n === 1 ? 'page' : 'pages'})`);
+      const csv = await page.evaluate((acct) => window.SAR.csv(acct), s.acct);
+      if (csv) fs.writeFileSync(path.join(outDir, `${meta.ymd} ${safeName(s.name)} - out of stock list.csv`), csv);
+      console.log(`${String(Math.floor(s.pct * 100 + 1e-7)).padStart(3)}%  ${s.name}  (${n} ${n === 1 ? 'page' : 'pages'}${csv ? ' + CSV' : ''})`);
     }
     console.log(`\n${images} images in ${outDir}`);
   } finally {

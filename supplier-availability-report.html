@@ -352,6 +352,13 @@ dialog::backdrop{background:rgba(8,14,24,.55)}
 .cb-val span{font-size:12px;color:var(--p-ink-3)}
 .cb-more{margin-top:8px!important;font-size:12.5px;color:var(--p-ink-3)}
 .cb-key{display:inline-block;width:2px;height:12px;background:var(--p-ink);vertical-align:-2px}
+.r-ask{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding:13px 40px;background:#F4F6FA;border-bottom:1px solid var(--p-rule);font-size:14.5px;line-height:1.4}
+.r-ask b{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--p-ink)}
+.r-ask strong{font-weight:800}
+.r-ask .who{color:var(--p-ink-2);margin-left:auto}
+.tier{font-family:var(--f-sans);font-size:11px;font-weight:700;letter-spacing:.02em;padding:4px 7px;white-space:nowrap}
+.tier.new{background:#E4ECFB;color:#1D4ED8}
+.oos tr.more td{padding:12px 8px;font-size:13px;font-weight:700;color:var(--p-ink-2);background:var(--p-wash);text-align:center;border-bottom:0}
 .r-good{margin:8px 40px 10px;border:1px solid var(--good-track);background:var(--good-tint);border-radius:6px;padding:18px 20px;display:flex;align-items:center;gap:14px;color:var(--good-ink);font-size:15px;font-weight:600}
 .r-good svg{width:26px;height:26px;flex:none}
 
@@ -449,6 +456,11 @@ body.capture .frame{box-shadow:none;border-radius:0}
       </div>
       <label class="check"><input id="set-rank" type="checkbox"> Show the supplier’s rank on the report</label>
       <label class="field"><span>Company name (optional)</span><input id="set-company" type="text" maxlength="60" placeholder="Shown above the supplier name"></label>
+      <label class="field"><span>Contact for suppliers (optional)</span><input id="set-contact" type="text" maxlength="90" placeholder="e.g. Saad Abdullah · +965 5000 0000"><small>Printed in the “What we need from you” box.</small></label>
+      <div class="row2">
+        <label class="field"><span>Ask for delivery within</span><input id="set-days" type="number" min="0" max="14" step="1"><small>Days after the stock date. 0 = no deadline.</small></label>
+        <label class="field"><span>Images per supplier</span><select id="set-pages" style="border:1px solid var(--ui-line);background:var(--ui-panel-2);border-radius:7px;padding:8px 10px;font-size:14px;max-width:320px"><option value="2">2: summary + detail (recommended)</option><option value="0">All pages</option></select><small>The complete out-of-stock list is always exported as a CSV file too.</small></label>
+      </div>
     </div>
     <div class="dlg-foot">
       <button class="btn" id="btn-settings-reset" type="button">Reset to defaults</button>
@@ -487,7 +499,7 @@ const PAGE_W = 1080;
 const PAGE_MAX_H = 1620;                    // tallest page, CSS px (A4-like 1 : 1.5)
 const KNOWN_STORES = ['Egaila', 'Hawally', 'Jahra', 'Salmiya', 'Qibla'];
 const TIER_RANK = { T1: 1, T2: 2, T3: 3, T4: 4, T5: 5, TN: 6, TI: 7 };
-const DEFAULTS = { target: 95, critical: 80, excludedTiers: ['TD', 'TP/TS'], storeAuto: true, stores: [], showRank: true, company: '' };
+const DEFAULTS = { target: 95, critical: 80, excludedTiers: ['TD', 'TP/TS'], storeAuto: true, stores: [], showRank: true, company: '', contact: '', deliverDays: 2, maxPages: 2 };
 const STATUS_LABEL = { crit: 'Critical', warn: 'Below target', good: 'On target' };
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const SHELF_IN = '#BCC6D4', SHELF_OUT = '#D92D20';
@@ -526,6 +538,9 @@ function sanitizeSettings(s) {
   out.storeAuto = out.storeAuto !== false;
   out.showRank = out.showRank !== false;
   out.company = String(out.company || '').slice(0, 60);
+  out.contact = String(out.contact || '').slice(0, 90);
+  out.deliverDays = clampInt(out.deliverDays, 0, 14, DEFAULTS.deliverDays);
+  out.maxPages = Number(out.maxPages) === 0 ? 0 : 2;
   return out;
 }
 function clampInt(v, lo, hi, d) { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d; }
@@ -603,7 +618,7 @@ function computeNetwork() {
 
   const sums = [];
   for (const [acct, its] of bySup) {
-    let l = 0, y = 0, skus = 0, allOut = 0;
+    let l = 0, y = 0, skus = 0, allOut = 0, pout = 0;
     for (const it of its) {
       if (excluded.has(it.tier)) continue;
       let il = 0, iy = 0;
@@ -611,8 +626,9 @@ function computeNetwork() {
       if (!il) continue;
       skus++; l += il; y += iy;
       if (!iy) allOut++;
+      if (iy < il) pout++;
     }
-    if (l) sums.push({ acct, name: DATA.suppliers.get(acct) || acct, l, y, oos: l - y, r: y / l, skus, allOut });
+    if (l) sums.push({ acct, name: DATA.suppliers.get(acct) || acct, l, y, oos: l - y, r: y / l, skus, allOut, pout });
   }
   const ranked = [...sums].sort((a, b) => b.r - a.r);
   let rank = 0, prev = null;
@@ -683,6 +699,14 @@ function supplierModel(acct) {
 }
 
 /* ================= Report rendering ================= */
+const TYPE = { T1: ['Top seller', 't1'], T2: ['Strong seller', 't2'], TN: ['New', 'new'] };
+function typePill(t) { const [label, cls] = TYPE[t] || ['Regular', '']; return `<span class="tier ${cls}">${label}</span>`; }
+function deadline(asOfIso) {
+  if (!settings.deliverDays) return null;
+  const d = new Date(new Date(asOfIso).getTime() + settings.deliverDays * 864e5);
+  const k = kuwaitParts(d.toISOString());
+  return k ? `${k.weekday} ${k.date}` : null;
+}
 function chip(st) { return `<span class="chip ${st}">${ICON[st]}${STATUS_LABEL[st]}</span>`; }
 
 function headerFull(m) {
@@ -692,7 +716,7 @@ function headerFull(m) {
     <div>
       <div class="r-eyebrow">${eyebrow}</div>
       <h1 class="r-supplier">${esc(m.name)}</h1>
-      <div class="r-meta"><span>Account ${esc(m.acct)}</span><i>/</i><span>${fmtN(m.skus)} active ${plural(m.skus, 'SKU', 'SKUs')}</span><i>/</i><span>Stores: ${m.stores.map((s) => esc(s.name)).join(', ')}</span></div>
+      <div class="r-meta"><span>Account ${esc(m.acct)}</span><i>/</i><span>${fmtN(m.skus)} ${plural(m.skus, 'product', 'products')}</span><i>/</i><span>Stores: ${m.stores.map((s) => esc(s.name)).join(', ')}</span></div>
     </div>
     <div class="r-date">
       <div class="r-eyebrow">Stock position</div>
@@ -713,44 +737,51 @@ function headerMini(m) {
 function verdict(m) {
   let text;
   if (m.oosN > 0) {
-    text = m.l === 1
-      ? 'Your only store listing is <strong>out of stock</strong> right now.'
-      : `<strong>${fmtN(m.oosN)}</strong> of your ${fmtN(m.l)} store listings ${plural(m.oosN, 'is', 'are')} out of stock right now.`;
+    const pOut = m.oos.length;
+    text = m.skus === 1
+      ? `Your only product is <strong>out of stock</strong> in ${m.oosN === 1 ? 'its store' : `${m.oosN} stores`}.`
+      : `<strong>${fmtN(pOut)} of your ${fmtN(m.skus)} products</strong> ${plural(pOut, 'is', 'are')} out of stock in at least one store, leaving ${fmtN(m.oosN)} empty ${plural(m.oosN, 'shelf', 'shelves')}.`;
     text += m.need > 0
-      ? ` Restock <strong>${fmtN(m.need)}</strong> ${plural(m.need, 'listing', 'listings')} to reach the ${settings.target}% target.`
+      ? ` Refill <strong>${fmtN(m.need)}</strong> to reach the ${settings.target}% target.`
       : ` You are above the ${settings.target}% target.`;
   } else {
-    text = m.l === 1
-      ? 'Your store listing is in stock. Thank you for keeping the shelf full.'
-      : `All ${fmtN(m.l)} of your store listings are in stock. Thank you for keeping the shelves full.`;
+    text = `All ${fmtN(m.skus)} of your ${plural(m.skus, 'product is', 'products are')} in stock in every store. Thank you for keeping the shelves full.`;
   }
   return h(`<div class="r-verdict ${m.status}"><div class="r-tag">${ICON[m.status]}<span>${STATUS_LABEL[m.status]}</span></div><p>${text}</p></div>`);
 }
 
+function askBlock(m) {
+  if (!m.oos.length) return null;
+  const by = deadline(DATA.asOf);
+  const who = settings.contact ? `<span class="who">Questions? ${esc(settings.contact)}</span>` : '';
+  return h(`<div class="r-ask"><b>What we need from you</b><span>Please deliver the missing products${by ? ` by <strong>${by}</strong>` : ''}, starting with “Restock these first” below.</span>${who}</div>`);
+}
+
 function hero(m) {
-  const v = Math.floor(m.r * 1000 + 1e-7) / 10;
-  const diff = Math.abs(settings.target - v).toFixed(1);
-  const gap = v >= settings.target
-    ? `<strong>${diff} pts</strong> above the ${settings.target}% target`
-    : `<strong>${diff} pts</strong> below the ${settings.target}% target`;
+  const v = Math.floor(m.r * 100 + 1e-7);
+  const diff = Math.abs(settings.target - v);
+  const gap = (v >= settings.target
+    ? `<strong>${diff} ${plural(diff, 'pt', 'pts')}</strong> above the ${settings.target}% target`
+    : `<strong>${diff} ${plural(diff, 'pt', 'pts')}</strong> below the ${settings.target}% target`)
+    + `<br>${fmtN(m.y)} of ${fmtN(m.l)} shelves stocked`;
   const t1r = m.t1.l ? m.t1.y / m.t1.l : null;
   const listedIn = m.stores.filter((x) => x.l).length;
   const tiles = [
-    { lbl: 'Active SKUs', v: fmtN(m.skus), s: `listed in ${listedIn} ${plural(listedIn, 'store', 'stores')}` },
-    { lbl: 'Store listings', v: fmtN(m.l), s: `${fmtN(m.y)} in stock` },
-    { lbl: 'Out of stock', v: fmtN(m.oosN), s: plural(m.oosN, 'store listing', 'store listings'), flag: m.oosN ? 'crit' : '' },
-    { lbl: 'Missing everywhere', v: fmtN(m.allOut), s: plural(m.allOut, 'SKU customers can’t buy', 'SKUs customers can’t buy'), flag: m.allOut ? 'crit' : '' },
-    { lbl: 'Best sellers (T1)', v: t1r === null ? '—' : pct0(t1r) + '%', s: t1r === null ? 'No T1 items listed' : `${fmtN(m.t1.y)} of ${fmtN(m.t1.l)} listings in stock`, flag: t1r !== null && status(t1r) !== 'good' ? status(t1r) : '' },
+    { lbl: 'Your products', v: fmtN(m.skus), s: `listed in ${listedIn} ${plural(listedIn, 'store', 'stores')}` },
+    { lbl: 'Products with gaps', v: fmtN(m.oos.length), s: 'out of stock in 1 or more stores', flag: m.oos.length ? 'crit' : '' },
+    { lbl: 'Missing everywhere', v: fmtN(m.allOut), s: plural(m.allOut, 'product customers can’t buy', 'products customers can’t buy'), flag: m.allOut ? 'crit' : '' },
+    { lbl: 'Empty shelves', v: fmtN(m.oosN), s: `of ${fmtN(m.l)} product-store shelves`, flag: m.oosN ? 'crit' : '' },
+    { lbl: 'Top sellers in stock', v: t1r === null ? '—' : pct0(t1r) + '%', s: t1r === null ? 'No top sellers listed' : `${fmtN(m.t1.y)} of ${fmtN(m.t1.l)} shelves stocked`, flag: t1r !== null && status(t1r) !== 'good' ? status(t1r) : '' },
     settings.showRank && m.rank
       ? { lbl: 'Supplier rank', v: '#' + m.rank, s: `of ${m.rankOf} suppliers by availability` }
-      : { lbl: 'Weakest store', v: m.weakest ? esc(m.weakest.name) : '—', s: m.weakest ? `${pct1(m.weakest.r)}% available` : '', txt: true },
+      : { lbl: 'Weakest store', v: m.weakest ? esc(m.weakest.name) : '—', s: m.weakest ? `${pct0(m.weakest.r)}% in stock` : '', txt: true },
   ];
   const edge = settings.target >= 90 ? ' edge' : '';
   return h(`<div class="r-hero">
     <div>
       <div class="r-lbl">Overall availability</div>
-      <div class="r-big">${pct1(m.r)}<small>%</small></div>
-      <div class="meter ${m.status}" role="img" aria-label="${pct1(m.r)}% against a ${settings.target}% target"><i style="width:${(m.r * 100).toFixed(2)}%"></i><b class="tgt${edge}" style="left:${settings.target}%"><em>Target ${settings.target}%</em></b></div>
+      <div class="r-big">${pct0(m.r)}<small>%</small></div>
+      <div class="meter ${m.status}" role="img" aria-label="${pct0(m.r)}% against a ${settings.target}% target"><i style="width:${(m.r * 100).toFixed(2)}%"></i><b class="tgt${edge}" style="left:${settings.target}%"><em>Target ${settings.target}%</em></b></div>
       <div class="r-gap">${gap}</div>
     </div>
     <div class="r-kpis">${tiles.map((t) => `<div class="r-kpi"><div class="r-lbl">${t.flag ? `<i class="${t.flag}"></i>` : ''}${t.lbl}</div><div class="v${t.txt ? ' txt' : ''}">${t.v}</div><div class="s">${t.s}</div></div>`).join('')}</div>
@@ -787,12 +818,12 @@ function storesBlock(m) {
     const st = status(s.r);
     const img = shelfSVG(s.y, s.l - s.y, inner, 56);
     return `<div class="r-store"><div class="top"><span class="name">${esc(s.name)}</span>${chip(st)}</div>
-      <div class="pct">${pct1(s.r)}<small>%</small></div>
-      <div class="shelf"><img alt="${s.y} of ${s.l} listings in stock" src="${img.src}" width="${img.w}" height="${img.h}"></div>
-      <p class="foot"><b>${fmtN(s.y)}</b> in stock · <b class="o">${fmtN(s.l - s.y)}</b> out · ${fmtN(s.l)} listed</p></div>`;
+      <div class="pct">${pct0(s.r)}<small>%</small></div>
+      <div class="shelf"><img alt="${s.y} of ${s.l} shelves stocked" src="${img.src}" width="${img.w}" height="${img.h}"></div>
+      <p class="foot"><b>${fmtN(s.y)}</b> in stock · <b class="o">${fmtN(s.l - s.y)}</b> out of stock</p></div>`;
   }).join('');
   return h(`<div class="r-sec">
-    <div class="r-sec-head"><h3>Availability by store</h3><p class="r-note"><span class="sw in"></span>In stock <span class="sw out"></span>Out of stock <span>· one square = one listing</span></p></div>
+    <div class="r-sec-head"><h3>Availability by store</h3><p class="r-note"><span class="sw in"></span>In stock <span class="sw out"></span>Out of stock <span>· one square = one of your products in that store</span></p></div>
     <div class="r-stores" style="--n:${n}">${cards}</div>
   </div>`);
 }
@@ -803,15 +834,15 @@ function mcell(c, extra = '') {
   return `<td class="${extra.trim()}"><div class="mc ${status(r)}"><b>${pct0(r)}%</b><span>${fmtN(c.y)}/${fmtN(c.l)}</span></div></td>`;
 }
 
-function matrixSpec(m) {
+function matrixSpec(m, withSubs = true) {
   const n = m.stores.length;
   const labW = n >= 5 ? 250 : 290, allW = 132;
   const colgroup = `<colgroup><col style="width:${labW}px">${m.stores.map(() => '<col>').join('')}<col style="width:${allW}px"></colgroup>`;
   const thead = `<thead><tr><th>Category</th>${m.stores.map((s) => `<th class="c">${esc(s.name)}</th>`).join('')}<th class="c">All stores</th></tr></thead>`;
   const rows = [];
   for (const c of m.cats) {
-    const multi = c.subs.length > 1;
-    const lab = multi ? esc(c.name) : `${esc(c.name)}<em>${esc(c.subs[0].name)}</em>`;
+    const multi = withSubs && c.subs.length > 1;
+    const lab = multi || c.subs.length > 1 ? esc(c.name) : `${esc(c.name)}<em>${esc(c.subs[0].name)}</em>`;
     rows.push({ el: h(`<table><tbody><tr class="cat"><td class="lab">${lab}</td>${c.by.map((x) => mcell(x)).join('')}${mcell(c, ' all')}</tr></tbody></table>`).querySelector('tr'), keep: multi });
     if (multi) {
       // A category split by a page break gets its name repeated on the next page.
@@ -822,9 +853,9 @@ function matrixSpec(m) {
     }
   }
   rows.push({ el: h(`<table><tbody><tr class="total"><td class="lab">All categories</td>${m.stores.map((s) => mcell(s)).join('')}${mcell(m, ' all')}</tr></tbody></table>`).querySelector('tr') });
-  const legend = h(`<div class="r-legend"><span><i class="good"></i>On target (${settings.target}%+)</span><span><i class="warn"></i>Below target (${settings.critical}–${settings.target - 1}%)</span><span><i class="crit"></i>Critical (under ${settings.critical}%)</span><span class="end">Cells show % available and in stock / listed</span></div>`);
+  const legend = h(`<div class="r-legend"><span><i class="good"></i>On target (${settings.target}%+)</span><span><i class="warn"></i>Below target (${settings.critical}–${settings.target - 1}%)</span><span><i class="crit"></i>Critical (under ${settings.critical}%)</span><span class="end">Each cell: % in stock, then shelves stocked / total</span></div>`);
   return {
-    section: (cont) => h(`<div class="r-sec"><div class="r-sec-head"><h3>${cont ? 'Availability by category (continued)' : 'Availability by category and store'}</h3>${cont ? '' : '<p class="r-note">Categories and sub-categories from the item master</p>'}</div><table class="r-table mtx">${colgroup}${thead}<tbody></tbody></table></div>`),
+    section: (cont) => h(`<div class="r-sec"><div class="r-sec-head"><h3>${cont ? 'Availability by category (continued)' : 'Availability by category and store'}</h3>${cont ? '' : `<p class="r-note">${withSubs ? 'Sub-categories indented' : 'Sub-categories are in the attached list'}</p>`}</div><table class="r-table mtx">${colgroup}${thead}<tbody></tbody></table></div>`),
     rows, tail: legend,
   };
 }
@@ -832,8 +863,8 @@ function matrixSpec(m) {
 function oosSpec(m) {
   const n = m.stores.length;
   const storeW = n >= 5 ? 64 : 76;
-  const colgroup = `<colgroup><col style="width:34px"><col style="width:76px"><col><col style="width:${n >= 5 ? 150 : 164}px"><col style="width:46px">${m.stores.map(() => `<col style="width:${storeW}px">`).join('')}</colgroup>`;
-  const thead = `<thead><tr><th class="c">#</th><th>Code</th><th>Item</th><th>Sub-category</th><th>Tier</th>${m.stores.map((s) => `<th class="c">${esc(s.name)}</th>`).join('')}</tr></thead>`;
+  const colgroup = `<colgroup><col style="width:34px"><col style="width:76px"><col><col style="width:${n >= 5 ? 130 : 150}px"><col style="width:100px">${m.stores.map(() => `<col style="width:${storeW}px">`).join('')}</colgroup>`;
+  const thead = `<thead><tr><th class="c">#</th><th>Code</th><th>Product</th><th>Sub-category</th><th>Type</th>${m.stores.map((s) => `<th class="c">${esc(s.name)}</th>`).join('')}</tr></thead>`;
   const all = m.oos.filter((o) => o.allOut), part = m.oos.filter((o) => !o.allOut);
   const cols = 5 + n;
   const rows = [];
@@ -842,26 +873,27 @@ function oosSpec(m) {
     i++;
     const t = o.it.tier || '';
     const cells = o.marks.map((c) => (c === 'N' ? '<td class="c"><span class="out">OUT</span></td>' : c === 'Y' ? `<td class="c">${ICON.check}</td>` : '<td class="c na">—</td>')).join('');
-    return h(`<table><tbody><tr class="${o.allOut ? 'all' : ''}"><td class="n">${i}</td><td class="code">${esc(o.it.code)}</td><td class="it">${esc(o.it.name)}</td><td class="sub" title="${esc(o.it.cat)}">${esc(o.it.sub)}</td><td>${t ? `<span class="tier ${t === 'T1' ? 't1' : t === 'T2' ? 't2' : ''}">${esc(t)}</span>` : ''}</td>${cells}</tr></tbody></table>`).querySelector('tr');
+    return h(`<table><tbody><tr class="${o.allOut ? 'all' : ''}"><td class="n">${i}</td><td class="code">${esc(o.it.code)}</td><td class="it">${esc(o.it.name)}</td><td class="sub" title="${esc(o.it.cat)}">${esc(o.it.sub)}</td><td>${typePill(t)}</td>${cells}</tr></tbody></table>`).querySelector('tr');
   };
   const divider = (cls, title, count) => h(`<table><tbody><tr class="div ${cls}"><td colspan="${cols}"><div class="dv"><i></i>${title}<span>${count}</span></div></td></tr></tbody></table>`).querySelector('tr');
   if (all.length) {
-    rows.push({ el: divider('', 'Not available in any store', `${all.length} ${plural(all.length, 'SKU', 'SKUs')}`), keep: true });
-    all.forEach((o) => rows.push({ el: itemRow(o) }));
+    rows.push({ el: divider('', 'Not available in any store', `${all.length} ${plural(all.length, 'product', 'products')}`), keep: true });
+    all.forEach((o) => rows.push({ el: itemRow(o), item: true }));
   }
   if (part.length) {
-    rows.push({ el: divider('partial', 'Out of stock in some stores', `${part.length} ${plural(part.length, 'SKU', 'SKUs')}`), keep: true });
-    part.forEach((o) => rows.push({ el: itemRow(o) }));
+    rows.push({ el: divider('partial', 'Out of stock in some stores', `${part.length} ${plural(part.length, 'product', 'products')}`), keep: true });
+    part.forEach((o) => rows.push({ el: itemRow(o), item: true }));
   }
   const skus = m.oos.length;
   return {
-    section: (cont) => h(`<div class="r-sec"><div class="r-sec-head"><h3>${cont ? 'Out-of-stock action list (continued)' : 'Out-of-stock action list'}</h3>${cont ? '' : `<p class="r-note">${fmtN(skus)} ${plural(skus, 'SKU', 'SKUs')} to restock · most urgent first · T1 = best sellers</p>`}</div><table class="r-table oos">${colgroup}${thead}<tbody></tbody></table></div>`),
-    rows,
+    section: (cont) => h(`<div class="r-sec"><div class="r-sec-head"><h3>${cont ? 'Out-of-stock action list (continued)' : 'Out-of-stock action list'}</h3>${cont ? '' : `<p class="r-note">${fmtN(skus)} ${plural(skus, 'product', 'products')} to restock · most urgent first</p>`}</div><table class="r-table oos">${colgroup}${thead}<tbody></tbody></table></div>`),
+    rows, cols,
+    more: (k) => h(`<table><tbody><tr class="more"><td colspan="${cols}">+ ${fmtN(k)} more ${plural(k, 'product', 'products')} in the attached out-of-stock list (CSV)</td></tr></tbody></table>`).querySelector('tr'),
   };
 }
 
 function categoryChart(m) {
-  if (m.cats.length < 2) return null;
+  if (m.cats.length < 2 || !m.oos.length) return null;
   const MAX = 8;
   const sorted = [...m.cats].sort((a, b) => a.y / a.l - b.y / b.l || (b.l - b.y) - (a.l - a.y));
   const shown = sorted.slice(0, MAX);
@@ -879,22 +911,24 @@ function categoryChart(m) {
 
 function priorityBlock(m) {
   if (!m.oos.length) return null;
-  const top = m.oos.slice(0, 8);
+  // Top and strong sellers lead; within each group, products missing everywhere first.
+  const hot = (o) => (o.it.tier === 'T1' || o.it.tier === 'T2' ? 0 : 1);
+  const top = [...m.oos].sort((a, b) => hot(a) - hot(b) || (b.allOut - a.allOut) || (tierRank(a.it.tier) - tierRank(b.it.tier)) || (b.out - a.out) || (b.demand - a.demand)).slice(0, 8);
   const rows = top.map((o, i) => {
     const t = o.it.tier || '';
     const cells = o.marks.map((c) => (c === 'N' ? '<td class="c"><span class="out">OUT</span></td>' : c === 'Y' ? `<td class="c">${ICON.check}</td>` : '<td class="c na">—</td>')).join('');
-    return `<tr class="${o.allOut ? 'all' : ''}"><td class="n">${i + 1}</td><td class="code">${esc(o.it.code)}</td><td class="it">${esc(o.it.name)}</td><td>${t ? `<span class="tier ${t === 'T1' ? 't1' : t === 'T2' ? 't2' : ''}">${esc(t)}</span>` : ''}</td>${cells}</tr>`;
+    return `<tr class="${o.allOut ? 'all' : ''}"><td class="n">${i + 1}</td><td class="code">${esc(o.it.code)}</td><td class="it">${esc(o.it.name)}</td><td>${typePill(t)}</td>${cells}</tr>`;
   }).join('');
   const n = m.stores.length;
   const rest = m.oos.length - top.length;
-  return h(`<div class="r-sec"><div class="r-sec-head"><h3>Restock these first</h3><p class="r-note">${rest > 0 ? `Top ${top.length} of ${fmtN(m.oos.length)} SKUs · full list on the next pages` : 'Every SKU that is out somewhere'}</p></div>
-    <table class="r-table oos pri"><colgroup><col style="width:34px"><col style="width:76px"><col><col style="width:46px">${m.stores.map(() => `<col style="width:${n >= 5 ? 64 : 76}px">`).join('')}</colgroup>
-    <thead><tr><th class="c">#</th><th>Code</th><th>Item</th><th>Tier</th>${m.stores.map((s) => `<th class="c">${esc(s.name)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`);
+  return h(`<div class="r-sec"><div class="r-sec-head"><h3>Restock these first</h3><p class="r-note">${rest > 0 ? `Top ${top.length} of ${fmtN(m.oos.length)} products · full list follows` : 'Every product that is out somewhere'}</p></div>
+    <table class="r-table oos pri"><colgroup><col style="width:34px"><col style="width:76px"><col><col style="width:100px">${m.stores.map(() => `<col style="width:${n >= 5 ? 64 : 76}px">`).join('')}</colgroup>
+    <thead><tr><th class="c">#</th><th>Code</th><th>Product</th><th>Type</th>${m.stores.map((s) => `<th class="c">${esc(s.name)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`);
 }
 
 function footer() {
-  const tiers = settings.excludedTiers.length ? ` Items tiered ${settings.excludedTiers.map(esc).join(' or ')} are not counted.` : '';
-  return h(`<footer class="r-foot"><p>Availability = listings in stock ÷ active listings. One listing is one SKU in one store; a listing counts as in stock when the store holds at least one unit.${tiers} Tier and category come from the item master.</p><p class="pg" data-pg></p></footer>`);
+  const tiers = settings.excludedTiers.length ? ' Products marked inactive or on hold in our item master are not counted.' : '';
+  return h(`<footer class="r-foot"><p>How to read this: each of your products in each store is one shelf. Availability = shelves with stock ÷ all your shelves. A shelf counts as in stock when the store has at least one unit.${tiers}</p><p class="pg" data-pg></p></footer>`);
 }
 
 /* Lays the report out on pages no taller than PAGE_MAX_H, repeating table
@@ -914,20 +948,26 @@ function paginate(m, host) {
   const fits = () => page.offsetHeight <= PAGE_MAX_H;
 
   newPage(true);
-  body.append(verdict(m), hero(m), storesBlock(m));
+  body.append(...[verdict(m), askBlock(m), hero(m), storesBlock(m)].filter(Boolean));
+  const limit = settings.maxPages;
   // Page 1 is a complete summary on its own; the detail starts on page 2
   // unless all of it fits here (small suppliers get a single image).
   const summary = [categoryChart(m), priorityBlock(m)].filter(Boolean);
-  const mSpec = matrixSpec(m);
-  if (summary.length && !fitsWhole(mSpec)) {
+  let mSpec = matrixSpec(m);
+  if (summary.length && !fitsWhole([mSpec, m.oos.length ? oosSpec(m) : null])) {
     body.append(...summary);
     if (!fits()) { summary.forEach((b) => b.remove()); body.append(summary[0]); if (!fits()) summary[0].remove(); }
     newPage(false);
+    // With a page limit, keep the category table short enough to leave room for the list.
+    if (limit && heightOf(mSpec) > 640) mSpec = matrixSpec(m, false);
   }
-  flow(mSpec);
-  if (m.oos.length) flow(oosSpec(m));
+  // A supplier with nothing out of stock gets one image: drop sub-categories if needed.
+  const okMsg = () => h(`<div class="r-good">${ICON.good}<span>Every product is in stock in every store. Nothing to restock today.</span></div>`);
+  if (!m.oos.length && pages.length === 1 && !fitsWhole([mSpec], [okMsg()])) mSpec = matrixSpec(m, false);
+  const whole = flow(mSpec);
+  if (m.oos.length && whole) flow(oosSpec(m));
   else {
-    const ok = h(`<div class="r-good">${ICON.good}<span>Every active listing is in stock in every store. Nothing to restock today.</span></div>`);
+    const ok = okMsg();
     body.append(ok);
     if (!fits()) { ok.remove(); newPage(false); body.append(ok); }
   }
@@ -940,15 +980,28 @@ function paginate(m, host) {
   });
   return pages;
 
-  function fitsWhole(spec) {
+  function heightOf(spec) {
     const probe = spec.section(false);
     const tb = probe.querySelector('tbody');
     spec.rows.forEach((r) => tb.append(r.el.cloneNode(true)));
     body.append(probe);
-    if (spec.tail) body.append(spec.tail.cloneNode(true));
-    const ok = fits();
+    const hgt = probe.offsetHeight;
     probe.remove();
-    if (spec.tail) body.lastElementChild.remove();
+    return hgt;
+  }
+
+  function fitsWhole(specs, extra = []) {
+    const added = [];
+    for (const spec of specs.filter(Boolean)) {
+      const probe = spec.section(false);
+      const tb = probe.querySelector('tbody');
+      spec.rows.forEach((r) => tb.append(r.el.cloneNode(true)));
+      body.append(probe); added.push(probe);
+      if (spec.tail) { const t = spec.tail.cloneNode(true); body.append(t); added.push(t); }
+    }
+    extra.forEach((x) => { body.append(x); added.push(x); });
+    const ok = fits();
+    added.forEach((x) => x.remove());
     return ok;
   }
 
@@ -967,6 +1020,7 @@ function paginate(m, host) {
       tbody.append(...group);
       if (!fits()) {
         group.forEach((r) => r.remove());
+        if (limit && pages.length >= limit) { truncate(i); return false; }
         if (!tbody.children.length) sec.remove();
         newPage(false);
         open();
@@ -978,7 +1032,29 @@ function paginate(m, host) {
     }
     if (spec.tail) {
       body.append(spec.tail);
-      if (!fits()) { spec.tail.remove(); newPage(false); body.append(spec.tail); }
+      if (!fits()) {
+        spec.tail.remove();
+        if (limit && pages.length >= limit) return true;
+        newPage(false); body.append(spec.tail);
+      }
+    }
+    return true;
+
+    // Out of pages: close the table with a pointer to the CSV list.
+    function truncate(from) {
+      if (!spec.more) return;
+      let left = spec.rows.slice(from).filter((r) => r.item).length;
+      let note = spec.more(left);
+      tbody.append(note);
+      while (!fits() && tbody.children.length > 1) {
+        const last = note.previousElementSibling;
+        if (last.classList.contains('div')) { last.remove(); continue; }
+        last.remove(); left++;
+        note.remove(); note = spec.more(left); tbody.append(note);
+      }
+      // A section divider left with no products under it goes too.
+      const prev = note.previousElementSibling;
+      if (prev && prev.classList.contains('div')) prev.remove();
     }
   }
 }
@@ -1029,7 +1105,7 @@ function renderList() {
     <input type="checkbox" id="sel-${esc(s.acct)}" ${selected.has(s.acct) ? 'checked' : ''} aria-label="Select ${esc(s.name)} for export">
     <button class="sup-main" type="button" data-open="${esc(s.acct)}">
       <span class="sup-name">${esc(s.name)}</span>
-      <span class="sup-stats"><span class="d ${s.status}"></span><b>${pct1(s.r)}%</b><span>${fmtN(s.oos)} out · ${fmtN(s.l)} listed</span></span>
+      <span class="sup-stats"><span class="d ${s.status}"></span><b>${pct0(s.r)}%</b><span>${fmtN(s.pout)} of ${fmtN(s.skus)} products out</span></span>
       <span class="sup-bar"><i class="${s.status}" style="width:${(s.r * 100).toFixed(1)}%"></i></span>
     </button></li>`).join('');
 }
@@ -1063,7 +1139,7 @@ function showSupplier(acct) {
   currentPages = paginate(m, els.pages);
   for (const p of currentPages) { const f = document.createElement('div'); f.className = 'frame'; p.replaceWith(f); f.append(p); }
   fitPages();
-  els.note.innerHTML = `<span><strong>${esc(m.name)}</strong> · ${currentPages.length} ${plural(currentPages.length, 'page', 'pages')}</span><span>${pct1(m.r)}% available · ${fmtN(m.oosN)} listings out · rank ${m.rank} of ${m.rankOf}</span>`;
+  els.note.innerHTML = `<span><strong>${esc(m.name)}</strong> · ${currentPages.length} ${plural(currentPages.length, 'page', 'pages')}</span><span>${pct0(m.r)}% available · ${fmtN(m.oosN)} listings out · rank ${m.rank} of ${m.rankOf}</span>`;
   for (const li of els.list.querySelectorAll('.sup')) li.classList.toggle('is-active', li.dataset.acct === acct);
   try { history.replaceState(null, '', '#s' + acct); } catch { /* not allowed in some frames */ }
   return currentPages.length;
@@ -1148,6 +1224,9 @@ function openSettings() {
   syncStoreBoxes();
   $('#set-rank').checked = settings.showRank;
   $('#set-company').value = settings.company;
+  $('#set-contact').value = settings.contact;
+  $('#set-days').value = settings.deliverDays;
+  $('#set-pages').value = String(settings.maxPages);
   dlgSettings.showModal();
 }
 function syncStoreBoxes() { for (const cb of $('#set-stores').querySelectorAll('input')) cb.disabled = $('#set-store-auto').checked; }
@@ -1164,6 +1243,9 @@ $('#form-settings').addEventListener('submit', (e) => {
     stores: [...$('#set-stores').querySelectorAll('input:checked')].map((i) => i.value),
     showRank: $('#set-rank').checked,
     company: $('#set-company').value.trim(),
+    contact: $('#set-contact').value.trim(),
+    deliverDays: $('#set-days').value,
+    maxPages: $('#set-pages').value,
   });
   store.set('settings', settings);
   dlgSettings.close();
@@ -1173,7 +1255,9 @@ $('#form-settings').addEventListener('submit', (e) => {
 /* ================= Loading CSV / Excel ================= */
 const dlgData = $('#dlg-data');
 let pendingFiles = [];
+let dataCloseTimer = 0;
 function openData() {
+  clearTimeout(dataCloseTimer);
   pendingFiles = [];
   $('#data-files').value = '';
   $('#data-asof').value = toLocalInput(new Date());
@@ -1215,7 +1299,7 @@ $('#form-data').addEventListener('submit', async (e) => {
     DATA = result.data;
     refreshAll(false);
     showMsg(box, 'ok', `Loaded ${fmtN(result.listings)} store listings for ${fmtN(DATA.suppliers.size)} suppliers.${result.warnings.length ? `<ul>${result.warnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>` : ''}`);
-    if (!result.warnings.length) setTimeout(() => dlgData.close(), 900);
+    if (!result.warnings.length) dataCloseTimer = setTimeout(() => dlgData.close(), 900);
   } catch (err) {
     showMsg(box, 'err', esc(err.message || String(err)));
   }
@@ -1451,6 +1535,25 @@ async function pageToPng(page) {
   return lib.toPng(page, { pixelRatio: 2, backgroundColor: '#ffffff', fontEmbedCSS: fontCSS, cacheBust: false, width: PAGE_W, height: page.offsetHeight, style: { transform: 'none' } });
 }
 
+// The complete out-of-stock list for one supplier, as a CSV Excel opens directly.
+function supplierCSV(m) {
+  const q = (v) => { const t = String(v ?? ''); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+  const head = ['#', 'Item code', 'Product', 'Category', 'Sub-category', 'Type', ...m.stores.map((s) => s.name), 'Stores out of stock'];
+  const lines = [head.map(q).join(',')];
+  m.oos.forEach((o, i) => {
+    const marks = o.marks.map((c) => (c === 'N' ? 'OUT' : c === 'Y' ? 'In stock' : 'Not listed'));
+    lines.push([i + 1, o.it.code, o.it.name, o.it.cat, o.it.sub, (TYPE[o.it.tier] || ['Regular'])[0], ...marks, o.out].map(q).join(','));
+  });
+  return new Blob(['\ufeff' + lines.join('\r\n') + '\r\n'], { type: 'text/csv' });
+}
+
+function addFile(shot) {
+  exportShots.push(shot);
+  const card = h(`<figure class="shot" style="margin:0"><div style="aspect-ratio:1/1.3;display:grid;place-items:center;background:var(--ui-panel);border-bottom:1px solid var(--ui-line);font:700 22px var(--f-mono);color:var(--ui-text-2)">CSV</div><figcaption class="shot-meta"><b>${esc(shot.file)}</b><div><button class="btn small" type="button" data-dl>Download</button></div></figcaption></figure>`);
+  card.querySelector('[data-dl]').addEventListener('click', () => saveBlob(shot.blob, shot.file).catch(exportError));
+  $('#shots').append(card);
+}
+
 function addShot(shot) {
   exportShots.push(shot);
   const card = h(`<figure class="shot" style="margin:0"><img alt="${esc(shot.file)}"><figcaption class="shot-meta"><b>${esc(shot.file)}</b><div><button class="btn small" type="button" data-dl>Download</button><button class="btn small" type="button" data-copy>Copy</button></div></figcaption></figure>`);
@@ -1483,19 +1586,22 @@ async function runExport(accts) {
       if (run !== exportRun) return;
       const name = DATA.suppliers.get(acct) || acct;
       $('#export-sub').textContent = `Rendering ${name} (${done + 1} of ${accts.length})…`;
-      const pages = acct === current && currentPages.length ? currentPages : paginate(supplierModel(acct), els.offscreen);
+      const model = supplierModel(acct);
+      const pages = acct === current && currentPages.length ? currentPages : paginate(model, els.offscreen);
       for (let i = 0; i < pages.length; i++) {
         const url = await pageToPng(pages[i]);
         if (run !== exportRun) return;
         const suffix = pages.length > 1 ? ` - page ${i + 1} of ${pages.length}` : '';
         addShot({ url, acct, file: `${ymd} ${safeName(name)}${suffix}.png`, folder: safeName(name) });
       }
+      if (model.oos.length) addFile({ blob: supplierCSV(model), acct, file: `${ymd} ${safeName(name)} - out of stock list.csv` });
       done++;
       bar.style.width = `${(done / accts.length) * 100}%`;
       await new Promise((r) => setTimeout(r, 0));
     }
     els.offscreen.replaceChildren();
-    $('#export-sub').textContent = `${exportShots.length} ${plural(exportShots.length, 'image', 'images')} ready. Download them, or right-click (long-press on a phone) any image to save or copy it.`;
+    const nImg = exportShots.filter((x) => x.url).length, nCsv = exportShots.length - nImg;
+    $('#export-sub').textContent = `${nImg} ${plural(nImg, 'image', 'images')}${nCsv ? ` and ${nCsv} out-of-stock ${plural(nCsv, 'list', 'lists')}` : ''} ready. Send the images, and the CSV list if the supplier wants every item. Right-click (long-press on a phone) an image to save or copy it.`;
     $('#btn-export-all').disabled = !exportShots.length;
     $('#btn-export-cancel').hidden = true;
   } catch (err) {
@@ -1519,11 +1625,11 @@ $('#btn-export-all').addEventListener('click', async () => {
     if (multi && window.JSZip) {
       const zip = new window.JSZip();
       const root = zip.folder(`Supplier availability ${ymd}`);
-      for (const s of exportShots) root.file(s.file, s.url.split(',')[1], { base64: true });
+      for (const s of exportShots) { if (s.url) root.file(s.file, s.url.split(',')[1], { base64: true }); else root.file(s.file, s.blob); }
       await saveBlob(await zip.generateAsync({ type: 'blob' }), `Supplier availability ${ymd}.zip`);
     } else {
       for (const s of exportShots) {
-        if (!(await saveBlob(dataUrlToBlob(s.url), s.file))) break;   // viewer declined: stop asking
+        if (!(await saveBlob(s.blob || dataUrlToBlob(s.url), s.file))) break;   // viewer declined: stop asking
         await new Promise((r) => setTimeout(r, 250));
       }
     }
@@ -1554,6 +1660,7 @@ window.SAR = {
   ready,
   suppliers: () => NET.sums.map((s) => ({ acct: s.acct, name: s.name, listings: s.l, inStock: s.y, pct: s.r, status: s.status, rank: s.rank })),
   render: async (acct) => { await ready; return showSupplier(String(acct)); },
+  csv: async (acct) => { const m = supplierModel(String(acct)); return m.oos.length ? supplierCSV(m).text() : ''; },
   capture: (on) => { document.body.classList.toggle('capture', !!on); fitPages(); },
   meta: () => ({ asOf: DATA.asOf, ymd: (kuwaitParts(DATA.asOf) || {}).ymd, stores: NET.active.map((k) => DATA.stores[k]), origin: DATA.origin }),
   setSettings: (patch) => { settings = sanitizeSettings({ ...settings, ...patch }); refreshAll(); return settings; },
