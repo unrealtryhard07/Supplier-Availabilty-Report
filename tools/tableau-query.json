@@ -1,0 +1,25 @@
+{
+  "_comment": "VizQL Data Service query against the Tableau Cloud published data source \"Supplier's Availability Data\" (LUID a7ab1f36-6a15-4c2c-8e7a-4ea0f74a1320). One row per supplier item, with per-store stock status pivoted into strings in store order Egaila|Hawally|Jahra|Salmiya|Qibla. Feed the JSON result to tools/build_snapshot.py.",
+  "datasourceLuid": "a7ab1f36-6a15-4c2c-8e7a-4ea0f74a1320",
+  "stores": ["Egaila", "Hawally", "Jahra", "Salmiya", "Qibla"],
+  "query": {
+    "fields": [
+      {"fieldCaption": "Supplier Account", "fieldAlias": "a", "sortPriority": 1, "sortDirection": "ASC"},
+      {"fieldCaption": "Supplier Name", "fieldAlias": "sn"},
+      {"fieldCaption": "Item Code", "fieldAlias": "c", "sortPriority": 2, "sortDirection": "ASC"},
+      {"fieldCaption": "Item Description", "fieldAlias": "d"},
+      {"fieldCaption": "Category (Sheet1)", "fieldAlias": "k"},
+      {"fieldCaption": "Sub-Category (Sheet1)", "fieldAlias": "u"},
+      {"fieldCaption": "Rank", "fieldAlias": "t"},
+      {"fieldCaption": "Item Status", "fieldAlias": "is"},
+      {"fieldCaption": "n", "calculation": "MIN([Item Name])"},
+      {"fieldCaption": "v", "calculation": "COUNT([Variant ID])"},
+      {"fieldCaption": "s", "calculation": "IFNULL(MAX(IF [Store]='Egaila' THEN (IF [Items in Stock]='Yes' THEN 'Y' ELSE 'N' END) END),'-') + IFNULL(MAX(IF [Store]='Hawally' THEN (IF [Items in Stock]='Yes' THEN 'Y' ELSE 'N' END) END),'-') + IFNULL(MAX(IF [Store]='Jahra' THEN (IF [Items in Stock]='Yes' THEN 'Y' ELSE 'N' END) END),'-') + IFNULL(MAX(IF [Store]='Salmiya' THEN (IF [Items in Stock]='Yes' THEN 'Y' ELSE 'N' END) END),'-') + IFNULL(MAX(IF [Store]='Qibla' THEN (IF [Items in Stock]='Yes' THEN 'Y' ELSE 'N' END) END),'-')"},
+      {"fieldCaption": "q", "calculation": "IFNULL(STR(INT(SUM(IF [Store]='Egaila' THEN [Current Stock] END))),'') + '|' + IFNULL(STR(INT(SUM(IF [Store]='Hawally' THEN [Current Stock] END))),'') + '|' + IFNULL(STR(INT(SUM(IF [Store]='Jahra' THEN [Current Stock] END))),'') + '|' + IFNULL(STR(INT(SUM(IF [Store]='Salmiya' THEN [Current Stock] END))),'') + '|' + IFNULL(STR(INT(SUM(IF [Store]='Qibla' THEN [Current Stock] END))),'')"},
+      {"fieldCaption": "b", "calculation": "IFNULL(STR(INT(SUM(IF [Store]='Egaila' THEN [Items in Book] END))),'') + '|' + IFNULL(STR(INT(SUM(IF [Store]='Hawally' THEN [Items in Book] END))),'') + '|' + IFNULL(STR(INT(SUM(IF [Store]='Jahra' THEN [Items in Book] END))),'') + '|' + IFNULL(STR(INT(SUM(IF [Store]='Salmiya' THEN [Items in Book] END))),'') + '|' + IFNULL(STR(INT(SUM(IF [Store]='Qibla' THEN [Items in Book] END))),'')"}
+    ],
+    "filters": [
+      {"field": {"fieldCaption": "Supplier Account"}, "filterType": "QUANTITATIVE_NUMERICAL", "quantitativeFilterType": "MIN", "min": 1}
+    ]
+  }
+}
