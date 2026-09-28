@@ -222,8 +222,8 @@ def metadata_records():
 def parameters_ds():
     return f"""    <datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
       <aliases enabled='yes' />
-      <column caption='Target availability %' datatype='integer' name='[p_target]' param-domain-type='range' role='measure' type='quantitative' value='95'>
-        <calculation class='tableau' formula='95' />
+      <column caption='Target availability %' datatype='integer' name='[p_target]' param-domain-type='range' role='measure' type='quantitative' value='85'>
+        <calculation class='tableau' formula='85' />
         <range granularity='1' max='100' min='50' />
       </column>
       <column caption='Critical below %' datatype='integer' name='[p_critical]' param-domain-type='range' role='measure' type='quantitative' value='80'>
@@ -828,8 +828,8 @@ def report_dashboard():
     for idx, name in enumerate(["R KPI Empty", "R KPI Top"]):
         L.sheet(name, 380 + idx * 222, 446, 210, 102, bgc=WASH, margin=4)
     L.text(824, 446, 216, 102, semi("HOW TO READ THE COLOURS", INK2, 8) + NL
-           + run("■ ", GOOD_F, 11) + run("On target  95%+", INK, 9) + NL
-           + run("■ ", WARN_F, 11) + run("Below target  80–94%", INK, 9) + NL
+           + run("■ ", GOOD_F, 11) + run("On target  85%+", INK, 9) + NL
+           + run("■ ", WARN_F, 11) + run("Below target  80–84%", INK, 9) + NL
            + run("■ ", CRIT_F, 11) + run("Critical  under 80%", INK, 9))
     section_title(L, 566, "Availability by store", "share of your shelves with stock")
     L.sheet("R Stores BG", 40, 600, 1000, 132, margin=0)

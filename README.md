@@ -12,7 +12,7 @@ file the supplier can open in Excel. (Settings can switch to all pages.)
 
 - **Verdict band** in red (Critical), amber (Below target) or green
   (On target), with one plain sentence, e.g. *"84 of your 480 store listings
-  are out of stock right now. Restock 60 listings to reach the 95% target."*
+  are out of stock right now. Restock 60 listings to reach the 85% target."*
 - **Overall availability**: the headline figure, with a bar against the target.
 - **What we need from you**: a delivery deadline and your contact details
   (set once in Settings).
@@ -45,9 +45,9 @@ headers repeat on every page.
 - Suppliers are grouped by **Supplier Account**. Where the sheet spells one
   account two ways (e.g. `Co` and `CO.`), both share one report under the
   most used spelling.
-- Percentages are rounded **down**, so 94.96% shows as 94.9% (amber), never
-  as a green 95%.
-- Defaults: target 95%, critical below 80% (your old red line). Both are
+- Percentages are rounded **down**, so 84.96% shows as 84.9% (amber), never
+  as a green 85%.
+- Defaults: target 85%, critical below 80% (your old red line). Both are
   under Settings.
 
 ## Daily routine

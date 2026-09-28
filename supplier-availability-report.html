@@ -499,7 +499,7 @@ const PAGE_W = 1080;
 const PAGE_MAX_H = 1620;                    // tallest page, CSS px (A4-like 1 : 1.5)
 const KNOWN_STORES = ['Egaila', 'Hawally', 'Jahra', 'Salmiya', 'Qibla'];
 const TIER_RANK = { T1: 1, T2: 2, T3: 3, T4: 4, T5: 5, TN: 6, TI: 7 };
-const DEFAULTS = { target: 95, critical: 80, excludedTiers: ['TD', 'TP/TS'], storeAuto: true, stores: [], showRank: true, company: '', contact: '', deliverDays: 2, maxPages: 2 };
+const DEFAULTS = { target: 85, critical: 80, excludedTiers: ['TD', 'TP/TS'], storeAuto: true, stores: [], showRank: true, company: '', contact: '', deliverDays: 2, maxPages: 2 };
 const STATUS_LABEL = { crit: 'Critical', warn: 'Below target', good: 'On target' };
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const SHELF_IN = '#BCC6D4', SHELF_OUT = '#D92D20';
@@ -517,7 +517,7 @@ const $ = (sel, root = document) => root.querySelector(sel);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const nf = new Intl.NumberFormat('en-US');
 const fmtN = (n) => nf.format(n);
-// Floor, never round up: a supplier at 94.96% must not read "95%" in green.
+// Floor, never round up: a supplier at 84.96% must not read "85%" in green.
 const pct1 = (r) => (Math.floor(r * 1000 + 1e-7) / 10).toFixed(1);
 const pct0 = (r) => String(Math.floor(r * 100 + 1e-7));
 const plural = (n, one, many) => (n === 1 ? one : many);
