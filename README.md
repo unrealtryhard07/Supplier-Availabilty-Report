@@ -123,3 +123,25 @@ DEFAULT_SUPPLIER="<supplier to open on>" python3 tools/build_tableau_workbook.py
 The output goes to `tableau/` (git-ignored) and is published with Tableau's
 REST API or the Tableau MCP publish tool. Target %, critical % and delivery
 days are workbook parameters.
+
+## Availability Priorities (internal operations page)
+
+`availability-priorities.html` is the internal, action-oriented version for the
+commercial team: which suppliers, stores, categories and items to fix first.
+It is not for sending to suppliers (it shows every supplier).
+
+- **Data**: reads the Tableau data source "Supplier's Availability Data" live
+  through the viewer's Tableau Cloud connector when opened in Claude. A saved
+  snapshot can be built in with `tools/build_priorities.py` (see its header);
+  the built copy goes to `dist/`, which stays out of this repository.
+- **Status**: Target ≥ 85%, Below target 80–84.99%, Critical ≤ 79.99%.
+- **Sales importance**: average units per day = Lifetime Qty Sold ÷ days since
+  first sale (at least 30). The source has no single-day sales column.
+- **Priority**: lost sales per day = daily sales of listings that are out of
+  stock now. Used to order the drilldown and the fix-first lists.
+- **Sections**: summary tiles; supplier × store matrix (suppliers by sales,
+  weighted Total column and row); every supplier ranked by sales with the
+  suppliers that make the first 90% marked Focus; Category → Sub-category →
+  Store → Item drilldown; stores by lost sales; empty shelves losing the most
+  sales; supplier-store cells to escalate. Clicking a supplier, store or cell
+  filters the whole page.

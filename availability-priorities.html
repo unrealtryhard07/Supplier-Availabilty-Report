@@ -119,8 +119,9 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .meter i{position:absolute;inset:0 auto 0 0;border-radius:4px}
 .meter i.good{background:var(--good-dot)} .meter i.warn{background:var(--warn-dot)} .meter i.crit{background:var(--crit-dot)}
 .meter .tick{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
-.meter .tick span{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-size:10.5px;color:var(--ink-3);white-space:nowrap;font-family:var(--f-mono)}
+.meter .tick span{position:absolute;top:14px;left:4px;font-size:10.5px;color:var(--ink-3);white-space:nowrap;font-family:var(--f-mono)}
 .meter-wrap{padding-bottom:14px}
+.meter .tick.lo span{left:auto;right:4px}
 
 /* cards */
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column}
@@ -130,7 +131,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .card-h .q{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:3px}
 .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);align-items:center}
 .legend span{display:inline-flex;gap:5px;align-items:center}
-.duo{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(380px,1fr);gap:18px;align-items:stretch}
+.duo{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(430px,1fr);gap:18px;align-items:stretch}
 @media (max-width:1180px){.duo{grid-template-columns:minmax(0,1fr)}}
 .scroll{overflow:auto;max-height:640px;position:relative}
 .foot-note{padding:9px 18px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px}
@@ -177,18 +178,19 @@ tbody td{border-bottom:1px solid var(--line);padding:6px 10px;vertical-align:mid
 .mx .lost{color:var(--crit);font-weight:600}
 .mx .zero{color:var(--ink-3)}
 
-.fx{font-size:13px}
+.fx{font-size:12.5px}
+.fx th,.fx td{padding-left:7px;padding-right:7px}
 .fx td.rk{color:var(--ink-3);width:34px;text-align:right;padding-right:4px}
 .fx tbody tr{cursor:pointer}
 .fx tbody tr:hover td{background:var(--panel-2)}
 .fx tr.focus td:first-child{box-shadow:inset 4px 0 0 var(--accent)}
 .fx tr.sel td{background:var(--accent-soft)}
 .fx tr.out td{color:var(--ink-3)}
-.fx .nm{max-width:210px;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.fx .nm{max-width:170px;overflow:hidden;text-overflow:ellipsis;font-weight:600}
 .fx tr.out .nm{font-weight:500}
 .fx tr.cut td{background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:12px;padding:7px 10px;border-bottom:2px solid var(--accent);cursor:default;white-space:normal}
 .cum{display:flex;align-items:center;gap:8px;justify-content:flex-end}
-.cum .bar{position:relative;width:64px;height:6px;border-radius:3px;background:var(--panel-3);overflow:hidden;flex:none}
+.cum .bar{position:relative;width:44px;height:6px;border-radius:3px;background:var(--panel-3);overflow:hidden;flex:none}
 .cum .bar i{position:absolute;inset:0 auto 0 0;background:var(--accent)}
 .fx tr.out .cum .bar i{background:var(--line-2)}
 .cum .bar b{position:absolute;top:0;bottom:0;left:90%;width:1px;background:var(--ink)}
@@ -528,7 +530,7 @@ function kpiHTML(list, focus) {
       <div class="big t-${st}">${pct1(t.p)}</div>
       <div class="meter-wrap"><div class="meter" role="img" aria-label="${pct1(t.p)} against an 85% target">
         <i class="${st}" style="width:${w}%"></i>
-        <span class="tick" style="left:80%"><span>80</span></span><span class="tick" style="left:85%"><span>85</span></span>
+        <span class="tick lo" style="left:80%"><span>80</span></span><span class="tick" style="left:85%"><span>85</span></span>
       </div></div>
       <div class="sub">${int(t.inn)} of ${int(t.n)} listings in stock</div>
     </div>
