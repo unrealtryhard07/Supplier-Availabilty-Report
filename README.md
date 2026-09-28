@@ -1,8 +1,38 @@
 # Supplier Availability Report
 
-A daily availability report for each supplier, built to be sent as images.
-Open `supplier-availability-report.html` in Chrome or Edge, load today's
-stock, pick a supplier, and export the pages as PNG files.
+A daily availability report for each supplier, built to be sent as images,
+with a priorities view of all suppliers for the team. Open
+`supplier-availability-report.html` in Chrome or Edge (or the published copy in
+Claude), pick a supplier, and export the pages as PNG files.
+
+## Priorities view (all suppliers)
+
+The report opens on **Where to act today**: every supplier, sorted by sales.
+
+- **Summary**: overall availability, the 85% target, below-target and critical
+  supplier-store cells, sales at risk (units a day on empty shelves) and the
+  number of product-store combinations measured.
+- **Supplier × store availability**: suppliers as rows (biggest sellers
+  first), stores as columns (biggest-selling store first), with a Total column
+  and an All suppliers row counted from listings.
+- **Sales-wise most important suppliers to focus**: every supplier ranked by
+  sales with share and running total; the ones that make the first 90% of
+  sales are marked Focus.
+- **Category → Sub-category → Store → Item** drilldown, sorted by lost sales,
+  daily sales or availability.
+- **Stores by lost sales**, **empty shelves losing the most sales** and
+  **supplier-store cells to escalate**.
+- Filters for store, supplier, category, sub-category, status and item.
+  Clicking a supplier, store or cell filters the whole view; "Report →" opens
+  that supplier's pages.
+
+Sales: the Tableau data holds lifetime sales, so daily sales = Lifetime Qty
+Sold ÷ days since first sale (at least 30 days). Lost sales a day = daily sales
+of the listings out of stock now; it orders the fix-first lists.
+
+When opened in Claude with the Tableau Cloud connector, the report reads
+"Supplier's Availability Data" live (Load data → Reload from Tableau to
+refresh). Otherwise it shows the snapshot built into the copy.
 
 ## What a supplier receives
 
@@ -11,22 +41,21 @@ detail. Every export also includes the complete out-of-stock list as a CSV
 file the supplier can open in Excel. (Settings can switch to all pages.)
 
 - **Verdict band** in red (Critical), amber (Below target) or green
-  (On target), with one plain sentence, e.g. *"84 of your 480 store listings
-  are out of stock right now. Restock 60 listings to reach the 85% target."*
+  (On target), with one plain sentence, e.g. *"120 of your 258 products are
+  out of stock in at least one store. About 158 units a day are not being
+  sold because of it."*
 - **Overall availability**: the headline figure, with a bar against the target.
-- **What we need from you**: a delivery deadline and your contact details
-  (set once in Settings).
 - **Six key figures** in plain words: products, products with gaps, products
-  missing everywhere, empty shelves, top sellers in stock, and rank.
-- **Where you are losing**: categories as bars against the target.
-- **Restock these first**: the eight most urgent products, top sellers first.
+  missing everywhere, sales at risk, top sellers in stock, and rank.
+- **Where you are losing**: categories as bars against the target, biggest
+  lost sales first.
 - **Availability by store**: one card per store. Each square is one listing
   and red squares are empty shelves.
 - **Availability by category and store**: the same grid as the old Excel report.
   Category and sub-category come from the Google Sheet. Cells are colored by
   status and show `% available` and `in stock / listed`.
 - **Out-of-stock action list**: every SKU that is out somewhere. SKUs missing
-  in every store come first, then best-selling tiers first. `OUT` marks the
+  in every store come first, then the most sales lost a day. `OUT` marks the
   exact stores to restock.
 
 Pages are 1080 px wide (exported at 2160 px) and never taller than 1620 px, so
@@ -47,8 +76,8 @@ headers repeat on every page.
   most used spelling.
 - Percentages are rounded **down**, so 84.96% shows as 84.9% (amber), never
   as a green 85%.
-- Defaults: target 85%, critical below 80% (your old red line). Both are
-  under Settings.
+- Status: On target 85% and above, Below target 80–84.99%, Critical under
+  80%. Both lines are under Settings.
 
 ## Daily routine
 
@@ -85,11 +114,14 @@ Images go to `reports/<stock date>/`.
 
 ## Refreshing the built-in snapshot from Tableau
 
-`tools/tableau-query.json` is the VizQL Data Service query that pulls one row
-per supplier item from the published data source. Save its JSON result, then:
+The report runs two VizQL Data Service queries (stores, then one row per
+supplier item with stock and sales per store). To build a copy with them
+inside:
 
 ```sh
-python3 tools/build_snapshot.py result.json --as-of 2026-09-24T12:21:04Z
+python3 tools/build_snapshot.py --meta-query                  # run it, save the result as meta.json
+python3 tools/build_snapshot.py --pivot-query meta.json       # run it, save the result as pivot.json
+python3 tools/build_snapshot.py --meta meta.json pivot.json
 ```
 
 This writes `dist/supplier-availability-report.html` with the data inside,
@@ -123,25 +155,3 @@ DEFAULT_SUPPLIER="<supplier to open on>" python3 tools/build_tableau_workbook.py
 The output goes to `tableau/` (git-ignored) and is published with Tableau's
 REST API or the Tableau MCP publish tool. Target %, critical % and delivery
 days are workbook parameters.
-
-## Availability Priorities (internal operations page)
-
-`availability-priorities.html` is the internal, action-oriented version for the
-commercial team: which suppliers, stores, categories and items to fix first.
-It is not for sending to suppliers (it shows every supplier).
-
-- **Data**: reads the Tableau data source "Supplier's Availability Data" live
-  through the viewer's Tableau Cloud connector when opened in Claude. A saved
-  snapshot can be built in with `tools/build_priorities.py` (see its header);
-  the built copy goes to `dist/`, which stays out of this repository.
-- **Status**: Target ≥ 85%, Below target 80–84.99%, Critical ≤ 79.99%.
-- **Sales importance**: average units per day = Lifetime Qty Sold ÷ days since
-  first sale (at least 30). The source has no single-day sales column.
-- **Priority**: lost sales per day = daily sales of listings that are out of
-  stock now. Used to order the drilldown and the fix-first lists.
-- **Sections**: summary tiles; supplier × store matrix (suppliers by sales,
-  weighted Total column and row); every supplier ranked by sales with the
-  suppliers that make the first 90% marked Focus; Category → Sub-category →
-  Store → Item drilldown; stores by lost sales; empty shelves losing the most
-  sales; supplier-store cells to escalate. Clicking a supplier, store or cell
-  filters the whole page.

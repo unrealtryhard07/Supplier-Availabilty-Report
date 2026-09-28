@@ -367,8 +367,176 @@ dialog::backdrop{background:rgba(8,14,24,.55)}
 .r-foot .pg{font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:var(--p-ink-2);white-space:nowrap;text-align:right}
 .pg-body{display:flex;flex-direction:column;padding-bottom:18px}
 
+/* =====================================================================
+   Priorities overview: every supplier on one screen, same paper look as
+   the report pages. Screen only (never exported as an image).
+   ===================================================================== */
+.ov-host{width:100%;display:flex;justify-content:center}
+.app.ov-mode{grid-template-columns:minmax(0,1fr)}
+.app.ov-mode .sidebar{display:none}
+.page.ov{width:100%;max-width:1480px;box-shadow:var(--ui-shadow);border-radius:2px}
+.ov .r-head{padding:26px 32px 22px}
+.ov .r-supplier{font-size:34px}
+.ov .r-sec{padding:22px 32px 24px}
+.ov .r-sec-head{margin-bottom:10px;align-items:flex-end}
+.ov-q{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#2F5BEA;margin-bottom:4px}
+.ov-sub{font-size:13px;color:var(--p-ink-2);margin-top:5px!important;max-width:82ch}
+.ov-bar{position:sticky;top:57px;z-index:6;background:#fff;border-bottom:1px solid var(--p-rule);box-shadow:0 6px 12px -10px rgba(14,26,43,.35);padding:12px 32px;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end}
+.ov-f{display:grid;gap:3px;min-width:0}
+.ov-f label,.ov-f .l{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--p-ink-2)}
+.ov-f select,.ov-f input{border:1px solid #CBD3DF;background:#fff;color:var(--p-ink);border-radius:6px;padding:6px 8px;font-size:13px;width:175px;max-width:100%;color-scheme:light}
+.ov-f.wide select{width:250px}
+.ov-seg{display:inline-flex;border:1px solid #CBD3DF;border-radius:6px;overflow:hidden;background:#fff}
+.ov-seg button{border:0;background:#fff;color:var(--p-ink-2);padding:6px 10px;font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap}
+.ov-seg button + button{border-left:1px solid #CBD3DF}
+.ov-seg button[aria-pressed="true"]{background:var(--p-ink);color:#fff}
+.ov-seg .d{width:9px;height:9px;border-radius:2px;flex:none}
+.ov-seg .d.crit{background:var(--crit)}.ov-seg .d.warn{background:var(--warn)}
+.ov-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:100%}
+.ov-chips:empty{display:none}
+.ov-chip{display:inline-flex;align-items:center;gap:6px;background:#E7EDFE;color:#1D3FB8;border-radius:999px;padding:3px 6px 3px 11px;font-size:12px;font-weight:700}
+.ov-chip button{border:0;background:none;color:inherit;font-size:15px;line-height:1;padding:0 3px;cursor:pointer}
+.ov-link{border:0;background:none;color:#1D3FB8;font-weight:700;font-size:12.5px;padding:2px 4px;cursor:pointer;white-space:nowrap}
+.ov-link:hover{text-decoration:underline}
+
+.ov-hero{display:grid;grid-template-columns:300px minmax(0,1fr);gap:30px;padding:24px 32px 22px;border-bottom:1px solid var(--p-rule)}
+.ov-hero .r-big{font-size:88px}
+.ov-hero .meter{margin-top:34px}
+.ov-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-left:1px solid var(--p-rule);align-content:start}
+.ov-kpis .r-kpi{border-bottom:0;padding:4px 14px 4px 20px}
+.ov-kpis .r-kpi + .r-kpi{border-left:1px solid var(--p-rule)}
+.ov-kpis .r-kpi .v{font-size:34px}
+.ov-kpis .r-kpi .s{font-size:12.5px;line-height:1.35;margin-top:5px}
+.ov-kpis .r-kpi .v.crit{color:var(--crit-ink)}.ov-kpis .r-kpi .v.warn{color:var(--warn-ink)}
+@media (max-width:1280px){.ov-hero{grid-template-columns:minmax(0,1fr)}.ov-kpis{border-left:0;border-top:1px solid var(--p-rule);padding-top:14px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px 0}}
+
+.ov-duo{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);border-bottom:1px solid var(--p-rule)}
+.ov-duo > .r-sec + .r-sec{border-left:1px solid var(--p-rule)}
+.ov-trio{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.35fr) minmax(0,1.1fr);border-bottom:1px solid var(--p-rule)}
+.ov-trio > .r-sec + .r-sec{border-left:1px solid var(--p-rule)}
+@media (max-width:1360px){
+  .ov-duo,.ov-trio{grid-template-columns:minmax(0,1fr)}
+  .ov-duo > .r-sec + .r-sec,.ov-trio > .r-sec + .r-sec{border-left:0;border-top:1px solid var(--p-rule)}
+}
+.ov-scroll{overflow:auto;max-height:640px;border:1px solid var(--p-rule);border-radius:4px;position:relative}
+.ov-foot-note{font-size:12px;color:var(--p-ink-3);margin-top:8px!important}
+
+.ovt{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
+.ovt th{position:sticky;top:0;z-index:3;background:#F4F6FA;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--p-ink-2);text-align:left;padding:8px;border-bottom:2px solid var(--p-ink);white-space:nowrap;vertical-align:bottom}
+.ovt td{border-bottom:1px solid var(--p-rule);padding:6px 8px;white-space:nowrap;vertical-align:middle}
+.ovt .r{text-align:right}.ovt .c{text-align:center}
+.ovt .num{text-align:right;font-family:var(--f-mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.ovt .lost{color:var(--crit-ink);font-weight:700}
+.ovt .dim{color:var(--p-ink-3)}
+.ovt tbody tr[data-ov]{cursor:pointer}
+.ovt tbody tr[data-ov]:hover td{background:#F7F9FC}
+
+.ovm td{padding:3px}
+.ovm .rk{position:sticky;left:0;z-index:2;background:#fff;width:38px;min-width:38px;text-align:right;padding:6px 6px 6px 4px;font-family:var(--f-mono);font-size:11.5px;color:var(--p-ink-3)}
+.ovm .sp{position:sticky;left:38px;z-index:2;background:#fff;min-width:250px;max-width:300px;border-right:1px solid var(--p-rule);padding:6px 10px}
+.ovm thead .rk,.ovm thead .sp{z-index:5;background:#F4F6FA}
+.ovm tfoot td{position:sticky;bottom:0;z-index:3;background:#F4F6FA;border-top:2px solid var(--p-ink);border-bottom:0;padding:6px 3px;font-weight:800}
+.ovm tfoot .rk,.ovm tfoot .sp{z-index:5;background:#F4F6FA}
+.ovm tfoot .sp{padding:6px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:12.5px}
+.ovm td.num{padding:6px 10px}
+.ovm th.st{text-align:center;padding:5px 3px}
+.ovm th.st button{border:0;background:none;display:flex;flex-direction:column;align-items:center;margin:0 auto;padding:2px 8px;border-radius:4px;cursor:pointer;color:inherit;font:inherit}
+.ovm th.st button:hover{background:#E8ECF2}
+.ovm th.st b{font-size:19px;color:var(--p-ink);letter-spacing:0;line-height:1.05}
+.ovm th.st small{font-size:10px;letter-spacing:.03em;text-transform:none}
+.ovm th.st.sel button{background:#E7EDFE;color:#1D3FB8}.ovm th.st.sel b{color:#1D3FB8}
+.ovm td.tot{border-left:1px solid var(--p-rule)}
+.ovm tr.sel td,.ovm tr.sel .rk,.ovm tr.sel .sp{background:#EEF3FF}
+.ovm tbody tr:hover .sp,.ovm tbody tr:hover .rk{background:#F7F9FC}
+.cellb{border:0;width:100%;min-width:70px;padding:0;background:none;cursor:pointer;display:block;font:inherit;color:inherit}
+.cellb:disabled{cursor:default}
+.cellb .mc{padding:7px 8px;justify-content:center}
+.cellb .mc b{font-size:14px;display:inline-flex;align-items:center;gap:4px}
+.cellb .mc b i{font-style:normal;font-size:9px}
+.cellb .mc span{font-size:11px}
+.cellb:not(:disabled):hover .mc{box-shadow:inset 0 0 0 2px currentColor}
+.ovm td.tot .mc{box-shadow:inset 0 0 0 1.5px rgba(14,26,43,.18)}
+.ovm .na{display:block;text-align:center;color:#AEB8C7;padding:6px}
+.supb{border:0;background:none;padding:0;text-align:left;cursor:pointer;display:grid;gap:2px;max-width:215px;min-width:0;font:inherit;color:inherit}
+.supb b{font-weight:700;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.supb:hover b{color:#1D3FB8;text-decoration:underline}
+.supb small{display:flex;gap:6px;align-items:center;color:var(--p-ink-3);font-size:11px}
+.spw{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.spw .rep{font-size:11px;padding:2px 4px;flex:none;opacity:.8}
+.spw .rep:hover{opacity:1}
+.ftag{font-size:9.5px;font-weight:800;letter-spacing:.08em;background:#2F5BEA;color:#fff;border-radius:3px;padding:0 4px;line-height:15px}
+.ov-legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--p-ink-2);align-items:center}
+.ov-legend span{display:inline-flex;align-items:center;gap:6px}
+.ov-legend i{width:13px;height:13px;border-radius:3px;display:inline-block}
+.ov-legend i.good{background:var(--good-tint);box-shadow:inset 0 0 0 1px var(--good)}
+.ov-legend i.warn{background:var(--warn-tint);box-shadow:inset 0 0 0 1px var(--warn)}
+.ov-legend i.crit{background:var(--crit-tint);box-shadow:inset 0 0 0 1px var(--crit)}
+
+.ovf tr.focus td:first-child{box-shadow:inset 4px 0 0 #2F5BEA}
+.ovf tr.out td{color:var(--p-ink-3)}
+.ovf tr.sel td{background:#EEF3FF}
+.ovf{table-layout:fixed;min-width:470px}
+.ovf th,.ovf td{padding-left:6px;padding-right:6px}
+.ovf td.nm{overflow:hidden;text-overflow:ellipsis;font-weight:700}
+.ovf tr.out td.nm{font-weight:500}
+.ovf tr.cut td{background:#E7EDFE;color:#1D3FB8;font-weight:800;font-size:12px;border-bottom:2px solid #2F5BEA;white-space:normal;cursor:default}
+.cumb{display:inline-block;width:28px;height:6px;background:#EEF1F6;border-radius:3px;position:relative;vertical-align:middle;margin-left:7px;overflow:hidden}
+.cumb i{position:absolute;left:0;top:0;bottom:0;background:#2F5BEA}
+.ovf tr.out .cumb i{background:#C5CEDB}
+.cumb b{position:absolute;top:0;bottom:0;left:90%;width:1px;background:var(--p-ink)}
+.fyes{display:inline-block;background:#2F5BEA;color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:3px;padding:3px 6px}
+.ov-focushead{display:flex;align-items:center;gap:14px;margin-bottom:10px;padding:10px 12px;background:#F4F6FA;border-radius:4px}
+.ov-focushead .n{font-size:40px;font-weight:700;font-stretch:85%;line-height:1;color:#2F5BEA}
+.ov-focushead p{font-size:13px;color:var(--p-ink-2);line-height:1.4}
+.ov-focushead p b{color:var(--p-ink)}
+
+.ovd tr.l0 td{background:#F4F6FA;font-weight:800;font-size:14px;border-bottom-color:#CBD3DF}
+.ovd tr.l1 td.nm{padding-left:32px}
+.ovd tr.l2 td.nm{padding-left:56px}
+.ovd tr.l3 td.nm{padding-left:84px}
+.ovd tr.l3 td{font-size:12.5px}
+.ovd tr.more td{padding-left:84px}
+.ovd td.nm{white-space:normal;min-width:280px}
+.ovd .nmw{display:flex;align-items:center;gap:9px}
+.ovd .lv{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--p-ink-3);min-width:64px}
+.ovd .it-sub{display:block;color:var(--p-ink-3);font-size:11.5px;font-weight:400}
+.ovd .code{font-family:var(--f-mono);font-size:11.5px;color:var(--p-ink-2)}
+.caret{width:22px;height:22px;flex:none;border:1px solid #CBD3DF;background:#fff;border-radius:4px;display:inline-grid;place-items:center;font-size:10px;color:var(--p-ink-2);padding:0;cursor:pointer;transition:transform .15s}
+.caret[aria-expanded="true"]{transform:rotate(90deg);background:var(--p-ink);border-color:var(--p-ink);color:#fff}
+@media (prefers-reduced-motion:reduce){.caret{transition:none}}
+.avb{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.avb .cb-track{width:110px;height:10px;flex:none}
+.avb .cb-track b{top:-3px;bottom:-3px}
+.avb strong{min-width:50px;text-align:right;font-family:var(--f-mono);font-size:12.5px}
+.avb strong.crit{color:var(--crit-ink)}.avb strong.warn{color:var(--warn-ink)}.avb strong.good{color:var(--good-ink)}
+.shb{display:inline-block;width:56px;height:6px;border-radius:3px;background:#EEF1F6;position:relative;overflow:hidden;vertical-align:middle;margin-left:6px}
+.shb i{position:absolute;left:0;top:0;bottom:0;background:var(--crit)}
+
+.ov-stores{display:grid;gap:10px}
+.ov-store{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:4px 12px;align-items:center;border:1px solid var(--p-rule);border-radius:6px;padding:10px 12px;background:#fff;text-align:left;cursor:pointer;font:inherit;color:inherit;width:100%}
+.ov-store:hover{border-color:#AEB8C7}
+.ov-store.sel{border-color:#2F5BEA;box-shadow:inset 0 0 0 1px #2F5BEA}
+.ov-store .code-b{grid-row:span 2;font-size:28px;font-weight:800;font-stretch:85%;text-align:center}
+.ov-store .nm{font-size:14px;font-weight:700;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ov-store .lostv{font-family:var(--f-mono);font-weight:700;color:var(--crit-ink)}
+.ov-store .meta{grid-column:2 / 4;display:flex;gap:10px;align-items:center;font-size:11.5px;color:var(--p-ink-3)}
+.ov-store .meta .bar{flex:1;height:7px;border-radius:4px;background:#EEF1F6;position:relative;overflow:hidden}
+.ov-store .meta .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--crit)}
+.code-b.crit{color:var(--crit-ink)}.code-b.warn{color:var(--warn-ink)}.code-b.good{color:var(--good-ink)}
+.ovl td.nm{white-space:normal;min-width:170px}
+.ovl .it-sub{display:block;color:var(--p-ink-3);font-size:11.5px}
+.ovl .code{font-family:var(--f-mono);font-size:11.5px;color:var(--p-ink-2)}
+.ov-empty{padding:22px;text-align:center;color:var(--p-ink-3);border:1px dashed var(--p-rule);border-radius:4px}
+.ov-method{padding:18px 32px 22px;display:grid;grid-template-columns:170px minmax(0,1fr);gap:6px 18px;font-size:12.5px;color:var(--p-ink-2);line-height:1.5}
+.ov-method h3{grid-column:1/-1;font-size:15px;font-weight:700;color:var(--p-ink);margin-bottom:4px!important}
+.ov-method dt{font-weight:700;color:var(--p-ink)}
+.ov-method dd{margin:0;max-width:100ch}
+@media (max-width:760px){.ov-method{grid-template-columns:1fr}.ov-method dd{margin-bottom:6px}}
+@media (max-width:980px){.ov-bar{position:static}.ov .r-head{grid-template-columns:1fr}.ov .r-date{text-align:left}}
+.stage-back{margin-right:auto}
+
 /* Capture mode: used by tools/render-reports.js to screenshot pages at 1:1 */
-body.capture .topbar,body.capture .sidebar,body.capture .stage-note{display:none}
+body.capture .topbar,body.capture .sidebar,body.capture .stage-note,body.capture .ov-host{display:none}
 body.capture .app{display:block}
 body.capture .stage{padding:0;align-items:flex-start;gap:0}
 body.capture .pages{align-items:flex-start;gap:40px}
@@ -396,7 +564,9 @@ body.capture .frame{box-shadow:none;border-radius:0}
     <div class="find">
       <input id="sup-search" type="search" placeholder="Search suppliers" aria-label="Search suppliers by name or account" autocomplete="off">
       <select id="sup-sort" aria-label="Sort suppliers">
-        <option value="low">Lowest first</option>
+        <option value="sales">Highest sales first</option>
+        <option value="lost">Most lost sales</option>
+        <option value="low">Lowest availability first</option>
         <option value="high">Highest first</option>
         <option value="oos">Most out of stock</option>
         <option value="name">Name A–Z</option>
@@ -407,6 +577,7 @@ body.capture .frame{box-shadow:none;border-radius:0}
   </aside>
 
   <main class="stage" id="stage">
+    <div class="ov-host" id="overview" hidden></div>
     <div class="stage-note" id="stage-note"></div>
     <div class="pages" id="pages"></div>
   </main>
@@ -416,7 +587,7 @@ body.capture .frame{box-shadow:none;border-radius:0}
 <dialog id="dlg-data" aria-labelledby="dlg-data-title">
   <form class="dlg" id="form-data" method="dialog">
     <div class="dlg-head">
-      <div><h2 id="dlg-data-title">Load today’s data</h2><p>Use one CSV exported from the Tableau data source “Supplier’s Availability Data”, or both reports: the SQL stock report and the Google Sheet item master.</p></div>
+      <div><h2 id="dlg-data-title">Load today’s data</h2><p>The report reads the Tableau data source “Supplier’s Availability Data” directly when your Tableau Cloud connector is available. You can also load one CSV exported from it, or both reports: the SQL stock report and the Google Sheet item master.</p></div>
       <button class="x" type="button" data-close aria-label="Close"><svg viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     </div>
     <div class="dlg-body">
@@ -432,6 +603,7 @@ body.capture .frame{box-shadow:none;border-radius:0}
       <div id="data-msg" class="msg" aria-live="polite" hidden></div>
     </div>
     <div class="dlg-foot">
+      <button class="btn" id="btn-live" type="button">Reload from Tableau</button>
       <button class="btn" id="btn-snapshot" type="button">Use built-in snapshot</button>
       <button class="btn primary" id="btn-data-apply" type="submit">Load files</button>
     </div>
@@ -456,9 +628,8 @@ body.capture .frame{box-shadow:none;border-radius:0}
       </div>
       <label class="check"><input id="set-rank" type="checkbox"> Show the supplier’s rank on the report</label>
       <label class="field"><span>Company name (optional)</span><input id="set-company" type="text" maxlength="60" placeholder="Shown above the supplier name"></label>
-      <label class="field"><span>Contact for suppliers (optional)</span><input id="set-contact" type="text" maxlength="90" placeholder="e.g. Saad Abdullah · +965 5000 0000"><small>Printed in the “What we need from you” box.</small></label>
+      <input id="set-contact" type="hidden"><input id="set-days" type="hidden">
       <div class="row2">
-        <label class="field"><span>Ask for delivery within</span><input id="set-days" type="number" min="0" max="14" step="1"><small>Days after the stock date. 0 = no deadline.</small></label>
         <label class="field"><span>Images per supplier</span><select id="set-pages" style="border:1px solid var(--ui-line);background:var(--ui-panel-2);border-radius:7px;padding:8px 10px;font-size:14px;max-width:320px"><option value="2">2: summary + detail (recommended)</option><option value="0">All pages</option></select><small>The complete out-of-stock list is always exported as a CSV file too.</small></label>
       </div>
     </div>
@@ -499,7 +670,9 @@ const PAGE_W = 1080;
 const PAGE_MAX_H = 1620;                    // tallest page, CSS px (A4-like 1 : 1.5)
 const KNOWN_STORES = ['Egaila', 'Hawally', 'Jahra', 'Salmiya', 'Qibla'];
 const TIER_RANK = { T1: 1, T2: 2, T3: 3, T4: 4, T5: 5, TN: 6, TI: 7 };
-const DEFAULTS = { target: 85, critical: 80, excludedTiers: ['TD', 'TP/TS'], storeAuto: true, stores: [], showRank: true, company: '', contact: '', deliverDays: 2, maxPages: 2 };
+const MIN_SALES_DAYS = 30;                  // daily sales = lifetime qty ÷ days since first sale, at least this many days
+const TABLEAU = { server: 'Tableau Cloud', tool: 'query-datasource', datasourceLuid: 'a7ab1f36-6a15-4c2c-8e7a-4ea0f74a1320' };
+const DEFAULTS = { th: 2, target: 85, critical: 80, excludedTiers: ['TD', 'TP/TS'], storeAuto: true, stores: [], showRank: true, company: '', contact: '', deliverDays: 2, maxPages: 2 };
 const STATUS_LABEL = { crit: 'Critical', warn: 'Below target', good: 'On target' };
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const SHELF_IN = '#BCC6D4', SHELF_OUT = '#D92D20';
@@ -521,6 +694,9 @@ const fmtN = (n) => nf.format(n);
 const pct1 = (r) => (Math.floor(r * 1000 + 1e-7) / 10).toFixed(1);
 const pct0 = (r) => String(Math.floor(r * 100 + 1e-7));
 const plural = (n, one, many) => (n === 1 ? one : many);
+// Units a day: whole numbers from 10 up, one decimal below.
+const units = (x) => (x >= 100 ? nf.format(Math.round(x)) : x >= 10 ? x.toFixed(0) : x >= 0.05 ? x.toFixed(1) : x > 0 ? '<0.1' : '0');
+const share1 = (p) => (p * 100).toFixed(1) + '%';
 const tierRank = (t) => TIER_RANK[t] || 9;
 function h(html) { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; }
 const store = {
@@ -531,6 +707,8 @@ const store = {
 let settings = sanitizeSettings(store.get('settings', {}));
 function sanitizeSettings(s) {
   const out = { ...DEFAULTS, ...(s && typeof s === 'object' ? s : {}) };
+  // Thresholds moved to 85% target / 80% critical: older saved settings start from those.
+  if (!s || s.th !== 2) { out.target = DEFAULTS.target; out.critical = DEFAULTS.critical; out.th = 2; }
   out.target = clampInt(out.target, 50, 100, DEFAULTS.target);
   out.critical = clampInt(out.critical, 0, out.target - 1, DEFAULTS.critical);
   if (!Array.isArray(out.excludedTiers)) out.excludedTiers = DEFAULTS.excludedTiers.slice();
@@ -579,9 +757,53 @@ function fromSnapshot(snap) {
   const nS = snap.stores.length;
   const items = snap.items.map(([si, code, name, ci, ui, tier, st, , b]) => ({
     s: String(snap.sup[si][0]), code, name, cat: snap.cat[ci], sub: snap.sub[ui], tier, st,
-    b: splitNums(b, nS),
+    b: splitNums(b, nS), rate: new Array(nS).fill(0), stock: new Array(nS).fill(0),
   }));
   return { asOf: snap.asOf, source: snap.source, origin: 'snapshot', stores: snap.stores.slice(), suppliers, items };
+}
+// Snapshot v2 and live reads: rows of the Tableau pivot query (see pivotQuery).
+// p holds, per store, "Y|N in stock,lifetime qty,current stock,days since first sale".
+function fromPivot(snap, origin) {
+  const stores = snap.stores.slice();
+  const nS = stores.length;
+  const votes = new Map();
+  const items = new Map();
+  for (const raw of snap.rows) {
+    const r = Array.isArray(raw) ? { a: raw[0], sn: raw[1], c: raw[2], k: raw[3], u: raw[4], t: raw[5], n: raw[6], p: raw[7] } : raw;
+    if (r.a == null || r.c == null) continue;
+    const acct = String(r.a).replace(/\.0+$/, ''), code = cleanText(r.c);
+    const sn = cleanSupplier(r.sn) || acct;
+    let v = votes.get(acct);
+    if (!v) votes.set(acct, (v = new Map()));
+    v.set(sn, (v.get(sn) || 0) + 1);
+    const key = acct + '|' + code;
+    let it = items.get(key);
+    if (!it) {
+      items.set(key, (it = { s: acct, code, name: cleanText(r.n) || code, cat: cleanText(r.k) || 'Uncategorised', sub: cleanText(r.u) || 'Uncategorised',
+        tier: cleanText(r.t).toUpperCase(), st: new Array(nS).fill('-'), b: new Array(nS).fill(0), rate: new Array(nS).fill(0), stock: new Array(nS).fill(0) }));
+    }
+    const parts = String(r.p || '').split('|');
+    for (let k = 0; k < nS; k++) {
+      const x = parts[k];
+      if (!x || x === '-') continue;
+      const [flag, qty, stk, days] = x.split(',');
+      if (flag === 'Y') it.st[k] = 'Y'; else if (it.st[k] === '-') it.st[k] = 'N';
+      const d = days === '' || days == null ? NaN : Number(days);
+      const rate = Number.isFinite(d) ? (Number(qty) || 0) / Math.max(d + 1, MIN_SALES_DAYS) : 0;
+      it.rate[k] = Math.max(it.rate[k], rate);
+      it.stock[k] = Math.max(it.stock[k], Number(stk) || 0);
+    }
+  }
+  const suppliers = new Map();
+  for (const [a, v] of votes) suppliers.set(a, [...v.entries()].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0]))[0][0]);
+  const list = [...items.values()];
+  list.forEach((it) => { it.st = it.st.join(''); });
+  return { asOf: snap.asOf, source: snap.source || 'Tableau Cloud · Supplier’s Availability Data', origin, stores, suppliers, items: list, hiddenStores: snap.deadStores || [] };
+}
+function loadSnapshot(snap) {
+  if (snap && snap.v === 2 && Array.isArray(snap.rows)) return fromPivot(snap, 'snapshot');
+  if (snap && Array.isArray(snap.items)) return fromSnapshot(snap);
+  return null;
 }
 function splitNums(str, n) {
   const out = new Array(n).fill(0);
@@ -594,8 +816,9 @@ function splitNums(str, n) {
 function computeNetwork() {
   const nS = DATA.stores.length;
   const excluded = new Set(settings.excludedTiers);
-  const storeL = new Array(nS).fill(0), storeY = new Array(nS).fill(0);
+  const storeL = new Array(nS).fill(0), storeY = new Array(nS).fill(0), storeSales = new Array(nS).fill(0);
   const bySup = new Map();
+  let hasSales = false;
   for (const it of DATA.items) {
     let arr = bySup.get(it.s);
     if (!arr) bySup.set(it.s, (arr = []));
@@ -606,6 +829,8 @@ function computeNetwork() {
       if (c === '-') continue;
       storeL[k]++;
       if (c === 'Y') storeY[k]++;
+      const q = it.rate ? it.rate[k] : 0;
+      if (q > 0) { hasSales = true; storeSales[k] += q; }
     }
   }
   // A store with listings but no stock at all is not trading yet (e.g. a store
@@ -615,42 +840,56 @@ function computeNetwork() {
     ? DATA.stores.map((_, k) => k).filter((k) => live[k])
     : DATA.stores.map((_, k) => k).filter((k) => settings.stores.includes(DATA.stores[k]));
   if (!active.length) active = DATA.stores.map((_, k) => k).filter((k) => storeL[k] > 0);
+  // Biggest-selling store first, everywhere stores are listed.
+  if (hasSales) active.sort((a, b) => storeSales[b] - storeSales[a]);
 
   const sums = [];
+  const LST = [];   // one entry per listing (product in a store), for the overview
   for (const [acct, its] of bySup) {
-    let l = 0, y = 0, skus = 0, allOut = 0, pout = 0;
+    let l = 0, y = 0, skus = 0, allOut = 0, pout = 0, sales = 0, lost = 0;
     for (const it of its) {
       if (excluded.has(it.tier)) continue;
       let il = 0, iy = 0;
-      for (const k of active) { const c = it.st[k]; if (c === '-') continue; il++; if (c === 'Y') iy++; }
+      for (const k of active) {
+        const c = it.st[k];
+        if (c === '-') continue;
+        il++;
+        const q = it.rate ? it.rate[k] : 0;
+        sales += q;
+        if (c === 'Y') iy++; else lost += q;
+        LST.push({ p: acct, s: k, it, cat: it.cat, sub: it.sub, in: c === 'Y', rate: q, lost: c === 'Y' ? 0 : q });
+      }
       if (!il) continue;
       skus++; l += il; y += iy;
       if (!iy) allOut++;
       if (iy < il) pout++;
     }
-    if (l) sums.push({ acct, name: DATA.suppliers.get(acct) || acct, l, y, oos: l - y, r: y / l, skus, allOut, pout });
+    if (l) sums.push({ acct, name: DATA.suppliers.get(acct) || acct, l, y, oos: l - y, r: y / l, skus, allOut, pout, sales, lost });
   }
   const ranked = [...sums].sort((a, b) => b.r - a.r);
   let rank = 0, prev = null;
   ranked.forEach((s, i) => { if (prev === null || s.r < prev) { rank = i + 1; prev = s.r; } s.rank = rank; });
+  const bySales = [...sums].sort((a, b) => b.sales - a.sales || b.l - a.l);
+  bySales.forEach((s, i) => { s.salesRank = i + 1; });
 
-  let L = 0, Y = 0;
+  let L = 0, Y = 0, SALES = 0, LOST = 0;
   const counts = { crit: 0, warn: 0, good: 0 };
-  for (const s of sums) { L += s.l; Y += s.y; s.status = status(s.r); counts[s.status]++; }
+  for (const s of sums) { L += s.l; Y += s.y; SALES += s.sales; LOST += s.lost; s.status = status(s.r); counts[s.status]++; }
+  const hidden = [...new Set([...DATA.stores.filter((_, k) => !active.includes(k)), ...(DATA.hiddenStores || [])])];
   NET = {
-    excluded, active, live, storeL, storeY, bySup, sums,
+    excluded, active, live, storeL, storeY, storeSales, bySup, sums, LST, hasSales, hidden,
     byAcct: new Map(sums.map((s) => [s.acct, s])),
-    L, Y, r: L ? Y / L : 0, counts,
+    L, Y, r: L ? Y / L : 0, counts, sales: SALES, lost: LOST,
   };
 }
 
 function supplierModel(acct) {
   const act = NET.active;
-  const stores = act.map((k) => ({ k, name: DATA.stores[k], l: 0, y: 0 }));
+  const stores = act.map((k) => ({ k, name: DATA.stores[k], l: 0, y: 0, sales: 0, lost: 0 }));
   const cats = new Map();
   const t1 = { l: 0, y: 0 };
   const oos = [];
-  let l = 0, y = 0, skus = 0;
+  let l = 0, y = 0, skus = 0, sales = 0, lost = 0;
   const blank = () => act.map(() => ({ l: 0, y: 0 }));
 
   for (const it of NET.bySup.get(acct) || []) {
@@ -660,28 +899,35 @@ function supplierModel(acct) {
     if (!il) continue;
     skus++; l += il; y += iy;
     let cat = cats.get(it.cat);
-    if (!cat) cats.set(it.cat, (cat = { name: it.cat, l: 0, y: 0, by: blank(), subs: new Map() }));
+    if (!cat) cats.set(it.cat, (cat = { name: it.cat, l: 0, y: 0, sales: 0, lost: 0, by: blank(), subs: new Map() }));
     let sub = cat.subs.get(it.sub);
-    if (!sub) cat.subs.set(it.sub, (sub = { name: it.sub, l: 0, y: 0, by: blank() }));
+    if (!sub) cat.subs.set(it.sub, (sub = { name: it.sub, l: 0, y: 0, sales: 0, lost: 0, by: blank() }));
     const marks = [];
-    let demand = 0;
+    let demand = 0, iSales = 0, iLost = 0;
     act.forEach((k, j) => {
       const c = it.st[k];
       marks.push(c);
       if (c === '-') return;
+      const q = it.rate ? it.rate[k] : 0;
+      iSales += q; stores[j].sales += q;
       stores[j].l++; cat.by[j].l++; sub.by[j].l++;
-      if (c === 'Y') { stores[j].y++; cat.by[j].y++; sub.by[j].y++; }
+      if (c === 'Y') { stores[j].y++; cat.by[j].y++; sub.by[j].y++; } else { iLost += q; stores[j].lost += q; }
       demand += (it.b && it.b[k]) || 0;
     });
     cat.l += il; cat.y += iy; sub.l += il; sub.y += iy;
+    cat.sales += iSales; cat.lost += iLost; sub.sales += iSales; sub.lost += iLost;
+    sales += iSales; lost += iLost;
     if (it.tier === 'T1') { t1.l += il; t1.y += iy; }
-    if (iy < il) oos.push({ it, marks, out: il - iy, allOut: iy === 0, demand });
+    if (iy < il) oos.push({ it, marks, out: il - iy, allOut: iy === 0, demand, lost: iLost, sales: iSales });
   }
 
   const byName = (a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' });
-  const catList = [...cats.values()].sort(byName).map((c) => ({ ...c, subs: [...c.subs.values()].sort(byName) }));
-  // Most urgent first: missing everywhere, then best-selling tiers, then most stores out.
-  oos.sort((a, b) => (b.allOut - a.allOut) || (tierRank(a.it.tier) - tierRank(b.it.tier)) || (b.out - a.out)
+  // Business importance first: biggest-selling categories and sub-categories on top.
+  const byImportance = NET.hasSales ? (a, b) => b.sales - a.sales || b.l - a.l || byName(a, b) : (a, b) => b.l - a.l || byName(a, b);
+  const catList = [...cats.values()].sort(byImportance).map((c) => ({ ...c, subs: [...c.subs.values()].sort(byImportance) }));
+  // Most urgent first: missing everywhere, then the most sales lost per day
+  // (without sales figures: best-selling tiers, then most stores out).
+  oos.sort((a, b) => (b.allOut - a.allOut) || (NET.hasSales ? b.lost - a.lost : 0) || (tierRank(a.it.tier) - tierRank(b.it.tier)) || (b.out - a.out)
     || (b.demand - a.demand) || a.it.name.localeCompare(b.it.name));
 
   const r = l ? y / l : 0;
@@ -692,7 +938,7 @@ function supplierModel(acct) {
   const sum = NET.byAcct.get(acct);
   return {
     acct, name: DATA.suppliers.get(acct) || acct, asOf: kuwaitParts(DATA.asOf),
-    stores, cats: catList, oos, t1, l, y, r, skus, oosN: l - y,
+    stores, cats: catList, oos, t1, l, y, r, skus, oosN: l - y, sales, lost,
     allOut: oos.filter((o) => o.allOut).length, need, weakest,
     status: status(r), rank: sum ? sum.rank : null, rankOf: NET.sums.length,
   };
@@ -701,12 +947,6 @@ function supplierModel(acct) {
 /* ================= Report rendering ================= */
 const TYPE = { T1: ['Top seller', 't1'], T2: ['Strong seller', 't2'], TN: ['New', 'new'] };
 function typePill(t) { const [label, cls] = TYPE[t] || ['Regular', '']; return `<span class="tier ${cls}">${label}</span>`; }
-function deadline(asOfIso) {
-  if (!settings.deliverDays) return null;
-  const d = new Date(new Date(asOfIso).getTime() + settings.deliverDays * 864e5);
-  const k = kuwaitParts(d.toISOString());
-  return k ? `${k.weekday} ${k.date}` : null;
-}
 function chip(st) { return `<span class="chip ${st}">${ICON[st]}${STATUS_LABEL[st]}</span>`; }
 
 function headerFull(m) {
@@ -740,21 +980,12 @@ function verdict(m) {
     const pOut = m.oos.length;
     text = m.skus === 1
       ? `Your only product is <strong>out of stock</strong> in ${m.oosN === 1 ? 'its store' : `${m.oosN} stores`}.`
-      : `<strong>${fmtN(pOut)} of your ${fmtN(m.skus)} products</strong> ${plural(pOut, 'is', 'are')} out of stock in at least one store, leaving ${fmtN(m.oosN)} empty ${plural(m.oosN, 'shelf', 'shelves')}.`;
-    text += m.need > 0
-      ? ` Refill <strong>${fmtN(m.need)}</strong> to reach the ${settings.target}% target.`
-      : ` You are above the ${settings.target}% target.`;
+      : `<strong>${fmtN(pOut)} of your ${fmtN(m.skus)} products</strong> ${plural(pOut, 'is', 'are')} out of stock in at least one store.`;
+    if (NET.hasSales && m.lost > 0) text += ` About <strong>${units(m.lost)} units a day</strong> are not being sold because of it.`;
   } else {
     text = `All ${fmtN(m.skus)} of your ${plural(m.skus, 'product is', 'products are')} in stock in every store. Thank you for keeping the shelves full.`;
   }
   return h(`<div class="r-verdict ${m.status}"><div class="r-tag">${ICON[m.status]}<span>${STATUS_LABEL[m.status]}</span></div><p>${text}</p></div>`);
-}
-
-function askBlock(m) {
-  if (!m.oos.length) return null;
-  const by = deadline(DATA.asOf);
-  const who = settings.contact ? `<span class="who">Questions? ${esc(settings.contact)}</span>` : '';
-  return h(`<div class="r-ask"><b>What we need from you</b><span>Please deliver the missing products${by ? ` by <strong>${by}</strong>` : ''}, starting with “Restock these first” below.</span>${who}</div>`);
 }
 
 function hero(m) {
@@ -762,19 +993,22 @@ function hero(m) {
   const diff = Math.abs(settings.target - v);
   const gap = (v >= settings.target
     ? `<strong>${diff} ${plural(diff, 'pt', 'pts')}</strong> above the ${settings.target}% target`
-    : `<strong>${diff} ${plural(diff, 'pt', 'pts')}</strong> below the ${settings.target}% target`)
-    + `<br>${fmtN(m.y)} of ${fmtN(m.l)} shelves stocked`;
+    : `<strong>${diff} ${plural(diff, 'pt', 'pts')}</strong> below the ${settings.target}% target`);
   const t1r = m.t1.l ? m.t1.y / m.t1.l : null;
   const listedIn = m.stores.filter((x) => x.l).length;
   const tiles = [
     { lbl: 'Your products', v: fmtN(m.skus), s: `listed in ${listedIn} ${plural(listedIn, 'store', 'stores')}` },
     { lbl: 'Products with gaps', v: fmtN(m.oos.length), s: 'out of stock in 1 or more stores', flag: m.oos.length ? 'crit' : '' },
     { lbl: 'Missing everywhere', v: fmtN(m.allOut), s: plural(m.allOut, 'product customers can’t buy', 'products customers can’t buy'), flag: m.allOut ? 'crit' : '' },
-    { lbl: 'Empty shelves', v: fmtN(m.oosN), s: `of ${fmtN(m.l)} product-store shelves`, flag: m.oosN ? 'crit' : '' },
+    NET.hasSales
+      ? { lbl: 'Sales at risk', v: units(m.lost), s: `units a day on empty shelves${m.sales ? ` · ${share1(m.lost / m.sales)} of your sales` : ''}`, flag: m.lost > 0 ? 'crit' : '' }
+      : { lbl: 'Weakest store', v: m.weakest ? esc(m.weakest.name) : '—', s: m.weakest ? `${pct0(m.weakest.r)}% in stock` : '', txt: true },
     { lbl: 'Top sellers in stock', v: t1r === null ? '—' : pct0(t1r) + '%', s: t1r === null ? 'No top sellers listed' : `${fmtN(m.t1.y)} of ${fmtN(m.t1.l)} shelves stocked`, flag: t1r !== null && status(t1r) !== 'good' ? status(t1r) : '' },
     settings.showRank && m.rank
       ? { lbl: 'Supplier rank', v: '#' + m.rank, s: `of ${m.rankOf} suppliers by availability` }
-      : { lbl: 'Weakest store', v: m.weakest ? esc(m.weakest.name) : '—', s: m.weakest ? `${pct0(m.weakest.r)}% in stock` : '', txt: true },
+      : NET.hasSales
+        ? { lbl: 'Weakest store', v: m.weakest ? esc(m.weakest.name) : '—', s: m.weakest ? `${pct0(m.weakest.r)}% in stock` : '', txt: true }
+        : { lbl: 'Stores', v: fmtN(listedIn), s: 'carry your products' },
   ];
   const edge = settings.target >= 90 ? ' edge' : '';
   return h(`<div class="r-hero">
@@ -895,7 +1129,10 @@ function oosSpec(m) {
 function categoryChart(m) {
   if (m.cats.length < 2 || !m.oos.length) return null;
   const MAX = 8;
-  const sorted = [...m.cats].sort((a, b) => a.y / a.l - b.y / b.l || (b.l - b.y) - (a.l - a.y));
+  // Where the most sales are lost first; without sales figures, the weakest first.
+  const sorted = NET.hasSales
+    ? [...m.cats].sort((a, b) => b.lost - a.lost || a.y / a.l - b.y / b.l)
+    : [...m.cats].sort((a, b) => a.y / a.l - b.y / b.l || (b.l - b.y) - (a.l - a.y));
   const shown = sorted.slice(0, MAX);
   const t = settings.target;
   const rows = shown.map((c) => {
@@ -905,25 +1142,8 @@ function categoryChart(m) {
       <div class="cb-val"><strong>${pct0(r)}%</strong><span>${out ? `${fmtN(out)} out` : 'all in'}</span></div></div>`;
   }).join('');
   const more = sorted.length > MAX ? `<p class="cb-more">+ ${sorted.length - MAX} more ${plural(sorted.length - MAX, 'category', 'categories')} in the detail table</p>` : '';
-  return h(`<div class="r-sec"><div class="r-sec-head"><h3>Where you are losing</h3><p class="r-note">Categories, weakest first · <span class="cb-key"></span> ${t}% target</p></div>
+  return h(`<div class="r-sec"><div class="r-sec-head"><h3>Where you are losing</h3><p class="r-note">Categories, ${NET.hasSales ? 'biggest lost sales first' : 'weakest first'} · <span class="cb-key"></span> ${t}% target</p></div>
     <div class="cb">${rows}</div>${more}</div>`);
-}
-
-function priorityBlock(m) {
-  if (!m.oos.length) return null;
-  // Top and strong sellers lead; within each group, products missing everywhere first.
-  const hot = (o) => (o.it.tier === 'T1' || o.it.tier === 'T2' ? 0 : 1);
-  const top = [...m.oos].sort((a, b) => hot(a) - hot(b) || (b.allOut - a.allOut) || (tierRank(a.it.tier) - tierRank(b.it.tier)) || (b.out - a.out) || (b.demand - a.demand)).slice(0, 8);
-  const rows = top.map((o, i) => {
-    const t = o.it.tier || '';
-    const cells = o.marks.map((c) => (c === 'N' ? '<td class="c"><span class="out">OUT</span></td>' : c === 'Y' ? `<td class="c">${ICON.check}</td>` : '<td class="c na">—</td>')).join('');
-    return `<tr class="${o.allOut ? 'all' : ''}"><td class="n">${i + 1}</td><td class="code">${esc(o.it.code)}</td><td class="it">${esc(o.it.name)}</td><td>${typePill(t)}</td>${cells}</tr>`;
-  }).join('');
-  const n = m.stores.length;
-  const rest = m.oos.length - top.length;
-  return h(`<div class="r-sec"><div class="r-sec-head"><h3>Restock these first</h3><p class="r-note">${rest > 0 ? `Top ${top.length} of ${fmtN(m.oos.length)} products · full list follows` : 'Every product that is out somewhere'}</p></div>
-    <table class="r-table oos pri"><colgroup><col style="width:34px"><col style="width:76px"><col><col style="width:100px">${m.stores.map(() => `<col style="width:${n >= 5 ? 64 : 76}px">`).join('')}</colgroup>
-    <thead><tr><th class="c">#</th><th>Code</th><th>Product</th><th>Type</th>${m.stores.map((s) => `<th class="c">${esc(s.name)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`);
 }
 
 function footer() {
@@ -948,11 +1168,11 @@ function paginate(m, host) {
   const fits = () => page.offsetHeight <= PAGE_MAX_H;
 
   newPage(true);
-  body.append(...[verdict(m), askBlock(m), hero(m), storesBlock(m)].filter(Boolean));
+  body.append(...[verdict(m), hero(m), storesBlock(m)].filter(Boolean));
   const limit = settings.maxPages;
   // Page 1 is a complete summary on its own; the detail starts on page 2
   // unless all of it fits here (small suppliers get a single image).
-  const summary = [categoryChart(m), priorityBlock(m)].filter(Boolean);
+  const summary = [categoryChart(m)].filter(Boolean);
   let mSpec = matrixSpec(m);
   if (summary.length && !fitsWhole([mSpec, m.oos.length ? oosSpec(m) : null])) {
     body.append(...summary);
@@ -1059,6 +1279,365 @@ function paginate(m, host) {
   }
 }
 
+/* ================= Priorities overview (all suppliers) ================= */
+// Filters and drill state for the overview. Store filter is a DATA store index.
+const OV = { store: -1, sup: '', cat: '', sub: '', status: 'all', q: '', sort: 'lost', open: new Set(), more: new Map() };
+const GLYPH = { good: '', warn: '▲', crit: '●' };
+const storeCode = (k) => {
+  const first = (n) => cleanText(n).charAt(0).toUpperCase();
+  const c = first(DATA.stores[k]);
+  return DATA.stores.filter((n) => first(n) === c).length > 1 ? cleanText(DATA.stores[k]).slice(0, 2) : c;
+};
+const ovMatch = (st) => OV.status === 'all' || (OV.status === 'problem' ? st !== 'good' : st === 'crit');
+
+function ovFiltered(ignoreSup) {
+  const q = OV.q.trim().toLowerCase();
+  const out = [];
+  for (const l of NET.LST) {
+    if (OV.store >= 0 && l.s !== OV.store) continue;
+    if (!ignoreSup && OV.sup && l.p !== OV.sup) continue;
+    if (OV.cat && l.cat !== OV.cat) continue;
+    if (OV.sub && l.sub !== OV.sub) continue;
+    if (q && !(l.it.code + ' ' + l.it.name).toLowerCase().includes(q)) continue;
+    out.push(l);
+  }
+  return out;
+}
+function ovAgg(list, key) {
+  const m = new Map();
+  for (const l of list) {
+    const k = key(l);
+    let g = m.get(k);
+    if (!g) m.set(k, (g = { k, n: 0, inn: 0, sales: 0, lost: 0 }));
+    g.n++; if (l.in) g.inn++; g.sales += l.rate; g.lost += l.lost;
+  }
+  for (const g of m.values()) g.p = g.inn / g.n;
+  return m;
+}
+function ovTotal(list) { const g = { n: 0, inn: 0, sales: 0, lost: 0 }; for (const l of list) { g.n++; if (l.in) g.inn++; g.sales += l.rate; g.lost += l.lost; } g.p = g.n ? g.inn / g.n : 0; return g; }
+const ovImportance = (a, b) => b.sales - a.sales || b.n - a.n;
+const ovByLost = (a, b) => b.lost - a.lost || b.sales - a.sales || a.p - b.p;
+const ovSorter = () => (OV.sort === 'sales' ? ovImportance : OV.sort === 'avail' ? (a, b) => a.p - b.p || b.sales - a.sales : ovByLost);
+
+// Suppliers ranked by daily sales; those that take the running total up to
+// (and including the one that passes) 90% of sales are the focus group.
+function ovFocus(list) {
+  const rows = [...ovAgg(list, (l) => l.p).values()].sort(ovImportance);
+  const T = rows.reduce((a, r) => a + r.sales, 0);
+  let cum = 0, count = 0;
+  const set = new Set();
+  for (const r of rows) {
+    const before = cum;
+    cum += r.sales;
+    r.share = T ? r.sales / T : 0;
+    r.cum = T ? cum / T : 0;
+    r.focus = T > 0 && r.sales > 0 && before / T < 0.9 - 1e-12;
+    if (r.focus) { set.add(r.k); count++; }
+  }
+  return { rows, T, count, set };
+}
+
+function ovCell(g, attrs) {
+  if (!g) return '<span class="na" title="Not listed">—</span>';
+  const st = status(g.p);
+  const tip = `${pct1(g.p)}% · ${STATUS_LABEL[st]} · ${fmtN(g.inn)} of ${fmtN(g.n)} in stock${NET.hasSales ? ` · ${units(g.lost)} lost units/day` : ''}`;
+  return `<button type="button" class="cellb" ${attrs} title="${esc(tip)}" aria-label="${esc(tip)}"><div class="mc ${st}"><b>${GLYPH[st] ? `<i aria-hidden="true">${GLYPH[st]}</i>` : ''}${pct0(g.p)}%</b></div></button>`;
+}
+
+function renderOverview() {
+  const host = els.ov;
+  if (!NET || !NET.LST.length) { host.innerHTML = ''; return; }
+  if (OV.store >= 0 && !NET.active.includes(OV.store)) OV.store = -1;
+  if (OV.sup && !NET.byAcct.has(OV.sup)) OV.sup = '';
+  const list = ovFiltered(false);
+  const focus = ovFocus(OV.sup ? ovFiltered(true) : list);
+  const a = kuwaitParts(DATA.asOf);
+  const t = ovTotal(list);
+  const st = status(t.p);
+  const scroll = host.querySelector('.ov-drill .ov-scroll');
+  const keepTop = scroll ? scroll.scrollTop : 0;
+  host.innerHTML = `<section class="page ov ${st}">
+    <header class="r-head">
+      <div>
+        <div class="r-eyebrow">${settings.company ? esc(settings.company) + ' · ' : ''}Supplier availability report · all suppliers</div>
+        <h1 class="r-supplier">Where to act today</h1>
+        <div class="r-meta"><span>${fmtN(NET.sums.length)} suppliers</span><i>/</i><span>${NET.active.length} ${plural(NET.active.length, 'store', 'stores')}: ${NET.active.map((k) => `${storeCode(k)} ${esc(DATA.stores[k])}`).join(', ')}</span><i>/</i><span>${fmtN(NET.L)} product-store listings</span></div>
+      </div>
+      <div class="r-date"><div class="r-eyebrow">Stock position</div><div class="d">${a ? a.date : '—'}</div><div class="t">${a ? `${a.weekday} · ${a.time} Kuwait time` : ''}</div></div>
+    </header>
+    <div class="r-stripe"></div>
+    ${ovFilterBar()}
+    ${list.length ? ovKpis(list, t, st) + `<div class="ov-duo">${ovMatrix(list, focus)}${ovFocusTable(focus)}</div>` + ovDrill(list, t) + `<div class="ov-trio">${ovStores(list, t)}${ovFixFirst(list)}${ovCells(list)}</div>`
+      : '<div class="r-sec"><div class="ov-empty">No listings match these filters. <button class="ov-link" type="button" data-ov="clear">Clear filters</button></div></div>'}
+    ${ovMethod()}
+  </section>`;
+  const sc = host.querySelector('.ov-drill .ov-scroll');
+  if (sc && keepTop) sc.scrollTop = keepTop;
+}
+
+function ovFilterBar() {
+  const opt = (v, label, sel) => `<option value="${esc(v)}"${sel ? ' selected' : ''}>${esc(label)}</option>`;
+  const stores = NET.active.map((k) => opt(k, `${storeCode(k)} · ${DATA.stores[k]}`, OV.store === k)).join('');
+  const sups = [...NET.sums].sort((a, b) => b.sales - a.sales || b.l - a.l).map((s) => opt(s.acct, `${s.name} · ${s.acct}`, OV.sup === s.acct)).join('');
+  const catSales = new Map(), subSales = new Map();
+  for (const l of NET.LST) {
+    catSales.set(l.cat, (catSales.get(l.cat) || 0) + l.rate + 1e-9);
+    if (!OV.cat || l.cat === OV.cat) subSales.set(l.sub, (subSales.get(l.sub) || 0) + l.rate + 1e-9);
+  }
+  const rank = (m) => [...m.entries()].sort((x, y) => y[1] - x[1]).map((e) => e[0]);
+  if (OV.sub && !subSales.has(OV.sub)) OV.sub = '';
+  const seg = (v, label, dot) => `<button type="button" data-ov="status" data-v="${v}" aria-pressed="${OV.status === v}">${dot ? `<span class="d ${dot}"></span>` : ''}${label}</button>`;
+  const chips = [];
+  if (OV.store >= 0) chips.push(['store', `Store: ${storeCode(OV.store)} · ${DATA.stores[OV.store]}`]);
+  if (OV.sup) chips.push(['sup', `Supplier: ${DATA.suppliers.get(OV.sup) || OV.sup}`]);
+  if (OV.cat) chips.push(['cat', `Category: ${OV.cat}`]);
+  if (OV.sub) chips.push(['sub', `Sub-category: ${OV.sub}`]);
+  if (OV.status !== 'all') chips.push(['status', OV.status === 'crit' ? 'Critical only' : 'Below target & critical']);
+  if (OV.q) chips.push(['q', `Item: “${OV.q}”`]);
+  return `<div class="ov-bar" role="search" aria-label="Filters">
+    <div class="ov-f"><label for="ov-store">Store</label><select id="ov-store" data-ovf="store">${opt(-1, 'All stores', OV.store < 0)}${stores}</select></div>
+    <div class="ov-f wide"><label for="ov-sup">Supplier</label><select id="ov-sup" data-ovf="sup">${opt('', NET.hasSales ? 'All suppliers (by sales)' : 'All suppliers', !OV.sup)}${sups}</select></div>
+    <div class="ov-f"><label for="ov-cat">Category</label><select id="ov-cat" data-ovf="cat">${opt('', 'All categories', !OV.cat)}${rank(catSales).map((c) => opt(c, c, OV.cat === c)).join('')}</select></div>
+    <div class="ov-f"><label for="ov-sub">Sub-category</label><select id="ov-sub" data-ovf="sub">${opt('', 'All sub-categories', !OV.sub)}${rank(subSales).map((c) => opt(c, c, OV.sub === c)).join('')}</select></div>
+    <div class="ov-f"><span class="l" id="ov-status-l">Availability status</span><div class="ov-seg" role="group" aria-labelledby="ov-status-l">${seg('all', 'All')}${seg('problem', 'Below target &amp; critical', 'warn')}${seg('crit', 'Critical', 'crit')}</div></div>
+    <div class="ov-f"><label for="ov-q">Item code or name</label><input id="ov-q" type="search" value="${esc(OV.q)}" placeholder="e.g. 1001422 or milk" autocomplete="off"></div>
+    <div class="ov-chips">${chips.map(([k, txt]) => `<span class="ov-chip">${esc(txt)}<button type="button" data-ov="unset" data-k="${k}" aria-label="Remove ${esc(txt)}">×</button></span>`).join('')}${chips.length > 1 ? '<button type="button" class="ov-link" data-ov="clear">Clear all</button>' : ''}</div>
+  </div>`;
+}
+
+function ovKpis(list, t, st) {
+  const cells = ovAgg(list, (l) => l.p + '|' + l.s);
+  const band = { warn: { c: 0, n: 0 }, crit: { c: 0, n: 0 } };
+  for (const g of cells.values()) { const s2 = status(g.p); if (band[s2]) { band[s2].c++; band[s2].n += g.n; } }
+  const v = Math.floor(t.p * 100 + 1e-7), diff = Math.abs(settings.target - v);
+  const nSup = new Set(list.map((l) => l.p)).size, nSt = new Set(list.map((l) => l.s)).size;
+  const tile = (lbl, val, sub, flag) => `<div class="r-kpi"><div class="r-lbl">${flag ? `<i class="${flag}"></i>` : ''}${lbl}</div><div class="v${flag ? ' ' + flag : ''}">${val}</div><div class="s">${sub}</div></div>`;
+  return `<div class="ov-hero">
+    <div>
+      <div class="r-lbl">Overall availability ${chip(st)}</div>
+      <div class="r-big">${pct1(t.p)}<small>%</small></div>
+      <div class="meter ${st}" role="img" aria-label="${pct1(t.p)}% against a ${settings.target}% target"><i style="width:${(t.p * 100).toFixed(2)}%"></i><b class="tgt" style="left:${settings.target}%"><em>Target ${settings.target}%</em></b></div>
+      <div class="r-gap"><strong>${diff} ${plural(diff, 'pt', 'pts')}</strong> ${v >= settings.target ? 'above' : 'below'} the ${settings.target}% target</div>
+    </div>
+    <div class="ov-kpis">
+      ${tile('Target', settings.target + '%', `On target ${settings.target}%+ · below target ${settings.critical}–${settings.target - 0.01}% · critical under ${settings.critical}%`)}
+      ${tile('Below target', fmtN(band.warn.c), `supplier-store cells · ${fmtN(band.warn.n)} listings (${share1(t.n ? band.warn.n / t.n : 0)})`, 'warn')}
+      ${tile('Critical', fmtN(band.crit.c), `supplier-store cells · ${fmtN(band.crit.n)} listings (${share1(t.n ? band.crit.n / t.n : 0)})`, 'crit')}
+      ${NET.hasSales ? tile('Sales at risk', units(t.lost), `units a day on empty shelves · ${share1(t.sales ? t.lost / t.sales : 0)} of ${units(t.sales)} a day`, 'crit') : tile('Out of stock', fmtN(t.n - t.inn), 'listings with no stock', 'crit')}
+      ${tile('Product-store combinations', fmtN(t.n), `measured · ${fmtN(nSup)} ${plural(nSup, 'supplier', 'suppliers')} · ${nSt} ${plural(nSt, 'store', 'stores')}`)}
+    </div>
+  </div>`;
+}
+
+function ovMatrix(list, focus) {
+  const supAgg = ovAgg(list, (l) => l.p), storeAgg = ovAgg(list, (l) => l.s), cells = ovAgg(list, (l) => l.p + '|' + l.s);
+  const stores = NET.active.filter((k) => storeAgg.has(k));
+  const t = ovTotal(list);
+  let rows = [...supAgg.values()].sort(ovImportance);
+  const all = rows.length;
+  rows = rows.filter((r) => ovMatch(status(r.p)) || stores.some((k) => { const c = cells.get(r.k + '|' + k); return c && ovMatch(status(c.p)); }));
+  const head = `<tr><th class="rk">#</th><th class="sp">Supplier${NET.hasSales ? ' <span style="text-transform:none;letter-spacing:0;font-weight:500">· by sales ↓</span>' : ''}</th>${NET.hasSales ? '<th class="r">Units/day</th>' : ''}`
+    + stores.map((k) => `<th class="st${OV.store === k ? ' sel' : ''}"><button type="button" data-ov="store" data-s="${k}" title="Filter to ${esc(DATA.stores[k])}"><b>${esc(storeCode(k))}</b><small>${esc(DATA.stores[k])}</small></button></th>`).join('')
+    + `<th class="c">Total</th>${NET.hasSales ? '<th class="r">Lost/day</th>' : ''}</tr>`;
+  const body = rows.map((r, i) => {
+    const s2 = NET.byAcct.get(r.k);
+    return `<tr class="${OV.sup === r.k ? 'sel' : ''}"><td class="rk">${i + 1}</td>
+      <td class="sp"><div class="spw"><button type="button" class="supb" data-ov="sup" data-p="${esc(r.k)}" title="Filter the page to ${esc(s2.name)}"><b>${esc(s2.name)}</b><small>${focus.set.has(r.k) ? '<span class="ftag">FOCUS</span>' : ''}<span>${esc(r.k)}</span></small></button><button type="button" class="ov-link rep" data-ov="open" data-p="${esc(r.k)}" title="Open ${esc(s2.name)}’s report pages">Report →</button></div></td>
+      ${NET.hasSales ? `<td class="num">${units(r.sales)}</td>` : ''}
+      ${stores.map((k) => `<td>${ovCell(cells.get(r.k + '|' + k), `data-ov="cell" data-p="${esc(r.k)}" data-s="${k}"`)}</td>`).join('')}
+      <td class="tot">${ovCell(r, `data-ov="sup" data-p="${esc(r.k)}"`)}</td>
+      ${NET.hasSales ? `<td class="num${r.lost > 0 ? ' lost' : ' dim'}">${units(r.lost)}</td>` : ''}</tr>`;
+  }).join('');
+  const cols = stores.length + (NET.hasSales ? 5 : 3);
+  const foot = `<tr><td class="rk"></td><td class="sp">All suppliers</td>${NET.hasSales ? `<td class="num">${units(t.sales)}</td>` : ''}${stores.map((k) => `<td>${ovCell(storeAgg.get(k), `data-ov="store" data-s="${k}"`)}</td>`).join('')}<td class="tot">${ovCell(t, 'disabled')}</td>${NET.hasSales ? `<td class="num lost">${units(t.lost)}</td>` : ''}</tr>`;
+  return `<div class="r-sec">
+    <div class="r-sec-head"><div><div class="ov-q">Which suppliers have the biggest problems?</div><h3>Supplier × store availability</h3>
+      <p class="ov-sub">${NET.hasSales ? 'Biggest sellers first' : 'Most listings first'}. Click a supplier, a store or a cell to filter the whole page. The Total column and the bottom row are counted from all listings, not averaged.</p></div></div>
+    <div class="ov-legend" style="margin-bottom:10px"><span><i class="good"></i>On target ${settings.target}%+</span><span><i class="warn"></i>▲ Below target ${settings.critical}–${settings.target - 0.01}%</span><span><i class="crit"></i>● Critical under ${settings.critical}%</span><span>— not listed</span></div>
+    <div class="ov-scroll"><table class="ovt ovm"><thead>${head}</thead><tbody>${body || `<tr><td colspan="${cols}"><div class="ov-empty">No supplier matches the status filter.</div></td></tr>`}</tbody><tfoot>${foot}</tfoot></table></div>
+    <p class="ov-foot-note">${rows.length === all ? `${fmtN(all)} suppliers` : `${fmtN(rows.length)} of ${fmtN(all)} suppliers match the status filter`} · stores ${NET.hasSales ? 'ordered by sales, highest first' : 'in the usual order'}${OV.sup ? ` · <button type="button" class="ov-link" data-ov="open" data-p="${esc(OV.sup)}">Open ${esc(DATA.suppliers.get(OV.sup) || OV.sup)}’s report →</button>` : ''}</p>
+  </div>`;
+}
+
+function ovFocusTable(focus) {
+  const { rows, T, count } = focus;
+  if (!NET.hasSales) {
+    return `<div class="r-sec"><div class="r-sec-head"><div><div class="ov-q">Which suppliers should I focus on?</div><h3>Sales-wise most important suppliers to focus</h3></div></div>
+      <div class="ov-empty">This data has no sales figures. Reload from Tableau, or load a Tableau export that includes Lifetime Qty Sold and First Sale Date.</div></div>`;
+  }
+  let html = '';
+  rows.forEach((r, i) => {
+    const s2 = NET.byAcct.get(r.k), st = status(r.p);
+    html += `<tr class="${r.focus ? 'focus' : 'out'}${OV.sup === r.k ? ' sel' : ''}" data-ov="sup" data-p="${esc(r.k)}" tabindex="0" title="Filter the page to ${esc(s2.name)}">
+      <td class="num dim">${i + 1}</td><td class="nm">${esc(s2.name)}</td>
+      <td class="num">${units(r.sales)}</td><td class="num">${share1(r.share)}</td>
+      <td class="num">${share1(r.cum)}<span class="cumb"><i style="width:${Math.min(100, r.cum * 100)}%"></i><b></b></span></td>
+      <td class="c"><span class="chip ${st}" style="padding:2px 6px">${pct0(r.p)}%</span></td>
+      <td class="c">${r.focus ? '<span class="fyes">Focus</span>' : '<span class="dim">—</span>'}</td></tr>`;
+    if (r.focus && !(rows[i + 1] && rows[i + 1].focus)) {
+      html += `<tr class="cut"><td colspan="7">↑ These ${count} ${plural(count, 'supplier makes', 'suppliers make')} ${share1(r.cum)} of daily sales. Everyone below shares the last ${share1(1 - r.cum)}.</td></tr>`;
+    }
+  });
+  const scope = [OV.store >= 0 ? DATA.stores[OV.store] : 'All stores', OV.cat, OV.sub, OV.q ? `“${OV.q}”` : ''].filter(Boolean).join(' · ');
+  return `<div class="r-sec">
+    <div class="r-sec-head"><div><div class="ov-q">Which suppliers should I focus on?</div><h3>Sales-wise most important suppliers to focus</h3>
+      <p class="ov-sub">Every supplier, ranked by sales. The Focus group together makes the first 90% of daily sales. Click a row to filter.</p></div></div>
+    <div class="ov-focushead"><div class="n">${count}</div><p>of <b>${fmtN(rows.length)}</b> suppliers make <b>90%</b> of the <b>${units(T)}</b> units sold a day<br>Scope: ${esc(scope)}</p></div>
+    <div class="ov-scroll" style="max-height:548px"><table class="ovt ovf"><colgroup><col style="width:32px"><col><col style="width:66px"><col style="width:54px"><col style="width:90px"><col style="width:52px"><col style="width:58px"></colgroup><thead><tr><th class="r">#</th><th>Supplier</th><th class="r">Per day</th><th class="r">Share</th><th class="r">Cumulative</th><th class="c">Avail.</th><th class="c">Focus</th></tr></thead><tbody>${html}</tbody></table></div>
+  </div>`;
+}
+
+function ovDrill(list, T) {
+  const sort = ovSorter();
+  const rows = [];
+  const av = (p) => { const st = status(p); return `<div class="avb"><span class="cb-track"><i class="${st}" style="width:${(p * 100).toFixed(2)}%"></i><b style="left:${settings.target}%"></b></span><strong class="${st}">${pct1(p)}%</strong></div>`; };
+  const shareCell = (lost) => (NET.hasSales ? `<td class="num">${share1(T.lost ? lost / T.lost : 0)}<span class="shb"><i style="width:${T.lost ? (lost / T.lost) * 100 : 0}%"></i></span></td>` : '');
+  const salesCell = (x) => (NET.hasSales ? `<td class="num">${units(x)}</td>` : '');
+  const lostCell = (x) => (NET.hasSales ? `<td class="num${x > 0 ? ' lost' : ' dim'}">${units(x)}</td>` : '');
+  const group = (lvl, tag, key, label, g) => {
+    const open = OV.open.has(key);
+    rows.push(`<tr class="l${lvl}" data-ov="toggle" data-key="${esc(key)}">
+      <td class="nm"><div class="nmw"><button type="button" class="caret" aria-expanded="${open}" aria-label="${open ? 'Close' : 'Open'} ${esc(tag)}" data-ov="toggle" data-key="${esc(key)}">▶</button><span class="lv">${tag}</span><span>${label}</span></div></td>
+      ${salesCell(g.sales)}<td class="num">${fmtN(g.n)}</td><td class="num">${fmtN(g.n - g.inn)}</td><td>${av(g.p)}</td><td>${chip(status(g.p))}</td>${lostCell(g.lost)}${shareCell(g.lost)}</tr>`);
+    return open;
+  };
+  const by = (arr, key) => { const m = new Map(); for (const l of arr) { const k = key(l); let a2 = m.get(k); if (!a2) m.set(k, (a2 = [])); a2.push(l); } return m; };
+  const pOf = (arr) => { let i = 0; for (const l of arr) if (l.in) i++; return i / arr.length; };
+  const anyStore = (arr) => [...by(arr, (l) => l.s).values()].some((x) => ovMatch(status(pOf(x))));
+  const cols = NET.hasSales ? 8 : 5;
+  const catMap = by(list, (l) => l.cat);
+  for (const cg of [...ovAgg(list, (l) => l.cat).values()].sort(sort)) {
+    const cl = catMap.get(cg.k);
+    const subMap = by(cl, (l) => l.sub);
+    if (OV.status !== 'all' && !ovMatch(status(cg.p)) && ![...subMap.values()].some((sl) => ovMatch(status(pOf(sl))) || anyStore(sl))) continue;
+    const kc = 'c:' + cg.k;
+    if (!group(0, 'Category', kc, esc(cg.k), cg)) continue;
+    for (const sg of [...ovAgg(cl, (l) => l.sub).values()].sort(sort)) {
+      const sl = subMap.get(sg.k);
+      if (OV.status !== 'all' && !ovMatch(status(sg.p)) && !anyStore(sl)) continue;
+      const ks = kc + '|s:' + sg.k;
+      if (!group(1, 'Sub-cat.', ks, esc(sg.k), sg)) continue;
+      const stMap = by(sl, (l) => l.s);
+      for (const tg of [...ovAgg(sl, (l) => l.s).values()].sort(sort)) {
+        if (OV.status !== 'all' && !ovMatch(status(tg.p))) continue;
+        const kt = ks + '|t:' + tg.k;
+        if (!group(2, 'Store', kt, `<b>${esc(storeCode(tg.k))}</b> · ${esc(DATA.stores[tg.k])}`, tg)) continue;
+        let its = stMap.get(tg.k).slice();
+        if (OV.status !== 'all') its = its.filter((l) => !l.in);
+        its.sort(OV.sort === 'sales' ? (x, y) => y.rate - x.rate : OV.sort === 'avail' ? (x, y) => (x.in - y.in) || y.rate - x.rate : (x, y) => y.lost - x.lost || (x.in - y.in) || y.rate - x.rate);
+        const lim = OV.more.get(kt) || 25;
+        for (const l of its.slice(0, lim)) {
+          const it = l.it, s2 = NET.byAcct.get(l.p);
+          rows.push(`<tr class="l3"><td class="nm"><div class="nmw"><span class="lv">Item</span><span><span class="code">${esc(it.code)}</span> ${esc(it.name)}<span class="it-sub">${esc(s2 ? s2.name : l.p)} · ${(TYPE[it.tier] || ['Regular'])[0]}${NET.hasSales && it.stock ? ` · ${fmtN(it.stock[l.s])} units on hand` : ''}</span></span></div></td>
+            ${salesCell(l.rate)}<td class="num">1</td><td class="num">${l.in ? '0' : '1'}</td><td>${av(l.in ? 1 : 0)}</td>
+            <td>${l.in ? `<span class="chip good">${ICON.good}In stock</span>` : '<span class="out">OUT</span>'}</td>${lostCell(l.lost)}${shareCell(l.lost)}</tr>`);
+        }
+        if (its.length > lim) rows.push(`<tr class="more"><td colspan="${cols}"><button type="button" class="ov-link" data-ov="more" data-key="${esc(kt)}">Show ${Math.min(50, its.length - lim)} more of ${its.length - lim} remaining items</button></td></tr>`);
+        if (!its.length) rows.push(`<tr class="more"><td colspan="${cols}" class="dim">No out-of-stock items here.</td></tr>`);
+      }
+    }
+  }
+  const seg = (v, label) => `<button type="button" data-ov="sort" data-v="${v}" aria-pressed="${OV.sort === v}">${label}</button>`;
+  return `<div class="r-sec ov-drill" style="border-bottom:1px solid var(--p-rule)">
+    <div class="r-sec-head"><div><div class="ov-q">Which category, sub-category, store and item?</div><h3>Category → Sub-category → Store → Item</h3>
+      <p class="ov-sub">Open a category, then its sub-category, then the store, down to the exact item. Every level is sorted by the order you pick.</p></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><div class="ov-seg" role="group" aria-label="Sort the drilldown">${NET.hasSales ? seg('lost', 'Lost sales ↓') + seg('sales', 'Daily sales ↓') : ''}${seg('avail', 'Availability ↑')}</div>
+      <button type="button" class="ov-link" data-ov="expand">Open the 3 biggest problems</button><button type="button" class="ov-link" data-ov="collapse">Close all</button></div></div>
+    <div class="ov-scroll" style="max-height:760px"><table class="ovt ovd"><thead><tr><th>Category / sub-category / store / item</th>${NET.hasSales ? '<th class="r">Units/day</th>' : ''}<th class="r">Listings</th><th class="r">Out</th><th class="r">Availability</th><th>Status</th>${NET.hasSales ? '<th class="r">Lost/day</th><th class="r">Share of lost</th>' : ''}</tr></thead>
+    <tbody>${rows.join('') || `<tr><td colspan="${cols}"><div class="ov-empty">Nothing matches the status filter.</div></td></tr>`}</tbody></table></div>
+  </div>`;
+}
+
+function ovStores(list, t) {
+  const gs = [...ovAgg(list, (l) => l.s).values()].sort(NET.hasSales ? ovByLost : (a, b) => a.p - b.p);
+  const max = Math.max(...gs.map((g) => (NET.hasSales ? g.lost : g.n - g.inn)), 1e-9);
+  return `<div class="r-sec"><div class="r-sec-head"><div><div class="ov-q">Which stores cause the biggest issues?</div><h3>Stores${NET.hasSales ? ' by lost sales' : ''}</h3></div></div>
+    <div class="ov-stores">${gs.map((g) => {
+      const st = status(g.p), v = NET.hasSales ? g.lost : g.n - g.inn;
+      return `<button type="button" class="ov-store${OV.store === g.k ? ' sel' : ''}" data-ov="store" data-s="${g.k}">
+        <span class="code-b ${st}">${esc(storeCode(g.k))}</span><span class="nm">${esc(DATA.stores[g.k])} <span class="chip ${st}" style="padding:2px 6px">${pct1(g.p)}%</span></span>
+        <span class="lostv">${NET.hasSales ? `${units(g.lost)}/day` : `${fmtN(v)} out`}</span>
+        <span class="meta"><span class="bar"><i style="width:${(v / max) * 100}%"></i></span>${NET.hasSales ? `${share1(t.lost ? g.lost / t.lost : 0)} of lost sales · ` : ''}${fmtN(g.n - g.inn)} empty</span></button>`;
+    }).join('')}</div></div>`;
+}
+
+function ovFixFirst(list) {
+  const top = list.filter((l) => !l.in).sort((a, b) => b.lost - a.lost || tierRank(a.it.tier) - tierRank(b.it.tier)).slice(0, 20);
+  return `<div class="r-sec"><div class="r-sec-head"><div><div class="ov-q">What should I fix first?</div><h3>Empty shelves losing the most sales</h3>
+    <p class="ov-sub">Out-of-stock listings ranked by what they sell on a normal day. Click one to open it in the drilldown.</p></div></div>
+    ${top.length ? `<div class="ov-scroll" style="max-height:560px"><table class="ovt ovl"><thead><tr><th class="r">#</th><th>Item</th><th>Store</th>${NET.hasSales ? '<th class="r">Lost/day</th>' : '<th>Type</th>'}</tr></thead><tbody>
+    ${top.map((l, i) => { const s2 = NET.byAcct.get(l.p); return `<tr data-ov="reveal" data-cat="${esc(l.cat)}" data-sub="${esc(l.sub)}" data-s="${l.s}" tabindex="0"><td class="num dim">${i + 1}</td>
+      <td class="nm"><span class="code">${esc(l.it.code)}</span> ${esc(l.it.name)}<span class="it-sub">${esc(s2 ? s2.name : l.p)} · ${esc(l.sub)}</span></td>
+      <td><b>${esc(storeCode(l.s))}</b> <span class="dim">${esc(DATA.stores[l.s])}</span></td>${NET.hasSales ? `<td class="num lost">${units(l.lost)}</td>` : `<td>${typePill(l.it.tier)}</td>`}</tr>`; }).join('')}
+    </tbody></table></div>` : '<div class="ov-empty">No empty shelves in this selection.</div>'}</div>`;
+}
+
+function ovCells(list) {
+  const cells = [...ovAgg(list, (l) => l.p + '|' + l.s).values()].filter((g) => status(g.p) !== 'good' && g.n > g.inn)
+    .sort(NET.hasSales ? ovByLost : (a, b) => a.p - b.p || b.n - a.n).slice(0, 15);
+  return `<div class="r-sec"><div class="r-sec-head"><div><div class="ov-q">Who needs to act?</div><h3>Supplier-store cells to escalate</h3>
+    <p class="ov-sub">Below-target and critical cells, ${NET.hasSales ? 'biggest lost sales' : 'weakest'} first. Click one to filter.</p></div></div>
+    ${cells.length ? `<div class="ov-scroll" style="max-height:560px"><table class="ovt ovl"><thead><tr><th>Supplier</th><th>Store</th><th class="c">Avail.</th>${NET.hasSales ? '<th class="r">Lost/day</th>' : ''}</tr></thead><tbody>
+    ${cells.map((g) => { const [p, sk] = g.k.split('|'); const s2 = NET.byAcct.get(p); const st = status(g.p); return `<tr data-ov="cell" data-p="${esc(p)}" data-s="${sk}" tabindex="0"><td class="nm">${esc(s2 ? s2.name : p)}<span class="it-sub">${fmtN(g.n - g.inn)} of ${fmtN(g.n)} listings empty</span></td>
+      <td><b>${esc(storeCode(+sk))}</b> <span class="dim">${esc(DATA.stores[+sk])}</span></td><td class="c"><span class="chip ${st}" style="padding:2px 6px">${GLYPH[st]} ${pct0(g.p)}%</span></td>${NET.hasSales ? `<td class="num lost">${units(g.lost)}</td>` : ''}</tr>`; }).join('')}
+    </tbody></table></div>` : '<div class="ov-empty">Every supplier-store cell here is on target.</div>'}</div>`;
+}
+
+function ovMethod() {
+  const hidden = NET.hidden.length ? ` Stores with no stock anywhere are left out: ${esc(NET.hidden.join(', '))}.` : '';
+  return `<dl class="ov-method"><h3>How the numbers work</h3>
+    <dt>Listing</dt><dd>One product in one store (a product-store combination). It is in stock when the store holds at least one unit.</dd>
+    <dt>Availability</dt><dd>Listings in stock ÷ all listings. Every total (supplier, store, category and the grand total) is counted from listings, so it is weighted rather than an average of the percentages shown.</dd>
+    <dt>Status</dt><dd>On target ${settings.target}% and above · Below target ${settings.critical}–${settings.target - 0.01}% · Critical under ${settings.critical}%. Percentages are rounded down, so 84.99% shows as 84% and stays amber.</dd>
+    <dt>Daily sales</dt><dd>${NET.hasSales ? `Average units sold a day for each listing: Lifetime Qty Sold ÷ days since its first sale (at least ${MIN_SALES_DAYS} days, so new listings are not inflated). The Tableau data holds lifetime sales, not a single day’s sales.` : 'Not in this data. Reload from Tableau to rank by sales.'}</dd>
+    ${NET.hasSales ? '<dt>Lost sales / day</dt><dd>Daily sales of the listings that are out of stock now. The fix-first lists and the drilldown use it: it is high only when a listing both sells well and is empty, so a 70% supplier that barely sells ranks below a big supplier with a smaller gap.</dd><dt>90% focus group</dt><dd>Suppliers ranked by daily sales, highest first, with their shares added up in that order. Every supplier up to and including the one that takes the running total past 90% is marked Focus. It follows the store, category, sub-category and item filters, not the supplier filter.</dd>' : ''}
+    <dt>Left out</dt><dd>Items tiered ${esc(settings.excludedTiers.join(' or ') || 'nothing')} in the item master (change under Settings).${hidden}</dd>
+    <dt>Source</dt><dd>${esc(DATA.source || 'Tableau')}${DATA.origin === 'live' ? ', read live through your Tableau Cloud connector' : DATA.origin === 'snapshot' ? ', saved snapshot' : ''}. Suppliers are grouped by Supplier Account; category and sub-category come from the item master (Google Sheet).</dd>
+  </dl>`;
+}
+
+function ovExpandTop() {
+  const list = ovFiltered(false);
+  OV.open.clear();
+  const sortL = NET.hasSales ? ovByLost : (a, b) => a.p - b.p;
+  for (const c of [...ovAgg(list, (l) => l.cat).values()].sort(sortL).slice(0, 3)) {
+    const kc = 'c:' + c.k; OV.open.add(kc);
+    const cl = list.filter((l) => l.cat === c.k);
+    const sub = [...ovAgg(cl, (l) => l.sub).values()].sort(sortL)[0];
+    if (!sub) continue;
+    const ks = kc + '|s:' + sub.k; OV.open.add(ks);
+    const stg = [...ovAgg(cl.filter((l) => l.sub === sub.k), (l) => l.s).values()].sort(sortL)[0];
+    if (stg) OV.open.add(ks + '|t:' + stg.k);
+  }
+  if (NET.hasSales) OV.sort = 'lost';
+}
+
+function ovAct(el) {
+  const a = el.dataset.ov;
+  if (a === 'store') { const k = +el.dataset.s; OV.store = OV.store === k ? -1 : k; }
+  else if (a === 'sup') { const p = el.dataset.p; OV.sup = OV.sup === p ? '' : p; }
+  else if (a === 'cell') { const p = el.dataset.p, k = +el.dataset.s; if (OV.sup === p && OV.store === k) { OV.sup = ''; OV.store = -1; } else { OV.sup = p; OV.store = k; } }
+  else if (a === 'open') { showSupplier(el.dataset.p); els.stage.scrollIntoView({ block: 'start' }); return; }
+  else if (a === 'status') OV.status = el.dataset.v;
+  else if (a === 'unset') { const k = el.dataset.k; OV[k] = k === 'store' ? -1 : k === 'status' ? 'all' : ''; if (k === 'cat') OV.sub = ''; }
+  else if (a === 'clear') Object.assign(OV, { store: -1, sup: '', cat: '', sub: '', status: 'all', q: '' });
+  else if (a === 'toggle') { const k = el.dataset.key; if (OV.open.has(k)) OV.open.delete(k); else OV.open.add(k); }
+  else if (a === 'more') { const k = el.dataset.key; OV.more.set(k, (OV.more.get(k) || 25) + 50); }
+  else if (a === 'sort') OV.sort = el.dataset.v;
+  else if (a === 'collapse') OV.open.clear();
+  else if (a === 'expand') ovExpandTop();
+  else if (a === 'reveal') {
+    const kc = 'c:' + el.dataset.cat, ks = kc + '|s:' + el.dataset.sub;
+    OV.open.add(kc); OV.open.add(ks); OV.open.add(ks + '|t:' + el.dataset.s);
+    if (NET.hasSales) OV.sort = 'lost';
+    renderOverview();
+    const d = els.ov.querySelector('.ov-drill');
+    if (d) d.scrollIntoView({ block: 'start' });
+    return;
+  }
+  renderOverview();
+}
+
 /* ================= Screen: sidebar, stage ================= */
 let current = null;
 let currentPages = [];
@@ -1068,21 +1647,24 @@ const els = {
   list: $('#sup-list'), search: $('#sup-search'), sort: $('#sup-sort'), net: $('#net'),
   pages: $('#pages'), note: $('#stage-note'), stage: $('#stage'), offscreen: $('#offscreen'),
   selCount: $('#sel-count'), exportSel: $('#btn-export-sel'), exportSelText: $('#btn-export-sel-text'),
-  pillText: $('#data-pill-text'), pill: $('#data-pill'),
+  pillText: $('#data-pill-text'), pill: $('#data-pill'), ov: $('#overview'),
 };
-els.sort.value = store.get('sort', 'low');
+let view = 'overview';   // 'overview' (all suppliers) or 'supplier' (one supplier's report pages)
+els.sort.value = store.get('sort2', 'sales');
 
 function renderNet() {
   const c = NET.counts, total = NET.sums.length;
   const seg = (k) => (total ? `<i style="width:${(c[k] / total) * 100}%;background:${UI_STATUS[k]}"></i>` : '');
   const chipBtn = (key, label, n) => `<button class="fchip" type="button" data-filter="${key}" aria-pressed="${statusFilter === key}">${key !== 'all' ? `<span class="d ${key}"></span>` : ''}${label} ${n}</button>`;
   const stores = NET.active.map((k) => DATA.stores[k]).join(', ');
-  const hiddenStores = DATA.stores.filter((_, k) => !NET.active.includes(k));
-  els.net.innerHTML = `<div class="net-eyebrow">All suppliers · ${NET.active.length} stores</div>
+  const hiddenStores = NET.hidden;
+  els.net.innerHTML = `<button class="btn ${view === 'overview' ? 'primary' : ''}" type="button" data-overview style="width:100%;justify-content:center;margin-bottom:14px">Priorities: all suppliers</button>
+    <div class="net-eyebrow">All suppliers · ${NET.active.length} stores</div>
     <div class="net-row"><div class="net-big">${pct1(NET.r)}%</div><div class="net-cap">network availability<br>${fmtN(NET.Y)} of ${fmtN(NET.L)} listings in stock</div></div>
     <div class="net-bar">${seg('crit')}${seg('warn')}${seg('good')}</div>
     <div class="filters">${chipBtn('all', 'All', total)}${chipBtn('crit', 'Critical', c.crit)}${chipBtn('warn', 'Below target', c.warn)}${chipBtn('good', 'On target', c.good)}</div>
     <p class="net-cap" style="margin:10px 0 0">Stores: ${esc(stores)}${hiddenStores.length ? `<br>Not shown: ${esc(hiddenStores.join(', '))}${settings.storeAuto ? ' (no stock anywhere yet)' : ''}` : ''}</p>`;
+  if (NET.hasSales) els.net.querySelector('.net-cap').insertAdjacentHTML('beforeend', `<br>${units(NET.lost)} of ${units(NET.sales)} units a day on empty shelves`);
 }
 
 function visibleSuppliers() {
@@ -1091,7 +1673,9 @@ function visibleSuppliers() {
     && (!q || s.name.toLowerCase().includes(q) || s.acct.includes(q)));
   const by = els.sort.value;
   const name = (a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' });
-  if (by === 'low') list.sort((a, b) => a.r - b.r || b.oos - a.oos || name(a, b));
+  if (by === 'sales') list.sort((a, b) => b.sales - a.sales || b.l - a.l || name(a, b));
+  else if (by === 'lost') list.sort((a, b) => b.lost - a.lost || a.r - b.r || name(a, b));
+  else if (by === 'low') list.sort((a, b) => a.r - b.r || b.oos - a.oos || name(a, b));
   else if (by === 'high') list.sort((a, b) => b.r - a.r || name(a, b));
   else if (by === 'oos') list.sort((a, b) => b.oos - a.oos || a.r - b.r);
   else list.sort(name);
@@ -1105,7 +1689,7 @@ function renderList() {
     <input type="checkbox" id="sel-${esc(s.acct)}" ${selected.has(s.acct) ? 'checked' : ''} aria-label="Select ${esc(s.name)} for export">
     <button class="sup-main" type="button" data-open="${esc(s.acct)}">
       <span class="sup-name">${esc(s.name)}</span>
-      <span class="sup-stats"><span class="d ${s.status}"></span><b>${pct0(s.r)}%</b><span>${fmtN(s.pout)} of ${fmtN(s.skus)} products out</span></span>
+      <span class="sup-stats"><span class="d ${s.status}"></span><b>${pct0(s.r)}%</b><span>${fmtN(s.pout)} of ${fmtN(s.skus)} products out${NET.hasSales ? ` · ${units(s.sales)}/day` : ''}</span></span>
       <span class="sup-bar"><i class="${s.status}" style="width:${(s.r * 100).toFixed(1)}%"></i></span>
     </button></li>`).join('');
 }
@@ -1135,19 +1719,39 @@ function showSupplier(acct) {
   if (!acct) { els.pages.replaceChildren(); els.note.textContent = 'No suppliers in this data.'; return 0; }
   current = acct;
   store.set('current', acct);
+  setView('supplier');
   const m = supplierModel(acct);
   currentPages = paginate(m, els.pages);
   for (const p of currentPages) { const f = document.createElement('div'); f.className = 'frame'; p.replaceWith(f); f.append(p); }
   fitPages();
-  els.note.innerHTML = `<span><strong>${esc(m.name)}</strong> · ${currentPages.length} ${plural(currentPages.length, 'page', 'pages')}</span><span>${pct0(m.r)}% available · ${fmtN(m.oosN)} listings out · rank ${m.rank} of ${m.rankOf}</span>`;
+  els.note.innerHTML = `<button class="btn small stage-back" type="button" data-overview>← All suppliers</button><span><strong>${esc(m.name)}</strong> · ${currentPages.length} ${plural(currentPages.length, 'page', 'pages')}</span><span>${pct0(m.r)}% available · ${fmtN(m.oosN)} listings out${NET.hasSales ? ` · ${units(m.lost)} units/day lost` : ''} · rank ${m.rank} of ${m.rankOf}</span>`;
   for (const li of els.list.querySelectorAll('.sup')) li.classList.toggle('is-active', li.dataset.acct === acct);
   try { history.replaceState(null, '', '#s' + acct); } catch { /* not allowed in some frames */ }
   return currentPages.length;
 }
 
+function setView(v) {
+  view = v;
+  const ov = v === 'overview';
+  els.ov.hidden = !ov;
+  els.pages.hidden = ov;
+  els.note.hidden = ov;
+  $('.app').classList.toggle('ov-mode', ov);
+  $('#btn-export').disabled = ov;
+  $('#btn-export').title = ov ? 'Open a supplier to export its report images' : '';
+  const b = els.net.querySelector('[data-overview]');
+  if (b) b.classList.toggle('primary', ov);
+  if (ov) for (const li of els.list.querySelectorAll('.sup')) li.classList.remove('is-active');
+}
+function showOverview() {
+  setView('overview');
+  renderOverview();
+  try { history.replaceState(null, '', '#overview'); } catch { /* not allowed in some frames */ }
+}
+
 function updatePill() {
   const a = kuwaitParts(DATA.asOf);
-  const origin = DATA.origin === 'snapshot' ? 'Tableau snapshot' : 'Loaded files';
+  const origin = DATA.origin === 'live' ? 'Live from Tableau' : DATA.origin === 'snapshot' ? 'Tableau snapshot' : 'Loaded files';
   els.pillText.textContent = `Stock as of ${a ? `${a.date}, ${a.time}` : 'unknown'} · ${origin}`;
   const ageDays = (Date.now() - new Date(DATA.asOf).getTime()) / 864e5;
   els.pill.classList.toggle('stale', ageDays > 1.5);
@@ -1179,7 +1783,8 @@ function refreshAll(keepCurrent = true) {
   renderList();
   updateSelection();
   updatePill();
-  showSupplier(keepCurrent && current ? current : store.get('current', null));
+  if (view === 'overview') showOverview();
+  else showSupplier(keepCurrent && current ? current : store.get('current', null));
 }
 
 els.list.addEventListener('click', (e) => {
@@ -1201,7 +1806,36 @@ els.net.addEventListener('click', (e) => {
   renderList();
 });
 els.search.addEventListener('input', renderList);
-els.sort.addEventListener('change', () => { store.set('sort', els.sort.value); renderList(); });
+document.addEventListener('click', (e) => { if (e.target.closest('[data-overview]')) { showOverview(); els.stage.scrollIntoView({ block: 'start' }); } });
+els.ov.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-ov]');
+  if (!el || el.disabled) return;
+  const btn = e.target.closest('button');
+  if (el.tagName === 'TR' && btn && btn !== el) return;
+  ovAct(el);
+});
+els.ov.addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('tr[data-ov]')) { e.preventDefault(); ovAct(e.target); }
+});
+els.ov.addEventListener('change', (e) => {
+  const f = e.target.dataset.ovf;
+  if (!f) return;
+  if (f === 'store') OV.store = Number(e.target.value);
+  else { OV[f] = e.target.value; if (f === 'cat') OV.sub = ''; }
+  renderOverview();
+});
+let ovTimer = 0;
+els.ov.addEventListener('input', (e) => {
+  if (e.target.id !== 'ov-q') return;
+  clearTimeout(ovTimer);
+  ovTimer = setTimeout(() => {
+    OV.q = e.target.value;
+    renderOverview();
+    const q = $('#ov-q');
+    if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+  }, 250);
+});
+els.sort.addEventListener('change', () => { store.set('sort2', els.sort.value); renderList(); });
 $('#sel-all').addEventListener('click', () => { visibleSuppliers().forEach((s) => selected.add(s.acct)); renderList(); updateSelection(); });
 $('#sel-none').addEventListener('click', () => { selected.clear(); renderList(); updateSelection(); });
 let resizeTimer = 0;
@@ -1241,6 +1875,7 @@ $('#form-settings').addEventListener('submit', (e) => {
     excludedTiers: [...$('#set-tiers').querySelectorAll('input:checked')].map((i) => i.value),
     storeAuto: $('#set-store-auto').checked,
     stores: [...$('#set-stores').querySelectorAll('input:checked')].map((i) => i.value),
+    th: 2,
     showRank: $('#set-rank').checked,
     company: $('#set-company').value.trim(),
     contact: $('#set-contact').value.trim(),
@@ -1284,8 +1919,9 @@ const drop = $('#drop');
 ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
 drop.addEventListener('drop', (e) => takeFiles(e.dataTransfer.files));
 $('#btn-snapshot').addEventListener('click', () => {
-  if (!SNAPSHOT || !SNAPSHOT.items) { showMsg($('#data-msg'), 'err', 'This copy of the report has no built-in snapshot. Load the files instead.'); return; }
-  DATA = fromSnapshot(SNAPSHOT); dlgData.close(); refreshAll();
+  const snap = loadSnapshot(SNAPSHOT);
+  if (!snap) { showMsg($('#data-msg'), 'err', 'This copy of the report has no built-in snapshot. Load the files instead.'); return; }
+  DATA = snap; dlgData.close(); refreshAll();
 });
 $('#form-data').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -1377,6 +2013,8 @@ function classify(rows, name) {
     supName: col('supplier name', 'supplier', 'vendor name', 'vendor'),
     tier: col('tier', 'rank'),
     status: col('item status', 'item stat', 'status'),
+    qty: col('lifetime qty sold', 'lifetime qty', 'qty sold'),
+    first: col('first sale date'),
   };
   const listing = cols.store >= 0 && (cols.inStock >= 0 || cols.stock >= 0) && cols.code >= 0;
   const master = (cols.supName >= 0 || cols.acct >= 0) && cols.code >= 0;
@@ -1429,6 +2067,7 @@ async function loadFiles(files, asOf) {
 
   const storeNames = new Set();
   const listings = [];
+  const asOfMs = new Date(asOf).getTime();
   let unmatched = 0;
   for (let i = 1; i < src.rows.length; i++) {
     const r = src.rows[i];
@@ -1446,7 +2085,13 @@ async function loadFiles(files, asOf) {
     }
     if (!meta || (!meta.acct && !cleanText(meta.sup))) { unmatched++; continue; }
     storeNames.add(st);
-    listings.push({ k, st, meta, y: inStockOf(r, c), b: c.book >= 0 ? num(r[c.book]) : 0, name: c.name >= 0 ? cleanText(r[c.name]) : '' });
+    let rate = 0;
+    if (c.qty >= 0 && c.first >= 0) {
+      const first = new Date(cleanText(r[c.first]));
+      const days = Math.floor((asOfMs - first.getTime()) / 864e5);
+      if (Number.isFinite(days)) rate = num(r[c.qty]) / Math.max(days + 1, MIN_SALES_DAYS);
+    }
+    listings.push({ k, st, meta, y: inStockOf(r, c), b: c.book >= 0 ? num(r[c.book]) : 0, name: c.name >= 0 ? cleanText(r[c.name]) : '', rate, stock: c.stock >= 0 ? num(r[c.stock]) : 0 });
   }
   if (!listings.length) {
     throw new Error(joined ? 'No rows with a supplier were found in the file.' : 'No rows matched between the two files. Check that “Item Code” in the stock report matches “item No” in the Google Sheet.');
@@ -1469,12 +2114,14 @@ async function loadFiles(files, asOf) {
     const key = acct + '|' + L.k;
     let it = items.get(key);
     if (!it) {
-      it = { s: acct, code: L.k, name: L.name || L.meta.desc || L.k, cat: L.meta.cat || 'Uncategorised', sub: L.meta.sub || 'Uncategorised', tier: L.meta.tier, st: new Array(stores.length).fill('-'), b: new Array(stores.length).fill(0) };
+      it = { s: acct, code: L.k, name: L.name || L.meta.desc || L.k, cat: L.meta.cat || 'Uncategorised', sub: L.meta.sub || 'Uncategorised', tier: L.meta.tier, st: new Array(stores.length).fill('-'), b: new Array(stores.length).fill(0), rate: new Array(stores.length).fill(0), stock: new Array(stores.length).fill(0) };
       items.set(key, it);
     }
     const j = sIdx.get(L.st);
     if (L.y) it.st[j] = 'Y'; else if (it.st[j] === '-') it.st[j] = 'N';
     it.b[j] += L.b;
+    it.rate[j] = Math.max(it.rate[j], L.rate);
+    it.stock[j] = Math.max(it.stock[j], L.stock);
   }
   const suppliers = new Map();
   for (const [acct, votes] of nameVotes) suppliers.set(acct, [...votes.entries()].sort((a, b) => b[1] - a[1])[0][0]);
@@ -1485,6 +2132,104 @@ async function loadFiles(files, asOf) {
     listings: listings.length, warnings,
   };
 }
+
+
+/* ================= Live data from Tableau (the viewer's Tableau Cloud connector) ================= */
+function metaQuery() {
+  return { fields: [
+    { fieldCaption: 'Store' },
+    { fieldCaption: 'inS', calculation: "SUM(IF [Items in Stock]='Yes' THEN 1 ELSE 0 END)" },
+    { fieldCaption: 'asOf', calculation: 'MAX([Last Sale Date])' },
+  ] };
+}
+const tLit = (x) => '"' + String(x).replace(/"/g, '""') + '"';
+function pivotQuery(stores, asOfYmd) {
+  const part = (st) => {
+    const w = `[Store]=${tLit(st)}`;
+    return `IFNULL(MAX(IF ${w} THEN (IF [Items in Stock]='Yes' THEN 'Y' ELSE 'N' END) END)`
+      + `+','+IFNULL(STR(INT(ROUND(MAX(IF ${w} THEN [Lifetime Qty Sold] END),0))),'0')`
+      + `+','+IFNULL(STR(INT(ROUND(MAX(IF ${w} THEN [Current Stock] END),0))),'0')`
+      + `+','+IFNULL(STR(MIN(IF ${w} THEN DATEDIFF('day',[First Sale Date],#${asOfYmd}#) END)),''),'-')`;
+  };
+  return {
+    fields: [
+      { fieldCaption: 'Supplier Account', fieldAlias: 'a' }, { fieldCaption: 'Supplier Name', fieldAlias: 'sn' },
+      { fieldCaption: 'Item Code', fieldAlias: 'c' }, { fieldCaption: 'Category (Sheet1)', fieldAlias: 'k' },
+      { fieldCaption: 'Sub-Category (Sheet1)', fieldAlias: 'u' }, { fieldCaption: 'Rank', fieldAlias: 't' },
+      { fieldCaption: 'n', calculation: 'MIN([Item Name])' },
+      { fieldCaption: 'p', calculation: stores.map(part).join("+'|'+") },
+    ],
+    filters: [{ field: { fieldCaption: 'Supplier Account' }, filterType: 'QUANTITATIVE_NUMERICAL', quantitativeFilterType: 'MIN', min: 1 }],
+  };
+}
+// The newest sale date is the stock day. Read today: stamp the read time; an older extract: that day's close.
+function asOfFromDay(ymd) {
+  const today = (kuwaitParts(new Date().toISOString()) || {}).ymd;
+  return ymd === today ? new Date().toISOString() : new Date(`${ymd}T23:59:00+03:00`).toISOString();
+}
+const LIVE_ERR = {
+  needs_reauth: 'Reconnect Tableau Cloud in claude.ai Settings → Connectors, then reload from Tableau.',
+  server_not_connected: 'Add the Tableau Cloud connector in claude.ai Settings → Connectors to read live data.',
+  selection_required: 'Choose which Tableau Cloud connector this report should use, then reload from Tableau.',
+  not_in_manifest: 'Live Tableau access is turned off for this report.',
+  consent_required: 'Allow Tableau Cloud for this report, then reload from Tableau.',
+  blocked_by_policy: 'Your organisation blocks this Tableau query.',
+  approval_required: 'Your organisation needs to approve this Tableau query.',
+  server_unavailable: 'Tableau Cloud did not answer. Try Reload from Tableau again.',
+};
+async function tableauQuery(mcp, query, fresh, retried) {
+  try {
+    const cache = fresh ? { refresh: true, staleTime: 300000, gcTime: 3600000 } : { staleTime: 300000, gcTime: 3600000 };
+    const res = await mcp.callTool(TABLEAU.server, TABLEAU.tool, { datasourceLuid: TABLEAU.datasourceLuid, query }, { cache });
+    let pl = res.payload;
+    if (typeof pl === 'string') { try { pl = JSON.parse(pl); } catch { throw { code: 'tool_error', message: pl.slice(0, 240) }; } }
+    const rows = pl && (Array.isArray(pl.data) ? pl.data : Array.isArray(pl) ? pl : null);
+    if (!rows) throw { code: 'tool_error', message: 'Tableau returned no rows.' };
+    return rows;
+  } catch (err) {
+    if (err && err.retryable && !retried) {
+      await new Promise((r) => setTimeout(r, (err.retryAfterMs || 1200) + Math.random() * 800));
+      return tableauQuery(mcp, query, fresh, true);
+    }
+    throw err;
+  }
+}
+let liveBusy = false;
+async function loadLive(fresh) {
+  const c = window.claude;
+  if (liveBusy || !c || typeof c.use !== 'function') return { ok: false, message: 'Live Tableau data works when this report is opened in Claude with the Tableau Cloud connector.' };
+  liveBusy = true;
+  const before = els.pillText.textContent;
+  els.pillText.textContent = 'Reading Tableau…';
+  try {
+    const mcp = await c.use('mcp');
+    if (!mcp) throw { code: 'not_granted' };
+    const meta = await tableauQuery(mcp, metaQuery(), fresh);
+    const day = meta.map((r) => String(r.asOf || '').slice(0, 10)).filter(Boolean).sort().pop();
+    const stores = meta.filter((r) => r.Store && Number(r.inS) > 0).map((r) => r.Store);
+    if (!day || !stores.length) throw { code: 'tool_error', message: 'Tableau returned no stores with stock.' };
+    const rows = await tableauQuery(mcp, pivotQuery(stores, day), fresh);
+    const dead = meta.filter((r) => r.Store && !(Number(r.inS) > 0)).map((r) => r.Store);
+    DATA = fromPivot({ asOf: asOfFromDay(day), stores, deadStores: dead, rows }, 'live');
+    refreshAll(true);
+    return { ok: true, message: `Read ${fmtN(rows.length)} items live from Tableau.` };
+  } catch (err) {
+    const code = err && err.code;
+    const message = code === 'tool_error' ? `Tableau refused the query: ${err.message || 'unknown error'}` : LIVE_ERR[code] || (code === 'not_granted' || code === 'capability_disabled' || code === 'capability_removed' ? 'Live Tableau access is not available in this view.' : `Could not read Tableau (${code || 'error'}).`);
+    els.pillText.textContent = before;
+    els.pill.title = message + ' Showing the saved data.';
+    return { ok: false, message };
+  } finally {
+    liveBusy = false;
+  }
+}
+$('#btn-live').addEventListener('click', async () => {
+  const box = $('#data-msg');
+  showMsg(box, '', 'Reading Tableau…');
+  const r = await loadLive(true);
+  showMsg(box, r.ok ? 'ok' : 'err', esc(r.message));
+  if (r.ok) dataCloseTimer = setTimeout(() => dlgData.close(), 900);
+});
 
 /* ================= Export ================= */
 const dlgExport = $('#dlg-export');
@@ -1639,11 +2384,7 @@ $('#btn-export-all').addEventListener('click', async () => {
 /* ================= Boot + automation API ================= */
 async function boot() {
   try { SNAPSHOT = JSON.parse($('#snapshot').textContent); } catch { SNAPSHOT = null; }
-  if (!SNAPSHOT || !SNAPSHOT.items) {
-    DATA = { asOf: new Date().toISOString(), source: '', origin: 'files', stores: [], suppliers: new Map(), items: [] };
-  } else {
-    DATA = fromSnapshot(SNAPSHOT);
-  }
+  DATA = loadSnapshot(SNAPSHOT) || { asOf: new Date().toISOString(), source: '', origin: 'files', stores: [], suppliers: new Map(), items: [] };
   try {
     await Promise.all([
       document.fonts.load('700 20px Archivo'), document.fonts.load('500 12px "IBM Plex Mono"'), document.fonts.load('600 12px "IBM Plex Mono"'),
@@ -1651,8 +2392,10 @@ async function boot() {
     await document.fonts.ready;
   } catch { /* fall back to system fonts */ }
   const hash = (location.hash.match(/^#s(\w+)$/) || [])[1];
-  if (hash) store.set('current', hash);
+  if (hash) { store.set('current', hash); view = 'supplier'; }
   refreshAll(false);
+  // Then read today's data from Tableau; the saved data stays up until it arrives.
+  if (!document.body.classList.contains('capture')) loadLive(false);
 }
 
 const ready = boot();
