@@ -18,6 +18,9 @@ availability in each store and in all stores.
   supplier-store cells.
 - Click a supplier to open its report (the pages you send). "← All suppliers"
   brings you back to the same place in the list.
+- **Categories** below the suppliers, ranked by sales qty with the same store
+  columns. Click a category to open its sub-categories, and a sub-category to
+  see its products: which stores are OUT, best sellers first.
 
 When opened in Claude with the Tableau Cloud connector, the report reads
 "Supplier's Availability Data" live (Load data → Reload from Tableau to

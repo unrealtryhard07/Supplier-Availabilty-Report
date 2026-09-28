@@ -527,6 +527,26 @@ dialog::backdrop{background:rgba(8,14,24,.55)}
 .stage-back{margin-right:auto}
 
 /* Simplified overview */
+.ov-h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.ov-h h3{font-size:20px;font-weight:700;font-stretch:90%}
+.ov-h p{font-size:13px;color:var(--p-ink-2)}
+.ov-cats{border-top:1px solid var(--p-rule)}
+.ovc tbody tr{cursor:pointer}
+.ovc tr.lv0 td{background:#F7F9FC;border-bottom-color:#D8DEE8}
+.ovc tr.lv0:hover td{background:#EEF3FF}
+.ovc tr.lv1 .sp{padding-left:34px;font-weight:600}
+.ovc tr.lv2{cursor:default}
+.ovc tr.lv2:hover td{background:#fff}
+.ovc tr.lv2 .sp{padding-left:58px;font-size:13px;white-space:normal}
+.ovc tr.lv2 td{padding-top:5px;padding-bottom:5px}
+.car{display:inline-block;width:16px;font-size:10px;color:var(--p-ink-3);transition:transform .15s;margin-right:6px}
+.car.on{transform:rotate(90deg);color:var(--p-ink)}
+@media (prefers-reduced-motion:reduce){.car{transition:none}}
+.pcode{font-family:var(--f-mono);font-size:11.5px;color:var(--p-ink-2)}
+.psub{display:block;color:var(--p-ink-3);font-size:11.5px}
+.okm svg{width:15px;height:15px;color:var(--good);vertical-align:middle}
+.pcnt{font-size:12px;font-weight:700;color:var(--good-ink)}
+.pcnt.bad{color:var(--crit-ink)}
 .page.ov{max-width:1240px}
 .ov-bar{position:static;box-shadow:none;align-items:center;gap:12px 18px}
 .ov-bar .ov-seg button{font-size:13px;padding:8px 14px}
@@ -1303,7 +1323,7 @@ function paginate(m, host) {
 /* ================= Overview: all suppliers, ranked by sales qty ================= */
 // One table: suppliers by sales qty (biggest first), availability per store.
 // By default only the suppliers that together make 90% of sales qty.
-const OV = { scope: 'focus', store: -1, cat: '' };
+const OV = { scope: 'focus', store: -1, cat: '', open: new Set(), more: new Map() };
 let ovScrollY = 0;   // where the overview was when a supplier was opened
 const GLYPH = { good: '', warn: '▲', crit: '●' };
 const storeCode = (k) => {
@@ -1346,6 +1366,58 @@ function ovCell(g) {
   if (!g) return '<span class="na" title="Not listed">—</span>';
   const st = status(g.p);
   return `<div class="mc ${st}" title="${esc(`${pct1(g.p)}% · ${STATUS_LABEL[st]} · ${fmtN(g.inn)} of ${fmtN(g.n)} in stock`)}"><b>${GLYPH[st] ? `<i aria-hidden="true">${GLYPH[st]}</i>` : ''}${pct0(g.p)}%</b></div>`;
+}
+
+// Categories → sub-categories → products, ranked by sales qty, same columns as
+// the supplier table. Click a row to open the next level.
+function ovCategories(list, stores) {
+  const S = NET.hasSales;
+  const bySales = (a, b) => b.sales - a.sales || b.n - a.n;
+  const group = (arr, key) => { const m = new Map(); for (const l of arr) { const k = key(l); let a2 = m.get(k); if (!a2) m.set(k, (a2 = [])); a2.push(l); } return m; };
+  const cols = stores.length + (S ? 5 : 3);
+  const rowCells = (arr) => { const by = ovAgg(arr, (l) => l.s); return stores.map((k) => `<td>${ovCell(by.get(k))}</td>`).join('') + `<td class="tot">${ovCell(ovTotal(arr))}</td>`; };
+  const T = ovTotal(list).sales;
+  const out = [];
+  const catMap = group(list, (l) => l.cat);
+  [...ovAgg(list, (l) => l.cat).values()].sort(bySales).forEach((cg, i) => {
+    const cl = catMap.get(cg.k);
+    const ck = 'c\u0001' + cg.k, open = OV.open.has(ck);
+    out.push(`<tr class="lv0" data-ov-toggle="${esc(ck)}" tabindex="0"><td class="rk">${i + 1}</td><td class="sp"><span class="car${open ? ' on' : ''}" aria-hidden="true">▶</span><span class="supn">${esc(cg.k)}</span></td>
+      ${S ? `<td class="num">${units(cg.sales)}</td><td class="num">${share1(T ? cg.sales / T : 0)}</td>` : ''}${rowCells(cl)}</tr>`);
+    if (!open) return;
+    const subMap = group(cl, (l) => l.sub);
+    for (const sg of [...ovAgg(cl, (l) => l.sub).values()].sort(bySales)) {
+      const sl = subMap.get(sg.k);
+      const sk = ck + '\u0001' + sg.k, sopen = OV.open.has(sk);
+      out.push(`<tr class="lv1" data-ov-toggle="${esc(sk)}" tabindex="0"><td class="rk"></td><td class="sp"><span class="car${sopen ? ' on' : ''}" aria-hidden="true">▶</span>${esc(sg.k)}</td>
+        ${S ? `<td class="num">${units(sg.sales)}</td><td class="num">${share1(T ? sg.sales / T : 0)}</td>` : ''}${rowCells(sl)}</tr>`);
+      if (!sopen) continue;
+      // Products: out of stock somewhere first, then biggest sellers.
+      const prods = new Map();
+      for (const l of sl) {
+        const key = l.p + '|' + l.it.code;
+        let pr = prods.get(key);
+        if (!pr) prods.set(key, (pr = { it: l.it, p: l.p, sales: 0, by: new Map(), out: 0 }));
+        pr.sales += l.rate; pr.by.set(l.s, l.in); if (!l.in) pr.out++;
+      }
+      const plist = [...prods.values()].sort((a, b) => (b.out > 0) - (a.out > 0) || b.sales - a.sales);
+      const lim = OV.more.get(sk) || 25;
+      for (const pr of plist.slice(0, lim)) {
+        const s2 = NET.byAcct.get(pr.p);
+        const n = pr.by.size, inn = n - pr.out;
+        out.push(`<tr class="lv2"><td class="rk"></td><td class="sp"><span class="pcode">${esc(pr.it.code)}</span> ${esc(pr.it.name)}<span class="psub">${esc(s2 ? s2.name : pr.p)}</span></td>
+          ${S ? `<td class="num">${units(pr.sales)}</td><td></td>` : ''}
+          ${stores.map((k) => `<td class="c">${!pr.by.has(k) ? '<span class="dim">—</span>' : pr.by.get(k) ? `<span class="okm">${ICON.check}</span>` : '<span class="out">OUT</span>'}</td>`).join('')}
+          <td class="c tot"><span class="pcnt${pr.out ? ' bad' : ''}">${inn} of ${n} stores</span></td></tr>`);
+      }
+      if (plist.length > lim) out.push(`<tr class="lv2 more"><td class="rk"></td><td colspan="${cols - 1}"><button type="button" class="ov-link" data-ov-more="${esc(sk)}">Show ${Math.min(50, plist.length - lim)} more ${plural(Math.min(50, plist.length - lim), 'product', 'products')}${plist.length - lim > 50 ? ` (${plist.length - lim} left)` : ''}</button></td></tr>`);
+    }
+  });
+  return `<div class="r-sec ov-cats">
+    <div class="ov-h"><h3>Categories</h3><p>Ranked by sales qty. Click a category to see its sub-categories, and a sub-category to see its products.</p></div>
+    <table class="ovt ovm ovc"><thead><tr><th class="rk">#</th><th class="sp">Category</th>${S ? '<th class="r">Sales qty</th><th class="r">Share</th>' : ''}${stores.map((k) => `<th class="st">${esc(DATA.stores[k])}</th>`).join('')}<th class="c">All stores</th></tr></thead>
+    <tbody>${out.join('')}</tbody></table>
+  </div>`;
 }
 
 function renderOverview() {
@@ -1411,13 +1483,17 @@ function renderOverview() {
       <div class="ov-tile"><div class="r-lbl"><i class="warn"></i>Below target</div><div class="v warn">${fmtN(warn)}</div><div class="s">supplier-store cells ${settings.critical}–${settings.target - 0.01}%</div></div>
     </div>
     <div class="r-sec">
+      <div class="ov-h"><h3>Suppliers</h3><p>Ranked by sales qty. Click a supplier to open its report.</p></div>
       <table class="ovt ovm"><thead><tr><th class="rk">#</th><th class="sp">Supplier</th>${S ? '<th class="r">Sales qty</th><th class="r">Cumulative</th>' : ''}${stores.map((k) => `<th class="st">${esc(DATA.stores[k])}</th>`).join('')}<th class="c">All stores</th></tr></thead>
       <tbody>${body}</tbody><tfoot>${foot}</tfoot></table>
       <p class="ov-foot-note"><span class="ov-key"><i class="good"></i>On target ${settings.target}%+</span><span class="ov-key"><i class="warn"></i>▲ Below target ${settings.critical}–${settings.target - 0.01}%</span><span class="ov-key"><i class="crit"></i>● Critical under ${settings.critical}%</span>${S ? '<span>Sales qty = Lifetime Qty Sold. Cumulative = running share of sales qty.</span>' : ''}</p>
     </div>
+    ${ovCategories(list, stores)}
   </section>`;
   window.scrollTo(0, y);
+  if (ovFocusKey) { const el = [...host.querySelectorAll('[data-ov-toggle]')].find((x) => x.dataset.ovToggle === ovFocusKey); if (el) el.focus({ preventScroll: true }); ovFocusKey = null; }
 }
+let ovFocusKey = null;
 
 /* ================= Screen: sidebar, stage ================= */
 let current = null;
@@ -1600,12 +1676,19 @@ document.addEventListener('click', (e) => { if (e.target.closest('[data-overview
 els.ov.addEventListener('click', (e) => {
   const sc = e.target.closest('[data-ov-scope]');
   if (sc) { OV.scope = sc.dataset.ovScope; renderOverview(); return; }
+  const tg = e.target.closest('[data-ov-toggle]');
+  if (tg) { const k = tg.dataset.ovToggle; if (OV.open.has(k)) OV.open.delete(k); else OV.open.add(k); ovFocusKey = k; renderOverview(); return; }
+  const more = e.target.closest('[data-ov-more]');
+  if (more) { const k = more.dataset.ovMore; OV.more.set(k, (OV.more.get(k) || 25) + 50); renderOverview(); return; }
   const row = e.target.closest('[data-open-sup]');
   if (row) openSupplier(row.dataset.openSup);
 });
 els.ov.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const tg = e.target.closest('[data-ov-toggle]');
+  if (tg) { e.preventDefault(); tg.click(); return; }
   const row = e.target.closest('[data-open-sup]');
-  if (row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openSupplier(row.dataset.openSup); }
+  if (row) { e.preventDefault(); openSupplier(row.dataset.openSup); }
 });
 els.ov.addEventListener('change', (e) => {
   const f = e.target.dataset.ovf;
