@@ -526,6 +526,44 @@ dialog::backdrop{background:rgba(8,14,24,.55)}
 @media (max-width:980px){.ov-bar{position:static}.ov .r-head{grid-template-columns:1fr}.ov .r-date{text-align:left}}
 .stage-back{margin-right:auto}
 
+/* Simplified overview */
+.page.ov{max-width:1240px}
+.ov-bar{position:static;box-shadow:none;align-items:center;gap:12px 18px}
+.ov-bar .ov-seg button{font-size:13px;padding:8px 14px}
+.ov-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));border-bottom:1px solid var(--p-rule)}
+.ov-tile{padding:18px 32px;border-right:1px solid var(--p-rule)}
+.ov-tile:last-child{border-right:0}
+.ov-tile .r-lbl{display:flex;align-items:center;gap:7px}
+.ov-tile .r-lbl i{width:9px;height:9px;border-radius:2px}
+.ov-tile .r-lbl i.crit{background:var(--crit)}.ov-tile .r-lbl i.warn{background:var(--warn)}
+.ov-tile .v{font-size:40px;font-weight:700;font-stretch:85%;line-height:1.05;margin-top:6px}
+.ov-tile .v small{font-size:20px;color:var(--p-ink-3)}
+.ov-tile .v.crit{color:var(--crit-ink)}.ov-tile .v.warn{color:var(--warn-ink)}.ov-tile .v.good{color:var(--good-ink)}
+.ov-tile .s{font-size:13px;color:var(--p-ink-2);margin-top:4px;display:flex;align-items:center;gap:8px}
+.ovm{font-size:14px}
+.ovm thead th{position:static}
+.ovm th.st{text-align:center;font-size:11.5px}
+.ovm tbody tr{cursor:pointer}
+.ovm tbody tr:hover td,.ovm tbody tr:focus-visible td{background:#EEF3FF}
+.ovm tbody tr.cut{cursor:default}
+.ovm tbody tr.cut:hover td{background:#E7EDFE}
+.ovm .rk,.ovm .sp{position:static}
+.ovm .sp{min-width:240px;padding:8px 10px}
+.supn{font-weight:700}
+.ovm tbody tr:hover .supn{color:#1D3FB8;text-decoration:underline}
+.ovm td .mc{justify-content:center;padding:7px 8px}
+.ovm td .mc b{font-size:14px;display:inline-flex;align-items:center;gap:4px}
+.ovm td .mc b i{font-style:normal;font-size:9px}
+.ovm td.tot .mc{box-shadow:inset 0 0 0 1.5px rgba(14,26,43,.18)}
+.ovm tfoot td{position:static;padding:8px 3px}
+.ov-foot-note{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin-top:12px!important}
+.ov-key{display:inline-flex;align-items:center;gap:6px}
+.ov-key i{width:13px;height:13px;border-radius:3px;display:inline-block}
+.ov-key i.good{background:var(--good-tint);box-shadow:inset 0 0 0 1px var(--good)}
+.ov-key i.warn{background:var(--warn-tint);box-shadow:inset 0 0 0 1px var(--warn)}
+.ov-key i.crit{background:var(--crit-tint);box-shadow:inset 0 0 0 1px var(--crit)}
+@media (max-width:760px){.ov-tile{padding:14px 16px}.ov .r-sec{overflow-x:auto}}
+
 /* Capture mode: used by tools/render-reports.js to screenshot pages at 1:1 */
 body.capture .topbar,body.capture .sidebar,body.capture .stage-note,body.capture .ov-host{display:none}
 body.capture .app{display:block}
@@ -1262,30 +1300,18 @@ function paginate(m, host) {
   }
 }
 
-/* ================= Priorities overview (all suppliers) ================= */
-// Filters and drill state for the overview. Store filter is a DATA store index.
-const OV = { scope: 'focus', store: -1, sup: '', cat: '', sub: '', status: 'all', q: '', sort: 'sales', open: new Set(), more: new Map() };
+/* ================= Overview: all suppliers, ranked by sales qty ================= */
+// One table: suppliers by sales qty (biggest first), availability per store.
+// By default only the suppliers that together make 90% of sales qty.
+const OV = { scope: 'focus', store: -1, cat: '' };
+let ovScrollY = 0;   // where the overview was when a supplier was opened
 const GLYPH = { good: '', warn: '▲', crit: '●' };
 const storeCode = (k) => {
   const first = (n) => cleanText(n).charAt(0).toUpperCase();
   const c = first(DATA.stores[k]);
   return DATA.stores.filter((n) => first(n) === c).length > 1 ? cleanText(DATA.stores[k]).slice(0, 2) : c;
 };
-const ovMatch = (st) => OV.status === 'all' || (OV.status === 'problem' ? st !== 'good' : st === 'crit');
 
-function ovFiltered(ignoreSup) {
-  const q = OV.q.trim().toLowerCase();
-  const out = [];
-  for (const l of NET.LST) {
-    if (OV.store >= 0 && l.s !== OV.store) continue;
-    if (!ignoreSup && OV.sup && l.p !== OV.sup) continue;
-    if (OV.cat && l.cat !== OV.cat) continue;
-    if (OV.sub && l.sub !== OV.sub) continue;
-    if (q && !(l.it.code + ' ' + l.it.name).toLowerCase().includes(q)) continue;
-    out.push(l);
-  }
-  return out;
-}
 function ovAgg(list, key) {
   const m = new Map();
   for (const l of list) {
@@ -1298,327 +1324,99 @@ function ovAgg(list, key) {
   return m;
 }
 function ovTotal(list) { const g = { n: 0, inn: 0, sales: 0 }; for (const l of list) { g.n++; if (l.in) g.inn++; g.sales += l.rate; } g.p = g.n ? g.inn / g.n : 0; return g; }
-const ovImportance = (a, b) => b.sales - a.sales || b.n - a.n;
-const ovWeakest = (a, b) => a.p - b.p || b.sales - a.sales;
-// Not on target and biggest sellers first: where a gap matters most.
-const ovProblems = (a, b) => (status(a.p) === 'good') - (status(b.p) === 'good') || (NET.hasSales ? b.sales - a.sales : 0) || a.p - b.p;
-const ovSorter = () => (OV.sort === 'avail' || !NET.hasSales ? ovWeakest : ovImportance);
 
-// Suppliers ranked by sales qty; those that take the running total up to
-// (and including the one that passes) 90% of sales are the focus group.
-function ovFocus(list) {
-  const rows = [...ovAgg(list, (l) => l.p).values()].sort(ovImportance);
+// Suppliers ranked by sales qty; every supplier up to (and including) the one
+// that takes the running total past 90% is in the 90% group.
+function ovRanked(list) {
+  const rows = [...ovAgg(list, (l) => l.p).values()].sort((a, b) => b.sales - a.sales || b.n - a.n);
   const T = rows.reduce((a, r) => a + r.sales, 0);
   let cum = 0, count = 0;
-  const set = new Set();
   for (const r of rows) {
     const before = cum;
     cum += r.sales;
     r.share = T ? r.sales / T : 0;
     r.cum = T ? cum / T : 0;
-    r.focus = T > 0 && r.sales > 0 && before / T < 0.9 - 1e-12;
-    if (r.focus) { set.add(r.k); count++; }
+    r.focus = !NET.hasSales || (T > 0 && before / T < 0.9 - 1e-12);
+    if (r.focus) count++;
   }
-  return { rows, T, count, set };
+  return { rows, T, count };
 }
 
-function ovCell(g, attrs) {
+function ovCell(g) {
   if (!g) return '<span class="na" title="Not listed">—</span>';
   const st = status(g.p);
-  const tip = `${pct1(g.p)}% · ${STATUS_LABEL[st]} · ${fmtN(g.inn)} of ${fmtN(g.n)} in stock${NET.hasSales ? ` · sales qty ${units(g.sales)}` : ''}`;
-  return `<button type="button" class="cellb" ${attrs} title="${esc(tip)}" aria-label="${esc(tip)}"><div class="mc ${st}"><b>${GLYPH[st] ? `<i aria-hidden="true">${GLYPH[st]}</i>` : ''}${pct0(g.p)}%</b></div></button>`;
-}
-
-// The listings the view works on: every filter applied, then (in 90% scope)
-// only the suppliers that make the first 90% of sales qty. A supplier picked
-// in the Supplier filter is always shown.
-function ovScoped() {
-  const base = ovFiltered(false);
-  const focus = ovFocus(OV.sup ? ovFiltered(true) : base);
-  const scoped = OV.scope === 'focus' && NET.hasSales && !OV.sup;
-  return { base, focus, scoped, list: scoped ? base.filter((l) => focus.set.has(l.p)) : base };
+  return `<div class="mc ${st}" title="${esc(`${pct1(g.p)}% · ${STATUS_LABEL[st]} · ${fmtN(g.inn)} of ${fmtN(g.n)} in stock`)}"><b>${GLYPH[st] ? `<i aria-hidden="true">${GLYPH[st]}</i>` : ''}${pct0(g.p)}%</b></div>`;
 }
 
 function renderOverview() {
   const host = els.ov;
   if (!NET || !NET.LST.length) { host.innerHTML = ''; return; }
   if (OV.store >= 0 && !NET.active.includes(OV.store)) OV.store = -1;
-  if (OV.sup && !NET.byAcct.has(OV.sup)) OV.sup = '';
-  const { base, focus, scoped, list } = ovScoped();
+  const y = window.scrollY;
+  const all = NET.LST.filter((l) => (OV.store < 0 || l.s === OV.store) && (!OV.cat || l.cat === OV.cat));
+  const rk = ovRanked(all);
+  const focusOnly = OV.scope === 'focus' && NET.hasSales;
+  const rows = focusOnly ? rk.rows.filter((r) => r.focus) : rk.rows;
+  const keep = new Set(rows.map((r) => r.k));
+  const list = focusOnly ? all.filter((l) => keep.has(l.p)) : all;
+  const t = ovTotal(list), st = status(t.p);
+  const cells = ovAgg(list, (l) => l.p + '|' + l.s);
+  const storeAgg = ovAgg(list, (l) => l.s);
+  const stores = NET.active.filter((k) => storeAgg.has(k));
+  let crit = 0, warn = 0;
+  for (const g of cells.values()) { const s2 = status(g.p); if (s2 === 'crit') crit++; else if (s2 === 'warn') warn++; }
   const a = kuwaitParts(DATA.asOf);
-  const t = ovTotal(list);
-  const st = status(t.p);
-  const scroll = host.querySelector('.ov-drill .ov-scroll');
-  const keepTop = scroll ? scroll.scrollTop : 0;
+  const S = NET.hasSales;
+  const opt = (v, label, sel) => `<option value="${esc(v)}"${sel ? ' selected' : ''}>${esc(label)}</option>`;
+  const catSales = new Map();
+  for (const l of NET.LST) catSales.set(l.cat, (catSales.get(l.cat) || 0) + l.rate + 1e-9);
+  const cats = [...catSales.entries()].sort((x, z) => z[1] - x[1]).map((e) => e[0]);
+  const lastFocus = rk.rows[rk.count - 1];
+  let cutDone = false;
+  const cols = stores.length + (S ? 5 : 3);
+  const body = rows.map((r, i) => {
+    const s2 = NET.byAcct.get(r.k);
+    let pre = '';
+    if (S && !focusOnly && !cutDone && !r.focus) {
+      cutDone = true;
+      pre = `<tr class="cut"><td colspan="${cols}">↑ These ${fmtN(rk.count)} suppliers make ${lastFocus ? share1(lastFocus.cum) : '90%'} of sales qty</td></tr>`;
+    }
+    return pre + `<tr class="${r.focus ? 'focus' : 'nf'}" data-open-sup="${esc(r.k)}" tabindex="0" title="Open ${esc(s2.name)}’s report">
+      <td class="rk">${i + 1}</td><td class="sp"><span class="supn">${esc(s2.name)}</span></td>
+      ${S ? `<td class="num">${units(r.sales)}</td><td class="num">${share1(r.cum)}</td>` : ''}
+      ${stores.map((k) => `<td>${ovCell(cells.get(r.k + '|' + k))}</td>`).join('')}
+      <td class="tot">${ovCell(r)}</td></tr>`;
+  }).join('');
+  const foot = `<tr><td class="rk"></td><td class="sp">${focusOnly ? `These ${fmtN(rows.length)} suppliers` : `All ${fmtN(rows.length)} suppliers`}</td>${S ? `<td class="num">${units(t.sales)}</td><td class="num">${share1(rk.T ? t.sales / rk.T : 0)}</td>` : ''}${stores.map((k) => `<td>${ovCell(storeAgg.get(k))}</td>`).join('')}<td class="tot">${ovCell(t)}</td></tr>`;
+
   host.innerHTML = `<section class="page ov ${st}">
     <header class="r-head">
       <div>
-        <div class="r-eyebrow">${settings.company ? esc(settings.company) + ' · ' : ''}Supplier availability report · ${scoped ? 'suppliers making 90% of sales' : 'all suppliers'}</div>
-        <h1 class="r-supplier">Where to act today</h1>
-        <div class="r-meta"><span>${scoped ? `${fmtN(focus.count)} of ${fmtN(focus.rows.length)} suppliers make 90% of sales qty` : `${fmtN(NET.sums.length)} suppliers`}</span><i>/</i><span>${NET.active.length} ${plural(NET.active.length, 'store', 'stores')}: ${NET.active.map((k) => `${storeCode(k)} ${esc(DATA.stores[k])}`).join(', ')}</span><i>/</i><span>${fmtN(NET.L)} product-store listings</span></div>
+        <div class="r-eyebrow">${settings.company ? esc(settings.company) + ' · ' : ''}Supplier availability report</div>
+        <h1 class="r-supplier">All suppliers</h1>
+        <div class="r-meta"><span>${S ? 'Ranked by sales qty, biggest first' : 'Most listings first'}</span><i>/</i><span>Click a supplier to open its report</span></div>
       </div>
       <div class="r-date"><div class="r-eyebrow">Stock position</div><div class="d">${a ? a.date : '—'}</div><div class="t">${a ? `${a.weekday} · ${a.time} Kuwait time` : ''}</div></div>
     </header>
     <div class="r-stripe"></div>
-    ${ovFilterBar()}
-    ${list.length ? ovKpis(list, t, st, base, focus, scoped) + ovMatrix(list, base, focus, scoped) + ovDrill(list, t) + `<div class="ov-trio">${ovStores(list, t)}${ovFixFirst(list)}${ovCells(list)}</div>`
-      : '<div class="r-sec"><div class="ov-empty">No listings match these filters. <button class="ov-link" type="button" data-ov="clear">Clear filters</button></div></div>'}
-    ${ovMethod()}
+    <div class="ov-bar">
+      ${S ? `<div class="ov-seg" role="group" aria-label="Which suppliers"><button type="button" data-ov-scope="focus" aria-pressed="${focusOnly}">Top suppliers (90% of sales)</button><button type="button" data-ov-scope="all" aria-pressed="${!focusOnly}">All ${fmtN(rk.rows.length)} suppliers</button></div>` : ''}
+      <div class="ov-f"><label for="ov-store">Store</label><select id="ov-store" data-ovf="store">${opt(-1, 'All stores', OV.store < 0)}${NET.active.map((k) => opt(k, DATA.stores[k], OV.store === k)).join('')}</select></div>
+      <div class="ov-f"><label for="ov-cat">Category</label><select id="ov-cat" data-ovf="cat">${opt('', 'All categories', !OV.cat)}${cats.map((c) => opt(c, c, OV.cat === c)).join('')}</select></div>
+    </div>
+    <div class="ov-tiles">
+      <div class="ov-tile"><div class="r-lbl">Availability</div><div class="v ${st}">${pct1(t.p)}%</div><div class="s">${chip(st)} target ${settings.target}%</div></div>
+      ${S ? `<div class="ov-tile"><div class="r-lbl">Top suppliers</div><div class="v">${fmtN(rk.count)}<small> of ${fmtN(rk.rows.length)}</small></div><div class="s">make 90% of sales qty</div></div>` : ''}
+      <div class="ov-tile"><div class="r-lbl"><i class="crit"></i>Critical</div><div class="v crit">${fmtN(crit)}</div><div class="s">supplier-store cells under ${settings.critical}%</div></div>
+      <div class="ov-tile"><div class="r-lbl"><i class="warn"></i>Below target</div><div class="v warn">${fmtN(warn)}</div><div class="s">supplier-store cells ${settings.critical}–${settings.target - 0.01}%</div></div>
+    </div>
+    <div class="r-sec">
+      <table class="ovt ovm"><thead><tr><th class="rk">#</th><th class="sp">Supplier</th>${S ? '<th class="r">Sales qty</th><th class="r">Cumulative</th>' : ''}${stores.map((k) => `<th class="st">${esc(DATA.stores[k])}</th>`).join('')}<th class="c">All stores</th></tr></thead>
+      <tbody>${body}</tbody><tfoot>${foot}</tfoot></table>
+      <p class="ov-foot-note"><span class="ov-key"><i class="good"></i>On target ${settings.target}%+</span><span class="ov-key"><i class="warn"></i>▲ Below target ${settings.critical}–${settings.target - 0.01}%</span><span class="ov-key"><i class="crit"></i>● Critical under ${settings.critical}%</span>${S ? '<span>Sales qty = Lifetime Qty Sold. Cumulative = running share of sales qty.</span>' : ''}</p>
+    </div>
   </section>`;
-  const sc = host.querySelector('.ov-drill .ov-scroll');
-  if (sc && keepTop) sc.scrollTop = keepTop;
-}
-
-function ovFilterBar() {
-  const opt = (v, label, sel) => `<option value="${esc(v)}"${sel ? ' selected' : ''}>${esc(label)}</option>`;
-  const stores = NET.active.map((k) => opt(k, `${storeCode(k)} · ${DATA.stores[k]}`, OV.store === k)).join('');
-  const sups = [...NET.sums].sort((a, b) => b.sales - a.sales || b.l - a.l).map((s) => opt(s.acct, `${s.name} · ${s.acct}`, OV.sup === s.acct)).join('');
-  const catSales = new Map(), subSales = new Map();
-  for (const l of NET.LST) {
-    catSales.set(l.cat, (catSales.get(l.cat) || 0) + l.rate + 1e-9);
-    if (!OV.cat || l.cat === OV.cat) subSales.set(l.sub, (subSales.get(l.sub) || 0) + l.rate + 1e-9);
-  }
-  const rank = (m) => [...m.entries()].sort((x, y) => y[1] - x[1]).map((e) => e[0]);
-  if (OV.sub && !subSales.has(OV.sub)) OV.sub = '';
-  const seg = (v, label, dot) => `<button type="button" data-ov="status" data-v="${v}" aria-pressed="${OV.status === v}">${dot ? `<span class="d ${dot}"></span>` : ''}${label}</button>`;
-  const chips = [];
-  if (OV.store >= 0) chips.push(['store', `Store: ${storeCode(OV.store)} · ${DATA.stores[OV.store]}`]);
-  if (OV.sup) chips.push(['sup', `Supplier: ${DATA.suppliers.get(OV.sup) || OV.sup}`]);
-  if (OV.cat) chips.push(['cat', `Category: ${OV.cat}`]);
-  if (OV.sub) chips.push(['sub', `Sub-category: ${OV.sub}`]);
-  if (OV.status !== 'all') chips.push(['status', OV.status === 'crit' ? 'Critical only' : 'Below target & critical']);
-  if (OV.q) chips.push(['q', `Item: “${OV.q}”`]);
-  const nAll = NET.sums.length;
-  const scopeSeg = NET.hasSales ? `<div class="ov-f"><span class="l" id="ov-scope-l">Suppliers</span><div class="ov-seg" role="group" aria-labelledby="ov-scope-l">`
-    + `<button type="button" data-ov="scope" data-v="focus" aria-pressed="${OV.scope === 'focus'}">90% of sales</button>`
-    + `<button type="button" data-ov="scope" data-v="all" aria-pressed="${OV.scope === 'all'}">All ${fmtN(nAll)}</button></div></div>` : '';
-  return `<div class="ov-bar" role="search" aria-label="Filters">
-    ${scopeSeg}
-    <div class="ov-f"><label for="ov-store">Store</label><select id="ov-store" data-ovf="store">${opt(-1, 'All stores', OV.store < 0)}${stores}</select></div>
-    <div class="ov-f wide"><label for="ov-sup">Supplier</label><select id="ov-sup" data-ovf="sup">${opt('', NET.hasSales ? 'All suppliers (by sales)' : 'All suppliers', !OV.sup)}${sups}</select></div>
-    <div class="ov-f"><label for="ov-cat">Category</label><select id="ov-cat" data-ovf="cat">${opt('', 'All categories', !OV.cat)}${rank(catSales).map((c) => opt(c, c, OV.cat === c)).join('')}</select></div>
-    <div class="ov-f"><label for="ov-sub">Sub-category</label><select id="ov-sub" data-ovf="sub">${opt('', 'All sub-categories', !OV.sub)}${rank(subSales).map((c) => opt(c, c, OV.sub === c)).join('')}</select></div>
-    <div class="ov-f"><span class="l" id="ov-status-l">Availability status</span><div class="ov-seg" role="group" aria-labelledby="ov-status-l">${seg('all', 'All')}${seg('problem', 'Below target &amp; critical', 'warn')}${seg('crit', 'Critical', 'crit')}</div></div>
-    <div class="ov-f"><label for="ov-q">Item code or name</label><input id="ov-q" type="search" value="${esc(OV.q)}" placeholder="e.g. 1001422 or milk" autocomplete="off"></div>
-    <div class="ov-chips">${chips.map(([k, txt]) => `<span class="ov-chip">${esc(txt)}<button type="button" data-ov="unset" data-k="${k}" aria-label="Remove ${esc(txt)}">×</button></span>`).join('')}${chips.length > 1 ? '<button type="button" class="ov-link" data-ov="clear">Clear all</button>' : ''}</div>
-  </div>`;
-}
-
-function ovKpis(list, t, st, base, focus, scoped) {
-  const cells = ovAgg(list, (l) => l.p + '|' + l.s);
-  const band = { warn: { c: 0, n: 0 }, crit: { c: 0, n: 0 } };
-  for (const g of cells.values()) { const s2 = status(g.p); if (band[s2]) { band[s2].c++; band[s2].n += g.n; } }
-  const v = Math.floor(t.p * 100 + 1e-7), diff = Math.abs(settings.target - v);
-  const nSup = new Set(list.map((l) => l.p)).size, nSt = new Set(list.map((l) => l.s)).size;
-  const tile = (lbl, val, sub, flag) => `<div class="r-kpi"><div class="r-lbl">${flag ? `<i class="${flag}"></i>` : ''}${lbl}</div><div class="v${flag ? ' ' + flag : ''}">${val}</div><div class="s">${sub}</div></div>`;
-  return `<div class="ov-hero">
-    <div>
-      <div class="r-lbl">${scoped ? 'Availability · 90% suppliers' : 'Overall availability'} ${chip(st)}</div>
-      <div class="r-big">${pct1(t.p)}<small>%</small></div>
-      <div class="meter ${st}" role="img" aria-label="${pct1(t.p)}% against a ${settings.target}% target"><i style="width:${(t.p * 100).toFixed(2)}%"></i><b class="tgt" style="left:${settings.target}%"><em>Target ${settings.target}%</em></b></div>
-      <div class="r-gap"><strong>${diff} ${plural(diff, 'pt', 'pts')}</strong> ${v >= settings.target ? 'above' : 'below'} the ${settings.target}% target${scoped ? `<br>All ${fmtN(new Set(base.map((l) => l.p)).size)} suppliers: ${pct1(ovTotal(base).p)}%` : ''}</div>
-    </div>
-    <div class="ov-kpis">
-      ${tile('Target', settings.target + '%', `On target ${settings.target}%+ · below target ${settings.critical}–${settings.target - 0.01}% · critical under ${settings.critical}%`)}
-      ${tile('Below target', fmtN(band.warn.c), `supplier-store cells · ${fmtN(band.warn.n)} listings (${share1(t.n ? band.warn.n / t.n : 0)})`, 'warn')}
-      ${tile('Critical', fmtN(band.crit.c), `supplier-store cells · ${fmtN(band.crit.n)} listings (${share1(t.n ? band.crit.n / t.n : 0)})`, 'crit')}
-      ${NET.hasSales ? tile('Suppliers making 90% of sales', `${fmtN(focus.count)}<small style="font-size:18px;color:var(--p-ink-3)"> of ${fmtN(focus.rows.length)}</small>`, `${units(focus.rows.filter((r) => r.focus).reduce((x, r) => x + r.sales, 0))} of ${units(focus.T)} units sold (sales qty)`) : tile('Out of stock', fmtN(t.n - t.inn), 'listings with no stock', 'crit')}
-      ${tile('Product-store combinations', fmtN(t.n), `measured · ${fmtN(nSup)} ${plural(nSup, 'supplier', 'suppliers')} · ${nSt} ${plural(nSt, 'store', 'stores')}`)}
-    </div>
-  </div>`;
-}
-
-function ovMatrix(list, base, focus, scoped) {
-  const supAgg = ovAgg(list, (l) => l.p), storeAgg = ovAgg(list, (l) => l.s), cells = ovAgg(list, (l) => l.p + '|' + l.s);
-  const stores = NET.active.filter((k) => storeAgg.has(k));
-  const t = ovTotal(list);
-  const fr = new Map(focus.rows.map((r, i) => [r.k, { ...r, pos: i + 1 }]));
-  let rows = [...supAgg.values()].sort(ovImportance);
-  const all = rows.length;
-  rows = rows.filter((r) => ovMatch(status(r.p)) || stores.some((k) => { const c = cells.get(r.k + '|' + k); return c && ovMatch(status(c.p)); }));
-  const S = NET.hasSales;
-  const cols = stores.length + (S ? 6 : 3);
-  const head = `<tr><th class="rk">#</th><th class="sp">Supplier${S ? ' <span style="text-transform:none;letter-spacing:0;font-weight:500">· by sales qty ↓</span>' : ''}</th>${S ? '<th class="r">Sales qty</th><th class="r">Share</th><th class="r">Cumulative</th>' : ''}`
-    + stores.map((k) => `<th class="st${OV.store === k ? ' sel' : ''}"><button type="button" data-ov="store" data-s="${k}" title="Filter to ${esc(DATA.stores[k])}"><b>${esc(storeCode(k))}</b><small>${esc(DATA.stores[k])}</small></button></th>`).join('')
-    + '<th class="c">Total</th></tr>';
-  let cutDone = false;
-  const lastFocus = focus.rows[focus.count - 1];
-  const body = rows.map((r) => {
-    const s2 = NET.byAcct.get(r.k), f = fr.get(r.k) || { pos: '', sales: 0, share: 0, cum: 0, focus: false };
-    let pre = '';
-    if (S && !scoped && !cutDone && !f.focus) {
-      cutDone = true;
-      pre = `<tr class="cut"><td colspan="${cols}">↑ These ${fmtN(focus.count)} ${plural(focus.count, 'supplier makes', 'suppliers make')} ${lastFocus ? share1(lastFocus.cum) : '90%'} of sales qty. The ${fmtN(focus.rows.length - focus.count)} below share the rest.</td></tr>`;
-    }
-    return pre + `<tr class="${f.focus ? 'focus' : 'nf'}${OV.sup === r.k ? ' sel' : ''}"><td class="rk">${f.pos}</td>
-      <td class="sp"><div class="spw"><button type="button" class="supb" data-ov="sup" data-p="${esc(r.k)}" title="Filter the page to ${esc(s2.name)}"><b>${esc(s2.name)}</b><small>${f.focus ? '<span class="ftag">90%</span>' : ''}<span>${esc(r.k)}</span></small></button><button type="button" class="ov-link rep" data-ov="open" data-p="${esc(r.k)}" title="Open ${esc(s2.name)}’s report pages">Report →</button></div></td>
-      ${S ? `<td class="num">${units(f.sales)}</td><td class="num">${share1(f.share)}</td><td class="num">${share1(f.cum)}<span class="cumb"><i style="width:${Math.min(100, f.cum * 100)}%"></i><b></b></span></td>` : ''}
-      ${stores.map((k) => `<td>${ovCell(cells.get(r.k + '|' + k), `data-ov="cell" data-p="${esc(r.k)}" data-s="${k}"`)}</td>`).join('')}
-      <td class="tot">${ovCell(r, `data-ov="sup" data-p="${esc(r.k)}"`)}</td></tr>`;
-  }).join('');
-  const footRow = (cls, label, agg, tot) => `<tr class="${cls}"><td class="rk"></td><td class="sp">${label}</td>${S ? `<td class="num">${units(tot.sales)}</td><td class="num">${share1(focus.T ? tot.sales / focus.T : 0)}</td><td></td>` : ''}${stores.map((k) => `<td>${ovCell(agg.get(k), `data-ov="store" data-s="${k}"`)}</td>`).join('')}<td class="tot">${ovCell(tot, 'disabled')}</td></tr>`;
-  let foot = footRow('', scoped ? `90% suppliers (${fmtN(all)})` : 'All suppliers', storeAgg, t);
-  if (scoped) foot += footRow('all', `All suppliers (${fmtN(focus.rows.length)})`, ovAgg(base, (l) => l.s), ovTotal(base));
-  const shown = rows.length === all ? `${fmtN(all)} suppliers` : `${fmtN(rows.length)} of ${fmtN(all)} suppliers match the status filter`;
-  return `<div class="r-sec" style="border-bottom:1px solid var(--p-rule)">
-    <div class="r-sec-head"><div><div class="ov-q">Which suppliers matter most, and where are they short?</div><h3>Supplier × store availability, by sales qty</h3>
-      <p class="ov-sub">${S ? `Suppliers ranked by sales qty, biggest first, with their share and running total. ${scoped ? `Showing the <b>${fmtN(focus.count)}</b> suppliers that together make 90% of sales qty.` : 'The blue line marks where 90% of sales qty is reached.'} ` : 'Most listings first. '}Click a supplier, a store or a cell to filter the whole page. Totals are counted from all listings, not averaged.</p></div>
-      ${S ? `<button type="button" class="ov-link" data-ov="scope" data-v="${scoped ? 'all' : 'focus'}">${scoped ? `Show all ${fmtN(focus.rows.length)} suppliers` : 'Show only the 90% suppliers'}</button>` : ''}</div>
-    <div class="ov-legend" style="margin-bottom:10px"><span><i class="good"></i>On target ${settings.target}%+</span><span><i class="warn"></i>▲ Below target ${settings.critical}–${settings.target - 0.01}%</span><span><i class="crit"></i>● Critical under ${settings.critical}%</span><span>— not listed</span>${S ? '<span><span class="ftag">90%</span> makes up the first 90% of sales qty</span>' : ''}</div>
-    <div class="ov-scroll" style="max-height:680px"><table class="ovt ovm"><thead>${head}</thead><tbody>${body || `<tr><td colspan="${cols}"><div class="ov-empty">No supplier matches the status filter.</div></td></tr>`}</tbody><tfoot>${foot}</tfoot></table></div>
-    <p class="ov-foot-note">${shown} · stores ${S ? 'ordered by sales qty, highest first' : 'in the usual order'}${OV.sup ? ` · <button type="button" class="ov-link" data-ov="open" data-p="${esc(OV.sup)}">Open ${esc(DATA.suppliers.get(OV.sup) || OV.sup)}’s report →</button>` : ''}</p>
-  </div>`;
-}
-
-function ovDrill(list, T) {
-  const sort = ovSorter();
-  const rows = [];
-  const av = (p) => { const st = status(p); return `<div class="avb"><span class="cb-track"><i class="${st}" style="width:${(p * 100).toFixed(2)}%"></i><b style="left:${settings.target}%"></b></span><strong class="${st}">${pct1(p)}%</strong></div>`; };
-  // Share of the selection's sales qty: how much of the business this row carries.
-  const shareCell = (x) => (NET.hasSales ? `<td class="num">${share1(T.sales ? x / T.sales : 0)}<span class="shb"><i style="width:${T.sales ? (x / T.sales) * 100 : 0}%"></i></span></td>` : '');
-  const salesCell = (x) => (NET.hasSales ? `<td class="num">${units(x)}</td>` : '');
-  const group = (lvl, tag, key, label, g) => {
-    const open = OV.open.has(key);
-    rows.push(`<tr class="l${lvl}" data-ov="toggle" data-key="${esc(key)}">
-      <td class="nm"><div class="nmw"><button type="button" class="caret" aria-expanded="${open}" aria-label="${open ? 'Close' : 'Open'} ${esc(tag)}" data-ov="toggle" data-key="${esc(key)}">▶</button><span class="lv">${tag}</span><span>${label}</span></div></td>
-      ${salesCell(g.sales)}<td class="num">${fmtN(g.n)}</td><td class="num">${fmtN(g.n - g.inn)}</td><td>${av(g.p)}</td><td>${chip(status(g.p))}</td>${shareCell(g.sales)}</tr>`);
-    return open;
-  };
-  const by = (arr, key) => { const m = new Map(); for (const l of arr) { const k = key(l); let a2 = m.get(k); if (!a2) m.set(k, (a2 = [])); a2.push(l); } return m; };
-  const pOf = (arr) => { let i = 0; for (const l of arr) if (l.in) i++; return i / arr.length; };
-  const anyStore = (arr) => [...by(arr, (l) => l.s).values()].some((x) => ovMatch(status(pOf(x))));
-  const cols = NET.hasSales ? 7 : 5;
-  const catMap = by(list, (l) => l.cat);
-  for (const cg of [...ovAgg(list, (l) => l.cat).values()].sort(sort)) {
-    const cl = catMap.get(cg.k);
-    const subMap = by(cl, (l) => l.sub);
-    if (OV.status !== 'all' && !ovMatch(status(cg.p)) && ![...subMap.values()].some((sl) => ovMatch(status(pOf(sl))) || anyStore(sl))) continue;
-    const kc = 'c:' + cg.k;
-    if (!group(0, 'Category', kc, esc(cg.k), cg)) continue;
-    for (const sg of [...ovAgg(cl, (l) => l.sub).values()].sort(sort)) {
-      const sl = subMap.get(sg.k);
-      if (OV.status !== 'all' && !ovMatch(status(sg.p)) && !anyStore(sl)) continue;
-      const ks = kc + '|s:' + sg.k;
-      if (!group(1, 'Sub-cat.', ks, esc(sg.k), sg)) continue;
-      const stMap = by(sl, (l) => l.s);
-      for (const tg of [...ovAgg(sl, (l) => l.s).values()].sort(sort)) {
-        if (OV.status !== 'all' && !ovMatch(status(tg.p))) continue;
-        const kt = ks + '|t:' + tg.k;
-        if (!group(2, 'Store', kt, `<b>${esc(storeCode(tg.k))}</b> · ${esc(DATA.stores[tg.k])}`, tg)) continue;
-        let its = stMap.get(tg.k).slice();
-        if (OV.status !== 'all') its = its.filter((l) => !l.in);
-        // Out-of-stock items first, biggest sellers first within each group.
-        its.sort((x, y) => (x.in - y.in) || y.rate - x.rate);
-        const lim = OV.more.get(kt) || 25;
-        for (const l of its.slice(0, lim)) {
-          const it = l.it, s2 = NET.byAcct.get(l.p);
-          rows.push(`<tr class="l3"><td class="nm"><div class="nmw"><span class="lv">Item</span><span><span class="code">${esc(it.code)}</span> ${esc(it.name)}<span class="it-sub">${esc(s2 ? s2.name : l.p)} · ${(TYPE[it.tier] || ['Regular'])[0]}${NET.hasSales && it.stock ? ` · ${fmtN(it.stock[l.s])} units on hand` : ''}</span></span></div></td>
-            ${salesCell(l.rate)}<td class="num">1</td><td class="num">${l.in ? '0' : '1'}</td><td>${av(l.in ? 1 : 0)}</td>
-            <td>${l.in ? `<span class="chip good">${ICON.good}In stock</span>` : '<span class="out">OUT</span>'}</td>${shareCell(l.rate)}</tr>`);
-        }
-        if (its.length > lim) rows.push(`<tr class="more"><td colspan="${cols}"><button type="button" class="ov-link" data-ov="more" data-key="${esc(kt)}">Show ${Math.min(50, its.length - lim)} more of ${its.length - lim} remaining items</button></td></tr>`);
-        if (!its.length) rows.push(`<tr class="more"><td colspan="${cols}" class="dim">No out-of-stock items here.</td></tr>`);
-      }
-    }
-  }
-  const seg = (v, label) => `<button type="button" data-ov="sort" data-v="${v}" aria-pressed="${OV.sort === v}">${label}</button>`;
-  return `<div class="r-sec ov-drill" style="border-bottom:1px solid var(--p-rule)">
-    <div class="r-sec-head"><div><div class="ov-q">Which category, sub-category, store and item?</div><h3>Category → Sub-category → Store → Item</h3>
-      <p class="ov-sub">Open a category, then its sub-category, then the store, down to the exact item. Every level is sorted by the order you pick.</p></div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><div class="ov-seg" role="group" aria-label="Sort the drilldown">${NET.hasSales ? seg('sales', 'Sales qty ↓') : ''}${seg('avail', 'Availability ↑')}</div>
-      <button type="button" class="ov-link" data-ov="expand">Open the 3 biggest problems</button><button type="button" class="ov-link" data-ov="collapse">Close all</button></div></div>
-    <div class="ov-scroll" style="max-height:760px"><table class="ovt ovd"><thead><tr><th>Category / sub-category / store / item</th>${NET.hasSales ? '<th class="r">Sales qty</th>' : ''}<th class="r">Listings</th><th class="r">Out</th><th class="r">Availability</th><th>Status</th>${NET.hasSales ? '<th class="r">Share of sales</th>' : ''}</tr></thead>
-    <tbody>${rows.join('') || `<tr><td colspan="${cols}"><div class="ov-empty">Nothing matches the status filter.</div></td></tr>`}</tbody></table></div>
-  </div>`;
-}
-
-function ovStores(list, t) {
-  const gs = [...ovAgg(list, (l) => l.s).values()].sort(ovWeakest);
-  const max = Math.max(...gs.map((g) => g.n - g.inn), 1);
-  return `<div class="r-sec"><div class="r-sec-head"><div><div class="ov-q">Which stores cause the biggest issues?</div><h3>Stores, weakest first</h3></div></div>
-    <div class="ov-stores">${gs.map((g) => {
-      const st = status(g.p), v = g.n - g.inn;
-      return `<button type="button" class="ov-store${OV.store === g.k ? ' sel' : ''}" data-ov="store" data-s="${g.k}">
-        <span class="code-b ${st}">${esc(storeCode(g.k))}</span><span class="nm">${esc(DATA.stores[g.k])} <span class="chip ${st}" style="padding:2px 6px">${pct1(g.p)}%</span></span>
-        <span class="sv">${NET.hasSales ? `sales qty ${units(g.sales)}` : ''}</span>
-        <span class="meta"><span class="bar"><i style="width:${(v / max) * 100}%"></i></span>${fmtN(v)} of ${fmtN(g.n)} listings out of stock</span></button>`;
-    }).join('')}</div></div>`;
-}
-
-function ovFixFirst(list) {
-  const top = list.filter((l) => !l.in).sort((a, b) => b.rate - a.rate || tierRank(a.it.tier) - tierRank(b.it.tier)).slice(0, 20);
-  return `<div class="r-sec"><div class="r-sec-head"><div><div class="ov-q">What should I fix first?</div><h3>Best-selling products that are out of stock</h3>
-    <p class="ov-sub">Out-of-stock listings, ${NET.hasSales ? 'biggest sellers' : 'top-seller tiers'} first. Click one to open it in the drilldown.</p></div></div>
-    ${top.length ? `<div class="ov-scroll" style="max-height:560px"><table class="ovt ovl"><thead><tr><th class="r">#</th><th>Item</th><th>Store</th>${NET.hasSales ? '<th class="r">Sales qty</th>' : '<th>Type</th>'}</tr></thead><tbody>
-    ${top.map((l, i) => { const s2 = NET.byAcct.get(l.p); return `<tr data-ov="reveal" data-cat="${esc(l.cat)}" data-sub="${esc(l.sub)}" data-s="${l.s}" tabindex="0"><td class="num dim">${i + 1}</td>
-      <td class="nm"><span class="code">${esc(l.it.code)}</span> ${esc(l.it.name)}<span class="it-sub">${esc(s2 ? s2.name : l.p)} · ${esc(l.sub)}</span></td>
-      <td><b>${esc(storeCode(l.s))}</b> <span class="dim">${esc(DATA.stores[l.s])}</span></td>${NET.hasSales ? `<td class="num">${units(l.rate)}</td>` : `<td>${typePill(l.it.tier)}</td>`}</tr>`; }).join('')}
-    </tbody></table></div>` : '<div class="ov-empty">No empty shelves in this selection.</div>'}</div>`;
-}
-
-function ovCells(list) {
-  const cells = [...ovAgg(list, (l) => l.p + '|' + l.s).values()].filter((g) => status(g.p) !== 'good' && g.n > g.inn)
-    .sort(NET.hasSales ? (a, b) => b.sales - a.sales || a.p - b.p : (a, b) => a.p - b.p || b.n - a.n).slice(0, 15);
-  return `<div class="r-sec"><div class="r-sec-head"><div><div class="ov-q">Who needs to act?</div><h3>Supplier-store cells to escalate</h3>
-    <p class="ov-sub">Below-target and critical cells, ${NET.hasSales ? 'biggest sellers' : 'weakest'} first. Click one to filter.</p></div></div>
-    ${cells.length ? `<div class="ov-scroll" style="max-height:560px"><table class="ovt ovl"><thead><tr><th>Supplier</th><th>Store</th><th class="c">Avail.</th>${NET.hasSales ? '<th class="r">Sales qty</th>' : ''}</tr></thead><tbody>
-    ${cells.map((g) => { const [p, sk] = g.k.split('|'); const s2 = NET.byAcct.get(p); const st = status(g.p); return `<tr data-ov="cell" data-p="${esc(p)}" data-s="${sk}" tabindex="0"><td class="nm">${esc(s2 ? s2.name : p)}<span class="it-sub">${fmtN(g.n - g.inn)} of ${fmtN(g.n)} listings empty</span></td>
-      <td><b>${esc(storeCode(+sk))}</b> <span class="dim">${esc(DATA.stores[+sk])}</span></td><td class="c"><span class="chip ${st}" style="padding:2px 6px">${GLYPH[st]} ${pct0(g.p)}%</span></td>${NET.hasSales ? `<td class="num">${units(g.sales)}</td>` : ''}</tr>`; }).join('')}
-    </tbody></table></div>` : '<div class="ov-empty">Every supplier-store cell here is on target.</div>'}</div>`;
-}
-
-function ovMethod() {
-  const hidden = NET.hidden.length ? ` Stores with no stock anywhere are left out: ${esc(NET.hidden.join(', '))}.` : '';
-  return `<dl class="ov-method"><h3>How the numbers work</h3>
-    <dt>Listing</dt><dd>One product in one store (a product-store combination). It is in stock when the store holds at least one unit.</dd>
-    <dt>Availability</dt><dd>Listings in stock ÷ all listings. Every total (supplier, store, category and the grand total) is counted from listings, so it is weighted rather than an average of the percentages shown.</dd>
-    <dt>Status</dt><dd>On target ${settings.target}% and above · Below target ${settings.critical}–${settings.target - 0.01}% · Critical under ${settings.critical}%. Percentages are rounded down, so 84.99% shows as 84% and stays amber.</dd>
-    <dt>Sales qty</dt><dd>${NET.hasSales ? 'Lifetime Qty Sold from Tableau, per product and store. Suppliers, stores, categories, sub-categories and items are ordered by it, biggest first.' : 'Not in this data. Reload from Tableau to rank by sales qty.'}</dd>
-    ${NET.hasSales ? '<dt>90% of sales</dt><dd>Suppliers ranked by sales qty, highest first, with their shares added up in that order. Every supplier up to and including the one that takes the running total past 90% is in the group. With “Suppliers: 90% of sales” on, the whole view (summary, matrix, drilldown and lists) shows only these suppliers. The group follows the store, category, sub-category and item filters.</dd>' : ''}
-    <dt>Left out</dt><dd>Items tiered ${esc(settings.excludedTiers.join(' or ') || 'nothing')} in the item master (change under Settings).${hidden}</dd>
-    <dt>Source</dt><dd>${esc(DATA.source || 'Tableau')}${DATA.origin === 'live' ? ', read live through your Tableau Cloud connector' : DATA.origin === 'snapshot' ? ', saved snapshot' : ''}. Suppliers are grouped by Supplier Account; category and sub-category come from the item master (Google Sheet).</dd>
-  </dl>`;
-}
-
-function ovExpandTop() {
-  const { list } = ovScoped();
-  OV.open.clear();
-  const sortL = ovProblems;
-  for (const c of [...ovAgg(list, (l) => l.cat).values()].sort(sortL).slice(0, 3)) {
-    const kc = 'c:' + c.k; OV.open.add(kc);
-    const cl = list.filter((l) => l.cat === c.k);
-    const sub = [...ovAgg(cl, (l) => l.sub).values()].sort(sortL)[0];
-    if (!sub) continue;
-    const ks = kc + '|s:' + sub.k; OV.open.add(ks);
-    const stg = [...ovAgg(cl.filter((l) => l.sub === sub.k), (l) => l.s).values()].sort(sortL)[0];
-    if (stg) OV.open.add(ks + '|t:' + stg.k);
-  }
-}
-
-function ovAct(el) {
-  const a = el.dataset.ov;
-  if (a === 'store') { const k = +el.dataset.s; OV.store = OV.store === k ? -1 : k; }
-  else if (a === 'sup') { const p = el.dataset.p; OV.sup = OV.sup === p ? '' : p; }
-  else if (a === 'cell') { const p = el.dataset.p, k = +el.dataset.s; if (OV.sup === p && OV.store === k) { OV.sup = ''; OV.store = -1; } else { OV.sup = p; OV.store = k; } }
-  else if (a === 'open') { showSupplier(el.dataset.p); els.stage.scrollIntoView({ block: 'start' }); return; }
-  else if (a === 'status') OV.status = el.dataset.v;
-  else if (a === 'scope') OV.scope = el.dataset.v;
-  else if (a === 'unset') { const k = el.dataset.k; OV[k] = k === 'store' ? -1 : k === 'status' ? 'all' : ''; if (k === 'cat') OV.sub = ''; }
-  else if (a === 'clear') Object.assign(OV, { store: -1, sup: '', cat: '', sub: '', status: 'all', q: '' });
-  else if (a === 'toggle') { const k = el.dataset.key; if (OV.open.has(k)) OV.open.delete(k); else OV.open.add(k); }
-  else if (a === 'more') { const k = el.dataset.key; OV.more.set(k, (OV.more.get(k) || 25) + 50); }
-  else if (a === 'sort') OV.sort = el.dataset.v;
-  else if (a === 'collapse') OV.open.clear();
-  else if (a === 'expand') ovExpandTop();
-  else if (a === 'reveal') {
-    const kc = 'c:' + el.dataset.cat, ks = kc + '|s:' + el.dataset.sub;
-    OV.open.add(kc); OV.open.add(ks); OV.open.add(ks + '|t:' + el.dataset.s);
-    renderOverview();
-    const d = els.ov.querySelector('.ov-drill');
-    if (d) d.scrollIntoView({ block: 'start' });
-    return;
-  }
-  renderOverview();
+  window.scrollTo(0, y);
 }
 
 /* ================= Screen: sidebar, stage ================= */
@@ -1641,7 +1439,7 @@ function renderNet() {
   const chipBtn = (key, label, n) => `<button class="fchip" type="button" data-filter="${key}" aria-pressed="${statusFilter === key}">${key !== 'all' ? `<span class="d ${key}"></span>` : ''}${label} ${n}</button>`;
   const stores = NET.active.map((k) => DATA.stores[k]).join(', ');
   const hiddenStores = NET.hidden;
-  els.net.innerHTML = `<button class="btn ${view === 'overview' ? 'primary' : ''}" type="button" data-overview style="width:100%;justify-content:center;margin-bottom:14px">Priorities: all suppliers</button>
+  els.net.innerHTML = `<button class="btn ${view === 'overview' ? 'primary' : ''}" type="button" data-overview style="width:100%;justify-content:center;margin-bottom:14px">← All suppliers</button>
     <div class="net-eyebrow">All suppliers · ${NET.active.length} stores</div>
     <div class="net-row"><div class="net-big">${pct1(NET.r)}%</div><div class="net-cap">network availability<br>${fmtN(NET.Y)} of ${fmtN(NET.L)} listings in stock</div></div>
     <div class="net-bar">${seg('crit')}${seg('warn')}${seg('good')}</div>
@@ -1725,9 +1523,19 @@ function setView(v) {
   if (b) b.classList.toggle('primary', ov);
   if (ov) for (const li of els.list.querySelectorAll('.sup')) li.classList.remove('is-active');
 }
+// Open a supplier's report at the top of its pages; the overview remembers
+// where it was so "All suppliers" brings you back to the same row.
+function openSupplier(acct) {
+  if (view === 'overview') ovScrollY = window.scrollY;
+  showSupplier(acct);
+  const top = els.stage.getBoundingClientRect().top + window.scrollY - 64;
+  window.scrollTo(0, Math.max(0, top));
+}
 function showOverview() {
+  const back = view !== 'overview';
   setView('overview');
   renderOverview();
+  if (back) window.scrollTo(0, ovScrollY);
   try { history.replaceState(null, '', '#overview'); } catch { /* not allowed in some frames */ }
 }
 
@@ -1771,7 +1579,7 @@ function refreshAll(keepCurrent = true) {
 
 els.list.addEventListener('click', (e) => {
   const open = e.target.closest('[data-open]');
-  if (open) { showSupplier(open.dataset.open); els.stage.scrollIntoView({ block: 'start' }); }
+  if (open) openSupplier(open.dataset.open);
 });
 els.list.addEventListener('change', (e) => {
   const cb = e.target.closest('input[type="checkbox"]');
@@ -1788,34 +1596,23 @@ els.net.addEventListener('click', (e) => {
   renderList();
 });
 els.search.addEventListener('input', renderList);
-document.addEventListener('click', (e) => { if (e.target.closest('[data-overview]')) { showOverview(); els.stage.scrollIntoView({ block: 'start' }); } });
+document.addEventListener('click', (e) => { if (e.target.closest('[data-overview]')) showOverview(); });
 els.ov.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-ov]');
-  if (!el || el.disabled) return;
-  const btn = e.target.closest('button');
-  if (el.tagName === 'TR' && btn && btn !== el) return;
-  ovAct(el);
+  const sc = e.target.closest('[data-ov-scope]');
+  if (sc) { OV.scope = sc.dataset.ovScope; renderOverview(); return; }
+  const row = e.target.closest('[data-open-sup]');
+  if (row) openSupplier(row.dataset.openSup);
 });
 els.ov.addEventListener('keydown', (e) => {
-  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('tr[data-ov]')) { e.preventDefault(); ovAct(e.target); }
+  const row = e.target.closest('[data-open-sup]');
+  if (row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openSupplier(row.dataset.openSup); }
 });
 els.ov.addEventListener('change', (e) => {
   const f = e.target.dataset.ovf;
-  if (!f) return;
   if (f === 'store') OV.store = Number(e.target.value);
-  else { OV[f] = e.target.value; if (f === 'cat') OV.sub = ''; }
+  else if (f === 'cat') OV.cat = e.target.value;
+  else return;
   renderOverview();
-});
-let ovTimer = 0;
-els.ov.addEventListener('input', (e) => {
-  if (e.target.id !== 'ov-q') return;
-  clearTimeout(ovTimer);
-  ovTimer = setTimeout(() => {
-    OV.q = e.target.value;
-    renderOverview();
-    const q = $('#ov-q');
-    if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
-  }, 250);
 });
 els.sort.addEventListener('change', () => { store.set('sort2', els.sort.value); renderList(); });
 $('#sel-all').addEventListener('click', () => { visibleSuppliers().forEach((s) => selected.add(s.acct)); renderList(); updateSelection(); });

@@ -5,29 +5,19 @@ with a priorities view of all suppliers for the team. Open
 `supplier-availability-report.html` in Chrome or Edge (or the published copy in
 Claude), pick a supplier, and export the pages as PNG files.
 
-## Priorities view (all suppliers)
+## All suppliers view
 
-The report opens on **Where to act today**, built on one rule: rank suppliers
-by **sales qty** (Tableau's Lifetime Qty Sold), biggest first, and focus on the
-suppliers that together make **90% of sales qty**.
+The report opens on **All suppliers**: one table of suppliers ranked by
+**sales qty** (Tableau's Lifetime Qty Sold), biggest first, with their
+availability in each store and in all stores.
 
-- **Suppliers: 90% of sales / All.** By default the whole view (summary,
-  matrix, drilldown and lists) shows only the 90% suppliers; switch to All to
-  see every supplier with a line where 90% is reached.
-- **Summary**: availability of the 90% suppliers (and of all suppliers), the
-  85% target, below-target and critical supplier-store cells, how many
-  suppliers make 90% of sales qty, and the product-store combinations measured.
-- **Supplier × store availability, by sales qty**: rank, supplier, sales qty,
-  share, cumulative %, one column per store (biggest-selling store first) and a
-  Total. Bottom rows total the 90% suppliers and all suppliers, counted from
-  listings.
-- **Category → Sub-category → Store → Item** drilldown, sorted by sales qty or
-  availability; out-of-stock items first, biggest sellers first.
-- **Stores, weakest first**, **best-selling products that are out of stock**
-  and **supplier-store cells to escalate** (biggest sellers first).
-- Filters for store, supplier, category, sub-category, status and item.
-  Clicking a supplier, store or cell filters the whole view; "Report →" opens
-  that supplier's pages.
+- By default it shows the **top suppliers that together make 90% of sales
+  qty**; switch to *All suppliers* to see everyone (a line marks the 90% point).
+- Filter by store or category. Four figures on top: availability, how many
+  suppliers make 90% of sales, and the critical and below-target
+  supplier-store cells.
+- Click a supplier to open its report (the pages you send). "← All suppliers"
+  brings you back to the same place in the list.
 
 When opened in Claude with the Tableau Cloud connector, the report reads
 "Supplier's Availability Data" live (Load data → Reload from Tableau to
