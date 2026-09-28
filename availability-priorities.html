@@ -1,0 +1,913 @@
+<title>Availability Priorities</title>
+<meta name="description" content="Supplier × store shelf availability, ranked by sales, from the Tableau data source “Supplier's Availability Data”.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --f-sans:"Archivo","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  --bg:#EDF0F5; --panel:#FFFFFF; --panel-2:#F5F7FA; --panel-3:#EBEFF5; --line:#DCE2EB; --line-2:#C9D1DD;
+  --ink:#0E1A2B; --ink-2:#46536B; --ink-3:#6B778F;
+  --accent:#2F5BEA; --accent-soft:#E7EDFE; --accent-ink:#FFFFFF;
+  --good:#0E7A43; --good-bg:#DDF3E5; --good-dot:#16A05A;
+  --warn:#8F5400; --warn-bg:#FEEFD2; --warn-dot:#E39A10;
+  --crit:#B42318; --crit-bg:#FDE2DF; --crit-dot:#D92D20;
+  --shadow:0 1px 2px rgba(14,26,43,.05),0 6px 20px rgba(14,26,43,.06);
+  --band:#0E1A2B; --band-ink:#FFFFFF; --band-ink-2:#A9B4C7;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0A0F17; --panel:#111925; --panel-2:#162030; --panel-3:#1B2638; --line:#243047; --line-2:#33415C;
+    --ink:#E7ECF4; --ink-2:#A9B4C7; --ink-3:#8490A5;
+    --accent:#7F9DFF; --accent-soft:#1B2847; --accent-ink:#0A0F17;
+    --good:#62D69C; --good-bg:#0F2C1F; --good-dot:#3CC47C;
+    --warn:#F4BE55; --warn-bg:#33250B; --warn-dot:#F2B03D;
+    --crit:#FF8C82; --crit-bg:#3B1614; --crit-dot:#F2675D;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 20px rgba(0,0,0,.35);
+    --band:#050910; --band-ink:#FFFFFF; --band-ink-2:#8E9AB0;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0A0F17; --panel:#111925; --panel-2:#162030; --panel-3:#1B2638; --line:#243047; --line-2:#33415C;
+  --ink:#E7ECF4; --ink-2:#A9B4C7; --ink-3:#8490A5;
+  --accent:#7F9DFF; --accent-soft:#1B2847; --accent-ink:#0A0F17;
+  --good:#62D69C; --good-bg:#0F2C1F; --good-dot:#3CC47C;
+  --warn:#F4BE55; --warn-bg:#33250B; --warn-dot:#F2B03D;
+  --crit:#FF8C82; --crit-bg:#3B1614; --crit-dot:#F2675D;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 20px rgba(0,0,0,.35);
+  --band:#050910; --band-ink:#FFFFFF; --band-ink-2:#8E9AB0;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-sans);font-size:13.5px;line-height:1.45}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;text-wrap:balance}
+.app{max-width:1640px;margin:0 auto;padding-inline:24px;padding-block:0 40px;display:flex;flex-direction:column;gap:18px}
+@media (max-width:640px){.app{padding-inline:16px}}
+
+/* header band */
+.top{margin-inline:-24px;padding:22px 24px 18px;background:var(--band);color:var(--band-ink);display:flex;flex-wrap:wrap;gap:14px 28px;align-items:flex-end;justify-content:space-between}
+@media (max-width:640px){.top{margin-inline:-16px;padding-inline:16px}}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--band-ink-2);font-weight:600}
+.top h1{font-size:30px;font-weight:800;letter-spacing:-.01em;line-height:1.1;margin-top:4px}
+.top .lede{color:var(--band-ink-2);margin:6px 0 0;max-width:70ch}
+.src{display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:0}
+.src-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;background:rgba(255,255,255,.1);color:var(--band-ink)}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:#8490A5}
+.pill.live .dot{background:#3CC47C;box-shadow:0 0 0 3px rgba(60,196,124,.25)}
+.pill.snap .dot{background:#F2B03D}
+.pill.err .dot{background:#F2675D}
+.pill.busy .dot{background:#7F9DFF;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.3}}
+@media (prefers-reduced-motion:reduce){.pill.busy .dot{animation:none}}
+.asof{font-size:13px;color:var(--band-ink-2)}
+.asof b{color:var(--band-ink);font-weight:700}
+.btn-band{background:transparent;border:1px solid rgba(255,255,255,.28);color:var(--band-ink);border-radius:8px;padding:6px 12px;font-size:12.5px;font-weight:600}
+.btn-band:hover{background:rgba(255,255,255,.08)}
+.btn-band:disabled{opacity:.5;cursor:default}
+.src-msg{font-size:12px;color:var(--band-ink-2);max-width:52ch;text-align:right}
+
+/* filters */
+.filters{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;margin-inline:-24px;padding:10px 24px;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px 12px;align-items:flex-end}
+@media (max-width:640px){.filters{position:static;margin-inline:-16px;padding-inline:16px}}
+.f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.f label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.f select,.f input{background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:6px 9px;min-width:0;max-width:100%}
+.f select{width:190px}
+.f.sup select{width:260px}
+.f input{width:200px}
+@media (max-width:640px){.f,.f select,.f.sup select,.f input{width:100%}}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:transparent;padding:6px 10px;font-size:12.5px;font-weight:600;color:var(--ink-2);display:inline-flex;gap:6px;align-items:center}
+.seg button+button{border-left:1px solid var(--line-2)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:0}
+.chips:empty{display:none}
+.chip{display:inline-flex;gap:6px;align-items:center;background:var(--accent-soft);color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:999px;padding:3px 6px 3px 10px;font-size:12px;font-weight:600}
+.chip button{border:0;background:transparent;color:inherit;padding:0 4px;font-size:14px;line-height:1}
+.linkbtn{border:0;background:none;color:var(--accent);font-weight:600;font-size:12px;padding:3px 4px}
+
+/* status atoms */
+.sdot{display:inline-block;width:8px;height:8px;border-radius:50%;flex:none}
+.sdot.good{background:var(--good-dot)} .sdot.warn{background:var(--warn-dot)} .sdot.crit{background:var(--crit-dot)}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.badge.good{background:var(--good-bg);color:var(--good)} .badge.warn{background:var(--warn-bg);color:var(--warn)} .badge.crit{background:var(--crit-bg);color:var(--crit)}
+.badge.none{background:var(--panel-3);color:var(--ink-3)}
+.t-good{color:var(--good)} .t-warn{color:var(--warn)} .t-crit{color:var(--crit)}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:1.35fr repeat(5,minmax(0,1fr));gap:12px}
+@media (max-width:1280px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:640px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.kpi .lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:700;display:flex;gap:6px;align-items:center}
+.kpi .big{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:30px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.kpi .sub{color:var(--ink-2);font-size:12.5px}
+.kpi.hero{border-width:0;border-left:6px solid var(--line-2);background:var(--panel)}
+.kpi.hero.good{border-left-color:var(--good-dot)} .kpi.hero.warn{border-left-color:var(--warn-dot)} .kpi.hero.crit{border-left-color:var(--crit-dot)}
+.kpi.hero .big{font-size:40px}
+@media (max-width:1280px){.kpi.hero{grid-column:span 3}}
+@media (max-width:640px){.kpi.hero{grid-column:span 2}}
+.meter{position:relative;height:8px;border-radius:4px;background:var(--panel-3);margin-top:8px;overflow:visible}
+.meter i{position:absolute;inset:0 auto 0 0;border-radius:4px}
+.meter i.good{background:var(--good-dot)} .meter i.warn{background:var(--warn-dot)} .meter i.crit{background:var(--crit-dot)}
+.meter .tick{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.meter .tick span{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-size:10.5px;color:var(--ink-3);white-space:nowrap;font-family:var(--f-mono)}
+.meter-wrap{padding-bottom:14px}
+
+/* cards */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column}
+.card-h{padding:16px 18px 12px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--line)}
+.card-h h2{font-size:17px;font-weight:800;letter-spacing:-.005em}
+.card-h p{margin:3px 0 0;color:var(--ink-2);font-size:12.5px;max-width:78ch}
+.card-h .q{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:3px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);align-items:center}
+.legend span{display:inline-flex;gap:5px;align-items:center}
+.duo{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(380px,1fr);gap:18px;align-items:stretch}
+@media (max-width:1180px){.duo{grid-template-columns:minmax(0,1fr)}}
+.scroll{overflow:auto;max-height:640px;position:relative}
+.foot-note{padding:9px 18px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px}
+
+/* tables */
+table{border-collapse:separate;border-spacing:0;width:100%}
+th,td{padding:0;text-align:left;white-space:nowrap}
+thead th{position:sticky;top:0;z-index:3;background:var(--panel-2);border-bottom:1px solid var(--line-2);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:700;padding:8px 10px;vertical-align:bottom}
+tbody td{border-bottom:1px solid var(--line);padding:6px 10px;vertical-align:middle}
+.r{text-align:right}
+.c{text-align:center}
+
+.mx{font-size:13px}
+.mx .stk-rank{position:sticky;left:0;z-index:2;background:var(--panel);width:40px;min-width:40px;color:var(--ink-3);text-align:right;padding-right:6px}
+.mx .stk-sup{position:sticky;left:40px;z-index:2;background:var(--panel);min-width:220px;max-width:280px;border-right:1px solid var(--line-2)}
+.mx thead .stk-rank,.mx thead .stk-sup{z-index:5;background:var(--panel-2)}
+.mx tfoot td{position:sticky;bottom:0;z-index:3;background:var(--panel-2);border-top:2px solid var(--ink);padding:8px 10px;font-weight:700}
+.mx tfoot .stk-rank,.mx tfoot .stk-sup{z-index:5;background:var(--panel-2)}
+.mx .supbtn{border:0;background:none;padding:0;text-align:left;display:flex;flex-direction:column;max-width:260px;min-width:0}
+.mx .supbtn b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:250px}
+.mx .supbtn:hover b{color:var(--accent);text-decoration:underline}
+.mx .supbtn small{color:var(--ink-3);font-size:11px;display:flex;gap:6px;align-items:center}
+.ftag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.08em;color:var(--accent-ink);background:var(--accent);border-radius:4px;padding:0 4px;line-height:15px}
+.mx th.store{text-align:center;padding:6px 4px;min-width:78px}
+.mx th.store button{border:0;background:none;padding:2px 6px;display:flex;flex-direction:column;align-items:center;gap:1px;margin:0 auto;border-radius:6px;color:inherit}
+.mx th.store button:hover{background:var(--panel-3)}
+.mx th.store b{font-size:18px;color:var(--ink);font-family:var(--f-sans);letter-spacing:0;font-weight:800;line-height:1.05}
+.mx th.store small{font-size:10px;letter-spacing:.04em;text-transform:none;font-weight:600}
+.mx th.store[aria-selected="true"] button{background:var(--accent-soft);color:var(--accent)}
+.mx th.store[aria-selected="true"] b{color:var(--accent)}
+.mx td.cell{padding:3px 3px;text-align:center}
+.cellbtn{border:0;width:100%;min-width:66px;border-radius:6px;padding:6px 4px;font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:13px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.cellbtn.good{background:var(--good-bg);color:var(--good)}
+.cellbtn.warn{background:var(--warn-bg);color:var(--warn)}
+.cellbtn.crit{background:var(--crit-bg);color:var(--crit);font-weight:700}
+.cellbtn.none{background:transparent;color:var(--ink-3);cursor:default;font-weight:400}
+.cellbtn:not(.none):hover{box-shadow:inset 0 0 0 2px currentColor}
+.cellbtn .g{font-size:9px;line-height:1}
+.mx td.tot{border-left:1px solid var(--line-2)}
+.mx td.tot .cellbtn{min-width:72px;border-radius:6px;font-weight:800}
+.mx tr.sel td{background:var(--accent-soft)}
+.mx tr.sel .stk-rank,.mx tr.sel .stk-sup{background:var(--accent-soft)}
+.mx tbody tr:hover td.stk-sup,.mx tbody tr:hover td.stk-rank{background:var(--panel-2)}
+.mx .lost{color:var(--crit);font-weight:600}
+.mx .zero{color:var(--ink-3)}
+
+.fx{font-size:13px}
+.fx td.rk{color:var(--ink-3);width:34px;text-align:right;padding-right:4px}
+.fx tbody tr{cursor:pointer}
+.fx tbody tr:hover td{background:var(--panel-2)}
+.fx tr.focus td:first-child{box-shadow:inset 4px 0 0 var(--accent)}
+.fx tr.sel td{background:var(--accent-soft)}
+.fx tr.out td{color:var(--ink-3)}
+.fx .nm{max-width:210px;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.fx tr.out .nm{font-weight:500}
+.fx tr.cut td{background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:12px;padding:7px 10px;border-bottom:2px solid var(--accent);cursor:default;white-space:normal}
+.cum{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.cum .bar{position:relative;width:64px;height:6px;border-radius:3px;background:var(--panel-3);overflow:hidden;flex:none}
+.cum .bar i{position:absolute;inset:0 auto 0 0;background:var(--accent)}
+.fx tr.out .cum .bar i{background:var(--line-2)}
+.cum .bar b{position:absolute;top:0;bottom:0;left:90%;width:1px;background:var(--ink)}
+.focus-yes{display:inline-block;background:var(--accent);color:var(--accent-ink);border-radius:5px;font-size:11px;font-weight:800;letter-spacing:.04em;padding:1px 7px}
+.focus-no{color:var(--ink-3)}
+.focus-head{padding:12px 18px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center;border-bottom:1px solid var(--line);background:var(--panel-2)}
+.focus-head .n{font-family:var(--f-mono);font-size:30px;font-weight:600;color:var(--accent);line-height:1}
+.focus-head p{margin:0;color:var(--ink-2);font-size:12.5px}
+.focus-head p b{color:var(--ink)}
+
+/* drilldown */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.tree{font-size:13px}
+.tree thead th{background:var(--panel-2)}
+.tree td.nm{white-space:normal;min-width:260px}
+.tree .nmwrap{display:flex;align-items:center;gap:8px}
+.caret{width:22px;height:22px;flex:none;border:1px solid var(--line-2);background:var(--panel);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink-2);padding:0;transition:transform .15s}
+.caret[aria-expanded="true"]{transform:rotate(90deg);background:var(--ink);color:var(--panel);border-color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.caret{transition:none}}
+.lvl-tag{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:700;min-width:68px}
+.tree tr.l0 td{background:var(--panel-2);font-weight:700;border-bottom-color:var(--line-2)}
+.tree tr.l0 td.nm{font-size:14px}
+.tree tr.l1 td.nm{padding-left:30px}
+.tree tr.l2 td.nm{padding-left:52px}
+.tree tr.l3 td.nm{padding-left:80px}
+.tree tr.l3 td{background:var(--panel);font-size:12.5px}
+.tree tr.more td{padding-left:80px;font-size:12.5px}
+.tree tbody tr.grp{cursor:pointer}
+.tree tbody tr.grp:hover td{background:var(--panel-3)}
+.av{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.av .bar{position:relative;width:90px;height:7px;border-radius:4px;background:var(--panel-3);flex:none}
+.av .bar i{position:absolute;inset:0 auto 0 0;border-radius:4px}
+.av .bar i.good{background:var(--good-dot)} .av .bar i.warn{background:var(--warn-dot)} .av .bar i.crit{background:var(--crit-dot)}
+.av .bar b{position:absolute;top:-3px;bottom:-3px;width:1.5px;background:var(--ink);left:85%}
+.av .v{min-width:52px;text-align:right;font-family:var(--f-mono);font-weight:600}
+.item-sub{display:block;color:var(--ink-3);font-size:11.5px;font-weight:400}
+.code{font-family:var(--f-mono);color:var(--ink-3);font-size:12px}
+.share{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.share .bar{width:60px;height:6px;border-radius:3px;background:var(--panel-3);position:relative;overflow:hidden;flex:none}
+.share .bar i{position:absolute;inset:0 auto 0 0;background:var(--crit-dot)}
+
+/* insights */
+.insights{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr) minmax(0,1.1fr);gap:18px}
+@media (max-width:1280px){.insights{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.insights>.card:first-child{grid-column:span 2}}
+@media (max-width:760px){.insights{grid-template-columns:minmax(0,1fr)}.insights>.card:first-child{grid-column:auto}}
+.stores{padding:10px 18px 16px;display:flex;flex-direction:column;gap:10px}
+.srow{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:4px 12px;align-items:center;border:0;background:none;padding:6px 8px;border-radius:10px;text-align:left;width:100%}
+.srow:hover{background:var(--panel-2)}
+.srow.sel{background:var(--accent-soft)}
+.srow .code-b{grid-row:span 2;font-size:22px;font-weight:800;text-align:center}
+.srow .nm{font-weight:600}
+.srow .meta{grid-column:2 / 4;display:flex;gap:10px;align-items:center}
+.srow .meta .bar{flex:1;height:7px;border-radius:4px;background:var(--panel-3);position:relative;overflow:hidden}
+.srow .meta .bar i{position:absolute;inset:0 auto 0 0;background:var(--crit-dot)}
+.srow .meta small{color:var(--ink-3);font-size:11.5px;white-space:nowrap}
+.list td{font-size:12.5px}
+.list tbody tr{cursor:pointer}
+.list tbody tr:hover td{background:var(--panel-2)}
+.list .nm{white-space:normal;min-width:180px}
+.empty{padding:28px 18px;color:var(--ink-3);text-align:center}
+
+.method{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px;color:var(--ink-2);font-size:12.5px}
+.method h2{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:8px}
+.method dl{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:6px 18px;margin:0}
+.method dt{font-weight:700;color:var(--ink)}
+.method dd{margin:0;max-width:95ch}
+@media (max-width:640px){.method dl{grid-template-columns:1fr}.method dd{margin-bottom:6px}}
+.noscript,.nodata{background:var(--panel);border:1px dashed var(--line-2);border-radius:14px;padding:32px;text-align:center;color:var(--ink-2)}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Supplier availability · operations</div>
+      <h1>Availability Priorities</h1>
+      <p class="lede">Which suppliers, stores, categories and items to fix first. Sorted by how much each one sells, not by name.</p>
+    </div>
+    <div class="src">
+      <div class="src-row">
+        <span class="pill snap" id="src-pill"><span class="dot"></span><span id="src-label">Loading</span></span>
+        <button class="btn-band" id="refresh" type="button">Refresh from Tableau</button>
+      </div>
+      <div class="asof" id="asof"></div>
+      <div class="src-msg" id="src-msg" hidden></div>
+    </div>
+  </header>
+
+  <nav class="filters" aria-label="Filters">
+    <div class="f"><label for="f-store">Store</label><select id="f-store"></select></div>
+    <div class="f sup"><label for="f-sup">Supplier</label><select id="f-sup"></select></div>
+    <div class="f"><label for="f-cat">Category</label><select id="f-cat"></select></div>
+    <div class="f"><label for="f-sub">Sub-category</label><select id="f-sub"></select></div>
+    <div class="f"><label id="f-status-l">Availability status</label>
+      <div class="seg" role="group" aria-labelledby="f-status-l" id="f-status">
+        <button type="button" data-v="all" aria-pressed="true">All</button>
+        <button type="button" data-v="problem" aria-pressed="false"><span class="sdot warn"></span>Below target &amp; critical</button>
+        <button type="button" data-v="crit" aria-pressed="false"><span class="sdot crit"></span>Critical</button>
+      </div>
+    </div>
+    <div class="f"><label for="f-q">Item code or name</label><input id="f-q" type="search" placeholder="e.g. 1001422 or milk" autocomplete="off"></div>
+    <div class="chips" id="chips"></div>
+  </nav>
+
+  <main id="main" style="display:flex;flex-direction:column;gap:18px">
+    <div class="nodata" id="nodata">Loading availability data…</div>
+  </main>
+
+  <section class="method" aria-labelledby="m-h">
+    <h2 id="m-h">How the numbers work</h2>
+    <dl>
+      <dt>Listing</dt><dd>One product in one store (a product-store combination). A listing is in stock when the store holds at least one unit.</dd>
+      <dt>Availability</dt><dd>Listings in stock ÷ all listings. Every total (supplier, store, category and the grand total) is counted from listings, so it is weighted by listings rather than an average of the percentages shown.</dd>
+      <dt>Status</dt><dd><span class="badge good"><span class="sdot good"></span>Target</span> 85.00% and above · <span class="badge warn"><span class="sdot warn"></span>Below target</span> 80.00–84.99% · <span class="badge crit"><span class="sdot crit"></span>Critical</span> 79.99% and below. Percentages are rounded down, so 84.99% shows as 84% and stays amber.</dd>
+      <dt>Daily sales</dt><dd id="m-sales">Average units sold per day for each listing: Lifetime Qty Sold ÷ days since its first sale (at least 30 days, so new listings are not inflated). The Tableau source holds lifetime sales, not a single day’s sales.</dd>
+      <dt>Lost sales / day</dt><dd>Daily sales of the listings that are out of stock right now. This is the priority order used across the page: it is high only when a listing both sells well and is empty, so a 70% supplier that barely sells ranks below a big supplier with a smaller gap.</dd>
+      <dt>90% focus group</dt><dd>Suppliers ranked by daily sales, highest first. Each supplier’s share of total daily sales is added up in that order; every supplier up to and including the one that takes the running total past 90% is marked Focus. This group follows the store, category, sub-category and item filters, but not the supplier filter.</dd>
+      <dt>Left out</dt><dd id="m-excl">Items tiered TD or TP/TS in the item master, and stores with no stock anywhere.</dd>
+      <dt>Source</dt><dd id="m-src">Tableau data source “Supplier’s Availability Data”.</dd>
+    </dl>
+  </section>
+</div>
+
+<script id="snapshot" type="application/json">null</script>
+<script>
+'use strict';
+const CFG = {
+  server: 'Tableau Cloud',
+  tool: 'query-datasource',
+  datasourceLuid: 'a7ab1f36-6a15-4c2c-8e7a-4ea0f74a1320',
+  target: 0.85,
+  below: 0.80,
+  focusShare: 0.90,
+  minDays: 30,
+  excludedTiers: ['TD', 'TP/TS'],
+};
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+/* ---------- Tableau queries (the build script mirrors these) ---------- */
+function metaQuery() {
+  return {
+    fields: [
+      { fieldCaption: 'Store' },
+      { fieldCaption: 'inS', calculation: "SUM(IF [Items in Stock]='Yes' THEN 1 ELSE 0 END)" },
+      { fieldCaption: 'asOf', calculation: 'MAX([Last Sale Date])' },
+    ],
+  };
+}
+const lit = (s) => '"' + String(s).replace(/"/g, '""') + '"';
+function pivotQuery(stores, asOf) {
+  const part = (s) => {
+    const w = `[Store]=${lit(s)}`;
+    return `IFNULL(MAX(IF ${w} THEN (IF [Items in Stock]='Yes' THEN 'Y' ELSE 'N' END) END)`
+      + `+','+IFNULL(STR(INT(ROUND(MAX(IF ${w} THEN [Lifetime Qty Sold] END),0))),'0')`
+      + `+','+IFNULL(STR(INT(ROUND(MAX(IF ${w} THEN [Current Stock] END),0))),'0')`
+      + `+','+IFNULL(STR(MIN(IF ${w} THEN DATEDIFF('day',[First Sale Date],#${asOf}#) END)),''),'-')`;
+  };
+  return {
+    fields: [
+      { fieldCaption: 'Supplier Account', fieldAlias: 'a' },
+      { fieldCaption: 'Supplier Name', fieldAlias: 'sn' },
+      { fieldCaption: 'Item Code', fieldAlias: 'c' },
+      { fieldCaption: 'Category (Sheet1)', fieldAlias: 'k' },
+      { fieldCaption: 'Sub-Category (Sheet1)', fieldAlias: 'u' },
+      { fieldCaption: 'Rank', fieldAlias: 't' },
+      { fieldCaption: 'n', calculation: 'MIN([Item Name])' },
+      { fieldCaption: 'p', calculation: stores.map(part).join("+'|'+") },
+    ],
+    filters: [{ field: { fieldCaption: 'Supplier Account' }, filterType: 'QUANTITATIVE_NUMERICAL', quantitativeFilterType: 'MIN', min: 1 }],
+  };
+}
+
+/* ---------- model ---------- */
+let M = null; // current model
+const F = { store: -1, sup: -1, cat: '', sub: '', status: 'all', q: '' };
+const UI = { sort: 'lost', open: new Set(), more: new Map() };
+
+function buildModel(snap) {
+  const asOf = String(snap.asOf).slice(0, 10);
+  const stores = snap.stores.slice();
+  const excluded = new Set(CFG.excludedTiers);
+  const items = new Map();
+  let excludedItems = 0;
+  for (const raw of snap.rows) {
+    const r = Array.isArray(raw) ? { a: raw[0], sn: raw[1], c: raw[2], k: raw[3], u: raw[4], t: raw[5], n: raw[6], p: raw[7] } : raw;
+    if (r.a == null || r.c == null) continue;
+    const key = r.a + '|' + r.c;
+    let it = items.get(key);
+    if (!it) {
+      it = { a: String(r.a), names: new Map(), c: String(r.c), n: r.n || String(r.c), k: r.k || 'Uncategorised', u: r.u || 'No sub-category', t: r.t || '', st: new Array(stores.length).fill(null) };
+      items.set(key, it);
+    }
+    if (r.sn) it.names.set(r.sn, (it.names.get(r.sn) || 0) + 1);
+    const parts = String(r.p || '').split('|');
+    for (let s = 0; s < stores.length; s++) {
+      const v = parts[s];
+      if (!v || v === '-') continue;
+      const [flag, qty, stock, days] = v.split(',');
+      const cur = { in: flag === 'Y', qty: +qty || 0, stock: +stock || 0, days: days === '' || days == null ? null : +days };
+      const old = it.st[s];
+      if (!old) it.st[s] = cur;
+      else it.st[s] = { in: old.in || cur.in, qty: Math.max(old.qty, cur.qty), stock: Math.max(old.stock, cur.stock), days: old.days == null ? cur.days : cur.days == null ? old.days : Math.max(old.days, cur.days) };
+    }
+  }
+  // suppliers grouped by account, named by their most used spelling
+  const supIdx = new Map();
+  const sups = [];
+  const supNames = new Map();
+  for (const it of items.values()) {
+    let m = supNames.get(it.a);
+    if (!m) supNames.set(it.a, (m = new Map()));
+    for (const [n, c] of it.names) m.set(n, (m.get(n) || 0) + c);
+  }
+  for (const [a, m] of supNames) {
+    const name = [...m.entries()].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0]))[0]?.[0] || ('Account ' + a);
+    supIdx.set(a, sups.length);
+    sups.push({ a, name });
+  }
+  const itemArr = [];
+  const L = [];
+  for (const it of items.values()) {
+    if (excluded.has(it.t)) { excludedItems++; continue; }
+    const ii = itemArr.length;
+    itemArr.push({ c: it.c, n: it.n, t: it.t, q: (it.c + ' ' + it.n).toLowerCase() });
+    const sp = supIdx.get(it.a);
+    for (let s = 0; s < stores.length; s++) {
+      const x = it.st[s];
+      if (!x) continue;
+      const rate = x.days == null ? 0 : x.qty / Math.max(x.days + 1, CFG.minDays);
+      L.push({ i: ii, s, p: sp, cat: it.k, sub: it.u, in: x.in, rate, lost: x.in ? 0 : rate, stock: x.stock });
+    }
+  }
+  // stores with no stock anywhere are left out (e.g. a store not trading yet)
+  const storeIn = new Array(stores.length).fill(0);
+  for (const l of L) if (l.in) storeIn[l.s]++;
+  const deadStores = stores.filter((_, s) => storeIn[s] === 0);
+  const listings = L.filter((l) => storeIn[l.s] > 0);
+  // short codes: first letter, widened when two stores share it
+  const codes = stores.map((s) => s.trim().charAt(0).toUpperCase());
+  const short = stores.map((s, i) => (codes.filter((c) => c === codes[i]).length > 1 ? s.trim().slice(0, 2) : codes[i]));
+  // global importance for dropdown order
+  const g = (key) => { const m = new Map(); for (const l of listings) m.set(key(l), (m.get(key(l)) || 0) + l.rate); return m; };
+  return {
+    asOf, stores, short, sups, items: itemArr, L: listings, deadStores, excludedItems,
+    source: snap.source || 'snapshot', storedAt: snap.storedAt || null,
+    rank: { store: g((l) => l.s), sup: g((l) => l.p), cat: g((l) => l.cat), sub: g((l) => l.cat + '\u0000' + l.sub) },
+  };
+}
+
+/* ---------- helpers ---------- */
+const status = (p) => (p >= CFG.target ? 'good' : p >= CFG.below ? 'warn' : 'crit');
+const LABEL = { good: 'Target', warn: 'Below target', crit: 'Critical' };
+const GLYPH = { good: '', warn: '▲', crit: '●' };
+const pctFloor = (p) => Math.floor(p * 100 + 1e-9);
+const pct0 = (p) => pctFloor(p) + '%';
+const pct1 = (p) => (Math.floor(p * 1000 + 1e-9) / 10).toFixed(1) + '%';
+const share1 = (p) => (p * 100).toFixed(1) + '%';
+const int = (n) => Math.round(n).toLocaleString('en-US');
+const units = (x) => (x >= 100 ? int(x) : x >= 10 ? x.toFixed(0) : x >= 0.05 ? x.toFixed(1) : x > 0 ? '<0.1' : '0');
+const statusMatch = (st) => F.status === 'all' || (F.status === 'problem' ? st !== 'good' : st === 'crit');
+function badge(p) { const st = status(p); return `<span class="badge ${st}"><span class="sdot ${st}"></span>${LABEL[st]}</span>`; }
+
+function filtered(ignoreSup) {
+  const q = F.q.trim().toLowerCase();
+  const out = [];
+  for (const l of M.L) {
+    if (F.store >= 0 && l.s !== F.store) continue;
+    if (!ignoreSup && F.sup >= 0 && l.p !== F.sup) continue;
+    if (F.cat && l.cat !== F.cat) continue;
+    if (F.sub && l.sub !== F.sub) continue;
+    if (q && !M.items[l.i].q.includes(q)) continue;
+    out.push(l);
+  }
+  return out;
+}
+function agg(list, key) {
+  const m = new Map();
+  for (const l of list) {
+    const k = key(l);
+    let g = m.get(k);
+    if (!g) m.set(k, (g = { k, n: 0, inn: 0, sales: 0, lost: 0 }));
+    g.n++; if (l.in) g.inn++; g.sales += l.rate; g.lost += l.lost;
+  }
+  for (const g of m.values()) g.p = g.inn / g.n;
+  return m;
+}
+function total(list) { const g = { n: 0, inn: 0, sales: 0, lost: 0 }; for (const l of list) { g.n++; if (l.in) g.inn++; g.sales += l.rate; g.lost += l.lost; } g.p = g.n ? g.inn / g.n : 0; return g; }
+const byImportance = (a, b) => b.sales - a.sales || b.n - a.n;
+const byLost = (a, b) => b.lost - a.lost || b.sales - a.sales;
+
+function computeFocus(list) {
+  const rows = [...agg(list, (l) => l.p).values()].sort(byImportance);
+  const T = rows.reduce((s, r) => s + r.sales, 0);
+  let cum = 0, count = 0;
+  const set = new Set();
+  for (const r of rows) {
+    const before = cum;
+    cum += r.sales;
+    r.share = T ? r.sales / T : 0;
+    r.cum = T ? cum / T : 0;
+    r.focus = T > 0 && r.sales > 0 && before / T < CFG.focusShare - 1e-12;
+    if (r.focus) { set.add(r.k); count++; }
+  }
+  return { rows, T, count, set };
+}
+
+/* ---------- rendering ---------- */
+function render() {
+  if (!M) return;
+  const list = filtered(false);
+  const focus = computeFocus(F.sup >= 0 ? filtered(true) : list);
+  renderChips();
+  const main = $('#main');
+  if (!list.length) {
+    main.innerHTML = `<div class="nodata">No listings match these filters. <button class="linkbtn" type="button" data-act="clear">Clear filters</button></div>`;
+    return;
+  }
+  main.innerHTML = kpiHTML(list, focus)
+    + `<section class="duo">${matrixHTML(list, focus)}${focusHTML(focus)}</section>`
+    + drillHTML(list)
+    + `<section class="insights">${storesHTML(list)}${fixFirstHTML(list)}${cellsHTML(list)}</section>`;
+}
+
+function kpiHTML(list, focus) {
+  const t = total(list);
+  const st = status(t.p);
+  const cells = agg(list, (l) => l.p * 64 + l.s);
+  const band = { warn: { c: 0, n: 0 }, crit: { c: 0, n: 0 } };
+  for (const g of cells.values()) { const s = status(g.p); if (band[s]) { band[s].c++; band[s].n += g.n; } }
+  const gap = pctFloor(t.p) - CFG.target * 100;
+  const w = Math.max(0, Math.min(100, t.p * 100));
+  const nStores = new Set(list.map((l) => l.s)).size;
+  const nSups = new Set(list.map((l) => l.p)).size;
+  return `<section class="kpis" aria-label="Summary">
+    <div class="kpi hero ${st}">
+      <div class="lbl">Overall availability ${badge(t.p)}</div>
+      <div class="big t-${st}">${pct1(t.p)}</div>
+      <div class="meter-wrap"><div class="meter" role="img" aria-label="${pct1(t.p)} against an 85% target">
+        <i class="${st}" style="width:${w}%"></i>
+        <span class="tick" style="left:80%"><span>80</span></span><span class="tick" style="left:85%"><span>85</span></span>
+      </div></div>
+      <div class="sub">${int(t.inn)} of ${int(t.n)} listings in stock</div>
+    </div>
+    <div class="kpi"><div class="lbl">Target</div><div class="big">85%</div>
+      <div class="sub">${gap >= 0 ? `<span class="t-good">${gap} pts above</span>` : `<span class="t-${st}">${Math.abs(gap)} pts below</span>`} · below target 80–84.99%, critical under 80%</div></div>
+    <div class="kpi"><div class="lbl"><span class="sdot warn"></span>Below target</div><div class="big t-warn">${int(band.warn.c)}</div>
+      <div class="sub">supplier-store cells · ${int(band.warn.n)} listings (${share1(band.warn.n / t.n)})</div></div>
+    <div class="kpi"><div class="lbl"><span class="sdot crit"></span>Critical</div><div class="big t-crit">${int(band.crit.c)}</div>
+      <div class="sub">supplier-store cells · ${int(band.crit.n)} listings (${share1(band.crit.n / t.n)})</div></div>
+    <div class="kpi"><div class="lbl">Sales at risk</div><div class="big t-crit">${units(t.lost)}</div>
+      <div class="sub">units/day on empty shelves · ${share1(t.sales ? t.lost / t.sales : 0)} of ${units(t.sales)} units/day</div></div>
+    <div class="kpi"><div class="lbl">Listings measured</div><div class="big">${int(t.n)}</div>
+      <div class="sub">product-store combinations · ${int(nSups)} suppliers · ${nStores} store${nStores === 1 ? '' : 's'}</div></div>
+  </section>`;
+}
+
+function cellBtn(g, attrs, extraCls = '') {
+  if (!g) return `<span class="cellbtn none" aria-label="Not listed">—</span>`;
+  const st = status(g.p);
+  const tip = `${pct1(g.p)} · ${LABEL[st]} · ${int(g.inn)}/${int(g.n)} in stock · ${units(g.lost)} lost units/day`;
+  return `<button type="button" class="cellbtn ${st} ${extraCls}" ${attrs} title="${esc(tip)}" aria-label="${esc(tip)}">${GLYPH[st] ? `<span class="g" aria-hidden="true">${GLYPH[st]}</span>` : ''}${pct0(g.p)}</button>`;
+}
+
+function matrixHTML(list, focus) {
+  const supAgg = agg(list, (l) => l.p);
+  const storeAgg = agg(list, (l) => l.s);
+  const cells = agg(list, (l) => l.p * 64 + l.s);
+  const stores = [...storeAgg.values()].sort(byImportance).map((g) => g.k);
+  const t = total(list);
+  let rows = [...supAgg.values()].sort(byImportance);
+  const all = rows.length;
+  rows = rows.filter((r) => statusMatch(status(r.p)) || stores.some((s) => { const c = cells.get(r.k * 64 + s); return c && statusMatch(status(c.p)); }));
+  const head = `<tr><th class="stk-rank r">#</th><th class="stk-sup">Supplier <span style="text-transform:none;letter-spacing:0;font-weight:500">· by daily sales ↓</span></th><th class="r">Units/day</th>`
+    + stores.map((s) => `<th class="store" aria-selected="${F.store === s}"><button type="button" data-act="store" data-s="${s}" title="Filter to ${esc(M.stores[s])}"><b>${esc(M.short[s])}</b><small>${esc(M.stores[s])}</small></button></th>`).join('')
+    + `<th class="c">Total</th><th class="r">Lost/day</th></tr>`;
+  const body = rows.map((r, i) => {
+    const sup = M.sups[r.k];
+    const fr = focus.rows.findIndex((x) => x.k === r.k);
+    return `<tr class="${F.sup === r.k ? 'sel' : ''}"><td class="stk-rank num">${i + 1}</td>
+      <td class="stk-sup"><button type="button" class="supbtn" data-act="sup" data-p="${r.k}" title="Filter to ${esc(sup.name)}"><b>${esc(sup.name)}</b><small>${focus.set.has(r.k) ? '<span class="ftag">FOCUS</span>' : ''}<span class="mono">${esc(sup.a)}</span>${fr >= 0 ? `<span>sales rank ${fr + 1}</span>` : ''}</small></button></td>
+      <td class="r num">${units(r.sales)}</td>`
+      + stores.map((s) => `<td class="cell">${cellBtn(cells.get(r.k * 64 + s), `data-act="cell" data-p="${r.k}" data-s="${s}"`)}</td>`).join('')
+      + `<td class="cell tot">${cellBtn(r, `data-act="sup" data-p="${r.k}"`)}</td>
+      <td class="r num ${r.lost > 0 ? 'lost' : 'zero'}">${units(r.lost)}</td></tr>`;
+  }).join('');
+  const foot = `<tr><td class="stk-rank"></td><td class="stk-sup">All suppliers</td><td class="r num">${units(t.sales)}</td>`
+    + stores.map((s) => `<td class="cell">${cellBtn(storeAgg.get(s), `data-act="store" data-s="${s}"`)}</td>`).join('')
+    + `<td class="cell tot">${cellBtn(t, 'disabled')}</td><td class="r num lost">${units(t.lost)}</td></tr>`;
+  const shown = rows.length === all ? `${all} suppliers` : `${rows.length} of ${all} suppliers match the status filter`;
+  return `<div class="card">
+    <div class="card-h"><div><div class="q">Which suppliers have the biggest problems?</div><h2>Supplier × store availability</h2>
+      <p>Biggest sellers first. Click a supplier, a store or a cell to filter the whole page. The bottom row and the Total column are weighted by listings.</p></div>
+      <div class="legend"><span><span class="sdot good"></span>Target ≥85%</span><span><span class="sdot warn"></span>▲ Below target 80–84.99%</span><span><span class="sdot crit"></span>● Critical ≤79.99%</span><span>— not listed</span></div></div>
+    <div class="scroll"><table class="mx"><thead>${head}</thead><tbody>${body || `<tr><td colspan="${stores.length + 5}" class="empty">No supplier matches the status filter.</td></tr>`}</tbody><tfoot>${foot}</tfoot></table></div>
+    <div class="foot-note">${shown} · ${stores.length} stores, highest-selling store first</div>
+  </div>`;
+}
+
+function focusHTML(focus) {
+  const { rows, T, count } = focus;
+  let html = '';
+  rows.forEach((r, i) => {
+    const sup = M.sups[r.k];
+    const st = status(r.p);
+    html += `<tr class="${r.focus ? 'focus' : 'out'} ${F.sup === r.k ? 'sel' : ''}" data-act="sup" data-p="${r.k}" tabindex="0" title="Filter to ${esc(sup.name)}">
+      <td class="rk num">${i + 1}</td><td class="nm">${esc(sup.name)}</td>
+      <td class="r num">${units(r.sales)}</td><td class="r num">${share1(r.share)}</td>
+      <td class="r"><div class="cum"><span class="num">${share1(r.cum)}</span><span class="bar"><i style="width:${Math.min(100, r.cum * 100)}%"></i><b></b></span></div></td>
+      <td class="r num t-${st}">${pct0(r.p)}</td>
+      <td class="c">${r.focus ? '<span class="focus-yes">Focus</span>' : '<span class="focus-no">—</span>'}</td></tr>`;
+    if (r.focus && !(rows[i + 1] && rows[i + 1].focus)) {
+      html += `<tr class="cut"><td colspan="7">↑ ${count} supplier${count === 1 ? '' : 's'} make ${share1(r.cum)} of daily sales. Everyone below shares the last ${share1(1 - r.cum)}.</td></tr>`;
+    }
+  });
+  const scope = [F.store >= 0 ? M.stores[F.store] : 'all stores', F.cat || null, F.sub || null].filter(Boolean).join(' · ');
+  return `<div class="card">
+    <div class="card-h"><div><div class="q">Which suppliers should I focus on?</div><h2>Sales-wise most important suppliers to focus</h2>
+      <p>Every supplier, ranked by daily sales. The Focus group together makes the first 90% of sales. Click a row to filter.</p></div></div>
+    <div class="focus-head"><div class="n">${count}</div><p>of <b>${rows.length}</b> suppliers make <b>90%</b> of the <b>${units(T)}</b> units sold per day<br><span style="color:var(--ink-3)">Scope: ${esc(scope)}</span></p></div>
+    <div class="scroll"><table class="fx"><thead><tr><th class="r">#</th><th>Supplier</th><th class="r">Units/day</th><th class="r">Share</th><th class="r">Cumulative</th><th class="r">Avail.</th><th class="c">90%</th></tr></thead><tbody>${html}</tbody></table></div>
+  </div>`;
+}
+
+/* drilldown: Category → Sub-category → Store → Item */
+function sorter() { return UI.sort === 'sales' ? byImportance : UI.sort === 'avail' ? (a, b) => a.p - b.p || b.sales - a.sales : byLost; }
+function groupBy(list, key) { const m = new Map(); for (const l of list) { const k = key(l); let a = m.get(k); if (!a) m.set(k, (a = [])); a.push(l); } return m; }
+function nodeMatches(g, children) {
+  if (F.status === 'all') return true;
+  if (statusMatch(status(g.p))) return true;
+  return children ? children() : false;
+}
+function drillHTML(list) {
+  const T = total(list);
+  const sort = sorter();
+  const rows = [];
+  const avCell = (g) => { const st = status(g.p); return `<div class="av"><span class="bar"><i class="${st}" style="width:${g.p * 100}%"></i><b></b></span><span class="v t-${st}">${pct1(g.p)}</span></div>`; };
+  const shareCell = (g) => `<div class="share"><span class="num">${share1(T.lost ? g.lost / T.lost : 0)}</span><span class="bar"><i style="width:${T.lost ? (g.lost / T.lost) * 100 : 0}%"></i></span></div>`;
+  const grpRow = (lvl, tag, key, label, g, sub) => {
+    const open = UI.open.has(key);
+    rows.push(`<tr class="grp l${lvl}" data-act="toggle" data-key="${esc(key)}">
+      <td class="nm"><div class="nmwrap"><button type="button" class="caret" aria-expanded="${open}" aria-label="${open ? 'Collapse' : 'Expand'} ${esc(label)}" data-act="toggle" data-key="${esc(key)}">▶</button><span class="lvl-tag">${tag}</span><span>${label}${sub ? `<span class="item-sub">${sub}</span>` : ''}</span></div></td>
+      <td class="r num">${units(g.sales)}</td><td class="r num">${int(g.n)}</td><td class="r num">${int(g.n - g.inn)}</td>
+      <td class="r">${avCell(g)}</td><td>${badge(g.p)}</td><td class="r num ${g.lost > 0 ? 't-crit' : ''}">${units(g.lost)}</td><td class="r">${shareCell(g)}</td></tr>`);
+    return open;
+  };
+  const statusOf = (arr) => { const n = arr.length; let i = 0; for (const l of arr) if (l.in) i++; return i / n; };
+  const catMap = groupBy(list, (l) => l.cat);
+  const cats = [...agg(list, (l) => l.cat).values()].sort(sort);
+  for (const cg of cats) {
+    const cl = catMap.get(cg.k);
+    const subMap = groupBy(cl, (l) => l.sub);
+    const anyChild = () => [...subMap.values()].some((sl) => statusMatch(status(statusOf(sl))) || [...groupBy(sl, (l) => l.s).values()].some((x) => statusMatch(status(statusOf(x)))));
+    if (!nodeMatches(cg, anyChild)) continue;
+    const kc = 'c:' + cg.k;
+    if (!grpRow(0, 'Category', kc, esc(cg.k), cg)) continue;
+    const subs = [...agg(cl, (l) => l.sub).values()].sort(sort);
+    for (const sg of subs) {
+      const sl = subMap.get(sg.k);
+      const stMap = groupBy(sl, (l) => l.s);
+      if (!nodeMatches(sg, () => [...stMap.values()].some((x) => statusMatch(status(statusOf(x)))))) continue;
+      const ks = kc + '|s:' + sg.k;
+      if (!grpRow(1, 'Sub-cat.', ks, esc(sg.k), sg)) continue;
+      const sts = [...agg(sl, (l) => l.s).values()].sort(sort);
+      for (const tg of sts) {
+        if (!nodeMatches(tg)) continue;
+        const kt = ks + '|t:' + tg.k;
+        if (!grpRow(2, 'Store', kt, `<b>${esc(M.short[tg.k])}</b> · ${esc(M.stores[tg.k])}`, tg)) continue;
+        let its = stMap.get(tg.k).slice();
+        if (F.status !== 'all') its = its.filter((l) => !l.in);
+        its.sort(UI.sort === 'sales' ? (a, b) => b.rate - a.rate : UI.sort === 'avail' ? (a, b) => (a.in - b.in) || b.rate - a.rate : (a, b) => b.lost - a.lost || b.rate - a.rate);
+        const lim = UI.more.get(kt) || 25;
+        for (const l of its.slice(0, lim)) {
+          const it = M.items[l.i];
+          const st = l.in ? 'good' : 'crit';
+          rows.push(`<tr class="l3"><td class="nm"><div class="nmwrap"><span class="lvl-tag">Item</span><span><span class="code">${esc(it.c)}</span> ${esc(it.n)}<span class="item-sub">${esc(M.sups[l.p].name)}${it.t ? ' · tier ' + esc(it.t) : ''} · ${int(l.stock)} units on hand</span></span></div></td>
+            <td class="r num">${units(l.rate)}</td><td class="r num">1</td><td class="r num">${l.in ? '0' : '1'}</td>
+            <td class="r"><div class="av"><span class="bar"><i class="${st}" style="width:${l.in ? 100 : 0}%"></i><b></b></span><span class="v t-${st}">${l.in ? '100%' : '0%'}</span></div></td>
+            <td>${l.in ? '<span class="badge good"><span class="sdot good"></span>In stock</span>' : '<span class="badge crit"><span class="sdot crit"></span>Out of stock</span>'}</td>
+            <td class="r num ${l.lost > 0 ? 't-crit' : ''}">${units(l.lost)}</td><td class="r">${shareCell(l)}</td></tr>`);
+        }
+        if (its.length > lim) rows.push(`<tr class="more"><td colspan="8"><button type="button" class="linkbtn" data-act="more" data-key="${esc(kt)}">Show ${Math.min(50, its.length - lim)} more of ${its.length - lim} remaining items</button></td></tr>`);
+        if (!its.length) rows.push(`<tr class="more"><td colspan="8" style="color:var(--ink-3)">No out-of-stock items here.</td></tr>`);
+      }
+    }
+  }
+  const seg = (v, label) => `<button type="button" data-act="sort" data-v="${v}" aria-pressed="${UI.sort === v}">${label}</button>`;
+  return `<section class="card" id="drill">
+    <div class="card-h"><div><div class="q">Which category, sub-category, store and item?</div><h2>Category → Sub-category → Store → Item</h2>
+      <p>Open a category to find the sub-category, then the store, then the exact item. Each level is sorted by the order you pick; items that are out of stock and sell the most come first.</p></div>
+      <div class="toolbar"><div class="seg" role="group" aria-label="Sort">${seg('lost', 'Lost sales ↓')}${seg('sales', 'Daily sales ↓')}${seg('avail', 'Availability ↑')}</div>
+      <button type="button" class="linkbtn" data-act="expand">Open top 3 problems</button><button type="button" class="linkbtn" data-act="collapse">Close all</button></div></div>
+    <div class="scroll" style="max-height:760px"><table class="tree"><thead><tr><th>Category / sub-category / store / item</th><th class="r">Units/day</th><th class="r">Listings</th><th class="r">Out</th><th class="r">Availability</th><th>Status</th><th class="r">Lost/day</th><th class="r">Share of lost</th></tr></thead>
+    <tbody>${rows.join('') || '<tr><td colspan="8" class="empty">Nothing matches the status filter.</td></tr>'}</tbody></table></div>
+  </section>`;
+}
+
+function storesHTML(list) {
+  const t = total(list);
+  const gs = [...agg(list, (l) => l.s).values()].sort(byLost);
+  const max = Math.max(...gs.map((g) => g.lost), 1e-9);
+  return `<div class="card"><div class="card-h"><div><div class="q">Which stores cause the biggest issues?</div><h2>Stores by lost sales</h2></div></div>
+    <div class="stores">${gs.map((g) => { const st = status(g.p); return `<button type="button" class="srow ${F.store === g.k ? 'sel' : ''}" data-act="store" data-s="${g.k}">
+      <span class="code-b t-${st}">${esc(M.short[g.k])}</span><span class="nm">${esc(M.stores[g.k])} <span class="badge ${st}" style="margin-left:6px">${pct1(g.p)}</span></span>
+      <span class="num t-crit" style="font-weight:600">${units(g.lost)}/day</span>
+      <span class="meta"><span class="bar"><i style="width:${(g.lost / max) * 100}%"></i></span><small>${share1(t.lost ? g.lost / t.lost : 0)} of lost sales · ${int(g.n - g.inn)} empty</small></span></button>`; }).join('')}</div></div>`;
+}
+
+function fixFirstHTML(list) {
+  const top = list.filter((l) => !l.in && l.lost > 0).sort((a, b) => b.lost - a.lost).slice(0, 20);
+  return `<div class="card"><div class="card-h"><div><div class="q">What should I fix first?</div><h2>Empty shelves losing the most sales</h2>
+    <p>Out-of-stock listings ranked by the units they sell on a normal day. Click one to open it in the drilldown.</p></div></div>
+    ${top.length ? `<div class="scroll" style="max-height:520px"><table class="list"><thead><tr><th class="r">#</th><th>Item</th><th>Store</th><th class="r">Lost/day</th></tr></thead><tbody>
+    ${top.map((l, i) => { const it = M.items[l.i]; return `<tr data-act="reveal" data-cat="${esc(l.cat)}" data-sub="${esc(l.sub)}" data-s="${l.s}" tabindex="0"><td class="r num" style="color:var(--ink-3)">${i + 1}</td>
+      <td class="nm"><span class="code">${esc(it.c)}</span> ${esc(it.n)}<span class="item-sub">${esc(M.sups[l.p].name)} · ${esc(l.sub)}</span></td>
+      <td><b>${esc(M.short[l.s])}</b> <span style="color:var(--ink-3)">${esc(M.stores[l.s])}</span></td><td class="r num t-crit" style="font-weight:700">${units(l.lost)}</td></tr>`; }).join('')}
+    </tbody></table></div>` : '<div class="empty">No empty shelves in this selection.</div>'}</div>`;
+}
+
+function cellsHTML(list) {
+  const cells = [...agg(list, (l) => l.p * 64 + l.s).values()].filter((g) => status(g.p) !== 'good' && g.lost > 0).sort(byLost).slice(0, 15);
+  return `<div class="card"><div class="card-h"><div><div class="q">Who needs to act?</div><h2>Supplier-store cells to escalate</h2>
+    <p>Below-target and critical cells, biggest lost sales first. Click one to filter.</p></div></div>
+    ${cells.length ? `<div class="scroll" style="max-height:520px"><table class="list"><thead><tr><th>Supplier</th><th>Store</th><th class="r">Avail.</th><th class="r">Lost/day</th></tr></thead><tbody>
+    ${cells.map((g) => { const p = Math.floor(g.k / 64), s = g.k % 64, st = status(g.p); return `<tr data-act="cell" data-p="${p}" data-s="${s}" tabindex="0"><td class="nm">${esc(M.sups[p].name)}<span class="item-sub">${int(g.n - g.inn)} of ${int(g.n)} listings empty</span></td>
+      <td><b>${esc(M.short[s])}</b> <span style="color:var(--ink-3)">${esc(M.stores[s])}</span></td><td class="r"><span class="badge ${st}">${GLYPH[st]} ${pct0(g.p)}</span></td><td class="r num t-crit" style="font-weight:700">${units(g.lost)}</td></tr>`; }).join('')}
+    </tbody></table></div>` : '<div class="empty">Every supplier-store cell here is on target.</div>'}</div>`;
+}
+
+/* ---------- filters ---------- */
+function fillFilters() {
+  const opt = (v, label, sel) => `<option value="${esc(v)}" ${sel ? 'selected' : ''}>${esc(label)}</option>`;
+  const rs = M.rank;
+  const stores = M.stores.map((_, i) => i).filter((i) => rs.store.has(i)).sort((a, b) => rs.store.get(b) - rs.store.get(a));
+  $('#f-store').innerHTML = opt(-1, 'All stores', F.store < 0) + stores.map((i) => opt(i, `${M.short[i]} · ${M.stores[i]}`, F.store === i)).join('');
+  const sups = M.sups.map((_, i) => i).filter((i) => rs.sup.has(i)).sort((a, b) => rs.sup.get(b) - rs.sup.get(a));
+  $('#f-sup').innerHTML = opt(-1, 'All suppliers (by sales)', F.sup < 0) + sups.map((i) => opt(i, `${M.sups[i].name} · ${M.sups[i].a}`, F.sup === i)).join('');
+  const cats = [...rs.cat.entries()].sort((a, b) => b[1] - a[1]).map((e) => e[0]);
+  $('#f-cat').innerHTML = opt('', 'All categories (by sales)', !F.cat) + cats.map((c) => opt(c, c, F.cat === c)).join('');
+  fillSub();
+}
+function fillSub() {
+  const opt = (v, label, sel) => `<option value="${esc(v)}" ${sel ? 'selected' : ''}>${esc(label)}</option>`;
+  const subs = [...M.rank.sub.entries()].filter(([k]) => !F.cat || k.startsWith(F.cat + '\u0000')).sort((a, b) => b[1] - a[1]);
+  const names = [...new Set(subs.map(([k]) => k.split('\u0000')[1]))];
+  if (F.sub && !names.includes(F.sub)) F.sub = '';
+  $('#f-sub').innerHTML = opt('', F.cat ? 'All sub-categories' : 'All sub-categories (by sales)', !F.sub) + names.map((s) => opt(s, s, F.sub === s)).join('');
+}
+function syncControls() {
+  $('#f-store').value = String(F.store);
+  $('#f-sup').value = String(F.sup);
+  $('#f-cat').value = F.cat;
+  fillSub();
+  $('#f-sub').value = F.sub;
+  for (const b of $('#f-status').children) b.setAttribute('aria-pressed', String(b.dataset.v === F.status));
+  if ($('#f-q').value !== F.q) $('#f-q').value = F.q;
+}
+function renderChips() {
+  const c = [];
+  if (F.store >= 0) c.push(['store', `Store: ${M.short[F.store]} · ${M.stores[F.store]}`]);
+  if (F.sup >= 0) c.push(['sup', `Supplier: ${M.sups[F.sup].name}`]);
+  if (F.cat) c.push(['cat', `Category: ${F.cat}`]);
+  if (F.sub) c.push(['sub', `Sub-category: ${F.sub}`]);
+  if (F.status !== 'all') c.push(['status', F.status === 'crit' ? 'Critical only' : 'Below target & critical']);
+  if (F.q) c.push(['q', `Item: “${F.q}”`]);
+  $('#chips').innerHTML = c.map(([k, t]) => `<span class="chip">${esc(t)}<button type="button" data-act="unset" data-k="${k}" aria-label="Remove ${esc(t)}">×</button></span>`).join('')
+    + (c.length > 1 ? `<button type="button" class="linkbtn" data-act="clear">Clear all</button>` : '');
+}
+function setF(patch) { Object.assign(F, patch); syncControls(); render(); }
+
+$('#f-store').addEventListener('change', (e) => setF({ store: +e.target.value }));
+$('#f-sup').addEventListener('change', (e) => setF({ sup: +e.target.value }));
+$('#f-cat').addEventListener('change', (e) => setF({ cat: e.target.value, sub: '' }));
+$('#f-sub').addEventListener('change', (e) => setF({ sub: e.target.value }));
+$('#f-status').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setF({ status: b.dataset.v }); });
+let qTimer;
+$('#f-q').addEventListener('input', (e) => { clearTimeout(qTimer); qTimer = setTimeout(() => setF({ q: e.target.value }), 200); });
+
+function act(el) {
+  const a = el.dataset.act;
+  if (a === 'store') { const s = +el.dataset.s; setF({ store: F.store === s ? -1 : s }); }
+  else if (a === 'sup') { const p = +el.dataset.p; setF({ sup: F.sup === p ? -1 : p }); }
+  else if (a === 'cell') { const p = +el.dataset.p, s = +el.dataset.s; setF(F.sup === p && F.store === s ? { sup: -1, store: -1 } : { sup: p, store: s }); }
+  else if (a === 'unset') { const k = el.dataset.k; setF({ [k]: k === 'store' || k === 'sup' ? -1 : k === 'status' ? 'all' : '' }); }
+  else if (a === 'clear') setF({ store: -1, sup: -1, cat: '', sub: '', status: 'all', q: '' });
+  else if (a === 'toggle') { const k = el.dataset.key; UI.open.has(k) ? UI.open.delete(k) : UI.open.add(k); keepScroll(render); }
+  else if (a === 'more') { const k = el.dataset.key; UI.more.set(k, (UI.more.get(k) || 25) + 50); keepScroll(render); }
+  else if (a === 'sort') { UI.sort = el.dataset.v; keepScroll(render); }
+  else if (a === 'collapse') { UI.open.clear(); keepScroll(render); }
+  else if (a === 'expand') { expandTop(); keepScroll(render); }
+  else if (a === 'reveal') {
+    const kc = 'c:' + el.dataset.cat, ks = kc + '|s:' + el.dataset.sub, kt = ks + '|t:' + el.dataset.s;
+    UI.open.add(kc); UI.open.add(ks); UI.open.add(kt); UI.sort = 'lost';
+    render();
+    const d = $('#drill'); if (d) d.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  }
+}
+function keepScroll(fn) {
+  const sc = $('#drill .scroll'); const top = sc ? sc.scrollTop : 0;
+  fn();
+  const sc2 = $('#drill .scroll'); if (sc2) sc2.scrollTop = top;
+}
+function expandTop() {
+  const list = filtered(false);
+  UI.open.clear();
+  const cats = [...agg(list, (l) => l.cat).values()].sort(byLost).slice(0, 3);
+  for (const c of cats) {
+    const kc = 'c:' + c.k; UI.open.add(kc);
+    const cl = list.filter((l) => l.cat === c.k);
+    const sub = [...agg(cl, (l) => l.sub).values()].sort(byLost)[0];
+    if (!sub) continue;
+    const ks = kc + '|s:' + sub.k; UI.open.add(ks);
+    const st = [...agg(cl.filter((l) => l.sub === sub.k), (l) => l.s).values()].sort(byLost)[0];
+    if (st) UI.open.add(ks + '|t:' + st.k);
+  }
+  UI.sort = 'lost';
+}
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.disabled) return;
+  if (el.tagName === 'TR' && e.target.closest('button') && e.target.closest('button') !== el) return;
+  act(el);
+});
+document.addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('tr[data-act]')) { e.preventDefault(); act(e.target); }
+});
+
+/* ---------- data source: live Tableau, else the saved snapshot ---------- */
+function fmtDate(ymd) {
+  const d = new Date(ymd + 'T00:00:00');
+  return isNaN(d) ? ymd : d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
+function setSource(kind, label, msg) {
+  const pill = $('#src-pill');
+  pill.className = 'pill ' + kind;
+  $('#src-label').textContent = label;
+  const m = $('#src-msg');
+  m.hidden = !msg; m.textContent = msg || '';
+}
+function showModel(model) {
+  M = model;
+  if (F.store >= M.stores.length) F.store = -1;
+  if (F.sup >= M.sups.length) F.sup = -1;
+  fillFilters();
+  syncControls();
+  $('#asof').innerHTML = `Stock position <b>${esc(fmtDate(M.asOf))}</b>`;
+  $('#m-excl').textContent = `Items tiered ${CFG.excludedTiers.join(' or ')} in the item master (${int(M.excludedItems)} items)`
+    + (M.deadStores.length ? `, and stores with no stock anywhere: ${M.deadStores.join(', ')}.` : '. Every store currently holds stock.');
+  $('#m-src').textContent = `Tableau data source “Supplier’s Availability Data”, ${M.source === 'live' ? 'read live through your Tableau Cloud connector' : 'saved snapshot'}; stock position ${fmtDate(M.asOf)}. Suppliers are grouped by Supplier Account; category and sub-category come from the item master (Google Sheet).`;
+  render();
+}
+const ERR = {
+  needs_reauth: 'Reconnect Tableau Cloud in claude.ai Settings → Connectors, then press Refresh.',
+  server_not_connected: 'Add the Tableau Cloud connector in claude.ai Settings → Connectors to load live data.',
+  selection_required: 'Choose which Tableau Cloud connector this page should use, then press Refresh.',
+  not_in_manifest: 'Live Tableau access is turned off for this page.',
+  not_granted: 'Live Tableau access is not available in this view.',
+  capability_disabled: 'Live Tableau access is not available in this view.',
+  capability_removed: 'Live Tableau access is not available in this view.',
+  consent_required: 'Allow Tableau Cloud for this page, then press Refresh.',
+  blocked_by_policy: 'Your organisation blocks this Tableau query.',
+  approval_required: 'Your organisation needs to approve this Tableau query.',
+  server_unavailable: 'Tableau Cloud did not answer. Press Refresh to try again.',
+};
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function query(mcp, q, fresh, retried) {
+  try {
+    const opts = { cache: fresh ? { refresh: true, staleTime: 300000, gcTime: 3600000 } : { staleTime: 300000, gcTime: 3600000 } };
+    const r = await mcp.callTool(CFG.server, CFG.tool, { datasourceLuid: CFG.datasourceLuid, query: q }, opts);
+    let p = r.payload;
+    if (typeof p === 'string') { try { p = JSON.parse(p); } catch { throw { code: 'tool_error', message: p.slice(0, 240) }; } }
+    const data = p && (Array.isArray(p.data) ? p.data : Array.isArray(p) ? p : null);
+    if (!data) throw { code: 'tool_error', message: 'Tableau returned no rows.' };
+    return { data, storedAt: r.cache ? r.cache.storedAt : Date.now() };
+  } catch (e) {
+    if (e && e.retryable && !retried) { await sleep((e.retryAfterMs || 1200) + Math.random() * 800); return query(mcp, q, fresh, true); }
+    throw e;
+  }
+}
+let busy = false;
+async function loadLive(fresh) {
+  if (busy) return;
+  const c = window.claude;
+  if (!c || typeof c.use !== 'function') { noLive(); return; }
+  busy = true; $('#refresh').disabled = true;
+  setSource('busy', 'Reading Tableau…', M ? `Showing the ${M.source === 'live' ? 'last live read' : 'saved snapshot'} until it arrives.` : '');
+  try {
+    const mcp = await c.use('mcp');
+    if (!mcp) { noLive(); return; }
+    const meta = await query(mcp, metaQuery(), fresh);
+    const asOf = meta.data.map((r) => String(r.asOf || '').slice(0, 10)).filter(Boolean).sort().pop();
+    const stores = meta.data.filter((r) => r.Store && +r.inS > 0).map((r) => r.Store);
+    if (!asOf || !stores.length) throw { code: 'tool_error', message: 'Tableau returned no stores with stock.' };
+    const piv = await query(mcp, pivotQuery(stores, asOf), fresh);
+    const all = meta.data.filter((r) => r.Store).map((r) => r.Store);
+    const model = buildModel({ asOf, stores, rows: piv.data, source: 'live', storedAt: piv.storedAt });
+    model.deadStores = all.filter((s) => !stores.includes(s)).concat(model.deadStores);
+    showModel(model);
+    const t = new Date(piv.storedAt || Date.now());
+    setSource('live', 'Live · Tableau Cloud', `Read ${t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} · ${int(model.L.length)} listings`);
+  } catch (e) {
+    const code = e && e.code;
+    const msg = code === 'tool_error' ? `Tableau refused the query: ${e.message || 'unknown error'}` : ERR[code] || `Could not read Tableau (${code || 'error'}).`;
+    setSource(M ? 'snap' : 'err', M ? (M.source === 'live' ? 'Last live read' : 'Saved snapshot') : 'No data', msg + (M ? '' : ' No saved snapshot is built into this copy.'));
+    if (!M) $('#main').innerHTML = `<div class="nodata">${esc(msg)}</div>`;
+  } finally {
+    busy = false; $('#refresh').disabled = false;
+  }
+}
+function noLive() {
+  busy = false; $('#refresh').disabled = true;
+  if (M) setSource('snap', 'Saved snapshot', 'Live Tableau refresh works when this page is opened in Claude with the Tableau Cloud connector.');
+  else { setSource('err', 'No data', 'Open this page in Claude with the Tableau Cloud connector, or build it with tools/build_priorities.py.'); $('#main').innerHTML = '<div class="nodata">No data yet. Open this page in Claude with the Tableau Cloud connector, or build a copy with a saved snapshot.</div>'; }
+}
+$('#refresh').addEventListener('click', () => loadLive(true));
+
+(function boot() {
+  let snap = null;
+  try { snap = JSON.parse($('#snapshot').textContent); } catch { snap = null; }
+  if (snap && snap.rows) { showModel(buildModel({ ...snap, source: 'snapshot' })); setSource('snap', 'Saved snapshot', ''); }
+  loadLive(false);
+})();
+</script>
