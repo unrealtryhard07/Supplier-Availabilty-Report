@@ -10,25 +10,25 @@ Claude), pick a supplier, and export the pages as PNG files.
 The report opens on **Where to act today**: every supplier, sorted by sales.
 
 - **Summary**: overall availability, the 85% target, below-target and critical
-  supplier-store cells, sales at risk (units a day on empty shelves) and the
-  number of product-store combinations measured.
+  supplier-store cells, how many suppliers make 90% of sales, and the number
+  of product-store combinations measured.
 - **Supplier × store availability**: suppliers as rows (biggest sellers
   first), stores as columns (biggest-selling store first), with a Total column
   and an All suppliers row counted from listings.
 - **Sales-wise most important suppliers to focus**: every supplier ranked by
   sales with share and running total; the ones that make the first 90% of
   sales are marked Focus.
-- **Category → Sub-category → Store → Item** drilldown, sorted by lost sales,
-  daily sales or availability.
-- **Stores by lost sales**, **empty shelves losing the most sales** and
-  **supplier-store cells to escalate**.
+- **Category → Sub-category → Store → Item** drilldown, sorted by daily sales
+  or availability; out-of-stock items first, biggest sellers first.
+- **Stores, weakest first**, **best-selling products that are out of stock**
+  and **supplier-store cells to escalate** (biggest sellers first).
 - Filters for store, supplier, category, sub-category, status and item.
   Clicking a supplier, store or cell filters the whole view; "Report →" opens
   that supplier's pages.
 
 Sales: the Tableau data holds lifetime sales, so daily sales = Lifetime Qty
-Sold ÷ days since first sale (at least 30 days). Lost sales a day = daily sales
-of the listings out of stock now; it orders the fix-first lists.
+Sold ÷ days since first sale (at least 30 days). Suppliers, stores,
+categories, sub-categories and items are ordered by it, biggest first.
 
 When opened in Claude with the Tableau Cloud connector, the report reads
 "Supplier's Availability Data" live (Load data → Reload from Tableau to
@@ -42,20 +42,19 @@ file the supplier can open in Excel. (Settings can switch to all pages.)
 
 - **Verdict band** in red (Critical), amber (Below target) or green
   (On target), with one plain sentence, e.g. *"120 of your 258 products are
-  out of stock in at least one store. About 158 units a day are not being
-  sold because of it."*
+  out of stock in at least one store."*
 - **Overall availability**: the headline figure, with a bar against the target.
 - **Six key figures** in plain words: products, products with gaps, products
-  missing everywhere, sales at risk, top sellers in stock, and rank.
+  missing everywhere, weakest store, top sellers in stock, and rank.
 - **Where you are losing**: categories as bars against the target, biggest
-  lost sales first.
+  sellers first.
 - **Availability by store**: one card per store. Each square is one listing
   and red squares are empty shelves.
 - **Availability by category and store**: the same grid as the old Excel report.
   Category and sub-category come from the Google Sheet. Cells are colored by
   status and show `% available` and `in stock / listed`.
 - **Out-of-stock action list**: every SKU that is out somewhere. SKUs missing
-  in every store come first, then the most sales lost a day. `OUT` marks the
+  in every store come first, then the best sellers. `OUT` marks the
   exact stores to restock.
 
 Pages are 1080 px wide (exported at 2160 px) and never taller than 1620 px, so

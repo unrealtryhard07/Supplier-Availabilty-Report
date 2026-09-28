@@ -426,7 +426,6 @@ dialog::backdrop{background:rgba(8,14,24,.55)}
 .ovt td{border-bottom:1px solid var(--p-rule);padding:6px 8px;white-space:nowrap;vertical-align:middle}
 .ovt .r{text-align:right}.ovt .c{text-align:center}
 .ovt .num{text-align:right;font-family:var(--f-mono);font-size:12.5px;font-variant-numeric:tabular-nums}
-.ovt .lost{color:var(--crit-ink);font-weight:700}
 .ovt .dim{color:var(--p-ink-3)}
 .ovt tbody tr[data-ov]{cursor:pointer}
 .ovt tbody tr[data-ov]:hover td{background:#F7F9FC}
@@ -518,7 +517,7 @@ dialog::backdrop{background:rgba(8,14,24,.55)}
 .ov-store.sel{border-color:#2F5BEA;box-shadow:inset 0 0 0 1px #2F5BEA}
 .ov-store .code-b{grid-row:span 2;font-size:28px;font-weight:800;font-stretch:85%;text-align:center}
 .ov-store .nm{font-size:14px;font-weight:700;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.ov-store .lostv{font-family:var(--f-mono);font-weight:700;color:var(--crit-ink)}
+.ov-store .sv{font-family:var(--f-mono);font-weight:700;font-size:12.5px;color:var(--p-ink-2)}
 .ov-store .meta{grid-column:2 / 4;display:flex;gap:10px;align-items:center;font-size:11.5px;color:var(--p-ink-3)}
 .ov-store .meta .bar{flex:1;height:7px;border-radius:4px;background:#EEF1F6;position:relative;overflow:hidden}
 .ov-store .meta .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--crit)}
@@ -565,7 +564,6 @@ body.capture .frame{box-shadow:none;border-radius:0}
       <input id="sup-search" type="search" placeholder="Search suppliers" aria-label="Search suppliers by name or account" autocomplete="off">
       <select id="sup-sort" aria-label="Sort suppliers">
         <option value="sales">Highest sales first</option>
-        <option value="lost">Most lost sales</option>
         <option value="low">Lowest availability first</option>
         <option value="high">Highest first</option>
         <option value="oos">Most out of stock</option>
@@ -846,7 +844,7 @@ function computeNetwork() {
   const sums = [];
   const LST = [];   // one entry per listing (product in a store), for the overview
   for (const [acct, its] of bySup) {
-    let l = 0, y = 0, skus = 0, allOut = 0, pout = 0, sales = 0, lost = 0;
+    let l = 0, y = 0, skus = 0, allOut = 0, pout = 0, sales = 0;
     for (const it of its) {
       if (excluded.has(it.tier)) continue;
       let il = 0, iy = 0;
@@ -856,15 +854,15 @@ function computeNetwork() {
         il++;
         const q = it.rate ? it.rate[k] : 0;
         sales += q;
-        if (c === 'Y') iy++; else lost += q;
-        LST.push({ p: acct, s: k, it, cat: it.cat, sub: it.sub, in: c === 'Y', rate: q, lost: c === 'Y' ? 0 : q });
+        if (c === 'Y') iy++;
+        LST.push({ p: acct, s: k, it, cat: it.cat, sub: it.sub, in: c === 'Y', rate: q });
       }
       if (!il) continue;
       skus++; l += il; y += iy;
       if (!iy) allOut++;
       if (iy < il) pout++;
     }
-    if (l) sums.push({ acct, name: DATA.suppliers.get(acct) || acct, l, y, oos: l - y, r: y / l, skus, allOut, pout, sales, lost });
+    if (l) sums.push({ acct, name: DATA.suppliers.get(acct) || acct, l, y, oos: l - y, r: y / l, skus, allOut, pout, sales });
   }
   const ranked = [...sums].sort((a, b) => b.r - a.r);
   let rank = 0, prev = null;
@@ -872,24 +870,24 @@ function computeNetwork() {
   const bySales = [...sums].sort((a, b) => b.sales - a.sales || b.l - a.l);
   bySales.forEach((s, i) => { s.salesRank = i + 1; });
 
-  let L = 0, Y = 0, SALES = 0, LOST = 0;
+  let L = 0, Y = 0, SALES = 0;
   const counts = { crit: 0, warn: 0, good: 0 };
-  for (const s of sums) { L += s.l; Y += s.y; SALES += s.sales; LOST += s.lost; s.status = status(s.r); counts[s.status]++; }
+  for (const s of sums) { L += s.l; Y += s.y; SALES += s.sales; s.status = status(s.r); counts[s.status]++; }
   const hidden = [...new Set([...DATA.stores.filter((_, k) => !active.includes(k)), ...(DATA.hiddenStores || [])])];
   NET = {
     excluded, active, live, storeL, storeY, storeSales, bySup, sums, LST, hasSales, hidden,
     byAcct: new Map(sums.map((s) => [s.acct, s])),
-    L, Y, r: L ? Y / L : 0, counts, sales: SALES, lost: LOST,
+    L, Y, r: L ? Y / L : 0, counts, sales: SALES,
   };
 }
 
 function supplierModel(acct) {
   const act = NET.active;
-  const stores = act.map((k) => ({ k, name: DATA.stores[k], l: 0, y: 0, sales: 0, lost: 0 }));
+  const stores = act.map((k) => ({ k, name: DATA.stores[k], l: 0, y: 0, sales: 0 }));
   const cats = new Map();
   const t1 = { l: 0, y: 0 };
   const oos = [];
-  let l = 0, y = 0, skus = 0, sales = 0, lost = 0;
+  let l = 0, y = 0, skus = 0, sales = 0;
   const blank = () => act.map(() => ({ l: 0, y: 0 }));
 
   for (const it of NET.bySup.get(acct) || []) {
@@ -899,11 +897,11 @@ function supplierModel(acct) {
     if (!il) continue;
     skus++; l += il; y += iy;
     let cat = cats.get(it.cat);
-    if (!cat) cats.set(it.cat, (cat = { name: it.cat, l: 0, y: 0, sales: 0, lost: 0, by: blank(), subs: new Map() }));
+    if (!cat) cats.set(it.cat, (cat = { name: it.cat, l: 0, y: 0, sales: 0, by: blank(), subs: new Map() }));
     let sub = cat.subs.get(it.sub);
-    if (!sub) cat.subs.set(it.sub, (sub = { name: it.sub, l: 0, y: 0, sales: 0, lost: 0, by: blank() }));
+    if (!sub) cat.subs.set(it.sub, (sub = { name: it.sub, l: 0, y: 0, sales: 0, by: blank() }));
     const marks = [];
-    let demand = 0, iSales = 0, iLost = 0;
+    let demand = 0, iSales = 0;
     act.forEach((k, j) => {
       const c = it.st[k];
       marks.push(c);
@@ -911,23 +909,23 @@ function supplierModel(acct) {
       const q = it.rate ? it.rate[k] : 0;
       iSales += q; stores[j].sales += q;
       stores[j].l++; cat.by[j].l++; sub.by[j].l++;
-      if (c === 'Y') { stores[j].y++; cat.by[j].y++; sub.by[j].y++; } else { iLost += q; stores[j].lost += q; }
+      if (c === 'Y') { stores[j].y++; cat.by[j].y++; sub.by[j].y++; }
       demand += (it.b && it.b[k]) || 0;
     });
     cat.l += il; cat.y += iy; sub.l += il; sub.y += iy;
-    cat.sales += iSales; cat.lost += iLost; sub.sales += iSales; sub.lost += iLost;
-    sales += iSales; lost += iLost;
+    cat.sales += iSales; sub.sales += iSales;
+    sales += iSales;
     if (it.tier === 'T1') { t1.l += il; t1.y += iy; }
-    if (iy < il) oos.push({ it, marks, out: il - iy, allOut: iy === 0, demand, lost: iLost, sales: iSales });
+    if (iy < il) oos.push({ it, marks, out: il - iy, allOut: iy === 0, demand, sales: iSales });
   }
 
   const byName = (a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' });
   // Business importance first: biggest-selling categories and sub-categories on top.
   const byImportance = NET.hasSales ? (a, b) => b.sales - a.sales || b.l - a.l || byName(a, b) : (a, b) => b.l - a.l || byName(a, b);
   const catList = [...cats.values()].sort(byImportance).map((c) => ({ ...c, subs: [...c.subs.values()].sort(byImportance) }));
-  // Most urgent first: missing everywhere, then the most sales lost per day
+  // Most urgent first: missing everywhere, then the best-selling products
   // (without sales figures: best-selling tiers, then most stores out).
-  oos.sort((a, b) => (b.allOut - a.allOut) || (NET.hasSales ? b.lost - a.lost : 0) || (tierRank(a.it.tier) - tierRank(b.it.tier)) || (b.out - a.out)
+  oos.sort((a, b) => (b.allOut - a.allOut) || (NET.hasSales ? b.sales - a.sales : 0) || (tierRank(a.it.tier) - tierRank(b.it.tier)) || (b.out - a.out)
     || (b.demand - a.demand) || a.it.name.localeCompare(b.it.name));
 
   const r = l ? y / l : 0;
@@ -938,7 +936,7 @@ function supplierModel(acct) {
   const sum = NET.byAcct.get(acct);
   return {
     acct, name: DATA.suppliers.get(acct) || acct, asOf: kuwaitParts(DATA.asOf),
-    stores, cats: catList, oos, t1, l, y, r, skus, oosN: l - y, sales, lost,
+    stores, cats: catList, oos, t1, l, y, r, skus, oosN: l - y, sales,
     allOut: oos.filter((o) => o.allOut).length, need, weakest,
     status: status(r), rank: sum ? sum.rank : null, rankOf: NET.sums.length,
   };
@@ -981,7 +979,6 @@ function verdict(m) {
     text = m.skus === 1
       ? `Your only product is <strong>out of stock</strong> in ${m.oosN === 1 ? 'its store' : `${m.oosN} stores`}.`
       : `<strong>${fmtN(pOut)} of your ${fmtN(m.skus)} products</strong> ${plural(pOut, 'is', 'are')} out of stock in at least one store.`;
-    if (NET.hasSales && m.lost > 0) text += ` About <strong>${units(m.lost)} units a day</strong> are not being sold because of it.`;
   } else {
     text = `All ${fmtN(m.skus)} of your ${plural(m.skus, 'product is', 'products are')} in stock in every store. Thank you for keeping the shelves full.`;
   }
@@ -1000,15 +997,11 @@ function hero(m) {
     { lbl: 'Your products', v: fmtN(m.skus), s: `listed in ${listedIn} ${plural(listedIn, 'store', 'stores')}` },
     { lbl: 'Products with gaps', v: fmtN(m.oos.length), s: 'out of stock in 1 or more stores', flag: m.oos.length ? 'crit' : '' },
     { lbl: 'Missing everywhere', v: fmtN(m.allOut), s: plural(m.allOut, 'product customers can’t buy', 'products customers can’t buy'), flag: m.allOut ? 'crit' : '' },
-    NET.hasSales
-      ? { lbl: 'Sales at risk', v: units(m.lost), s: `units a day on empty shelves${m.sales ? ` · ${share1(m.lost / m.sales)} of your sales` : ''}`, flag: m.lost > 0 ? 'crit' : '' }
-      : { lbl: 'Weakest store', v: m.weakest ? esc(m.weakest.name) : '—', s: m.weakest ? `${pct0(m.weakest.r)}% in stock` : '', txt: true },
+    { lbl: 'Weakest store', v: m.weakest ? esc(m.weakest.name) : '—', s: m.weakest ? `${pct0(m.weakest.r)}% in stock` : '', txt: true },
     { lbl: 'Top sellers in stock', v: t1r === null ? '—' : pct0(t1r) + '%', s: t1r === null ? 'No top sellers listed' : `${fmtN(m.t1.y)} of ${fmtN(m.t1.l)} shelves stocked`, flag: t1r !== null && status(t1r) !== 'good' ? status(t1r) : '' },
     settings.showRank && m.rank
       ? { lbl: 'Supplier rank', v: '#' + m.rank, s: `of ${m.rankOf} suppliers by availability` }
-      : NET.hasSales
-        ? { lbl: 'Weakest store', v: m.weakest ? esc(m.weakest.name) : '—', s: m.weakest ? `${pct0(m.weakest.r)}% in stock` : '', txt: true }
-        : { lbl: 'Stores', v: fmtN(listedIn), s: 'carry your products' },
+      : { lbl: 'Stores', v: fmtN(listedIn), s: 'carry your products' },
   ];
   const edge = settings.target >= 90 ? ' edge' : '';
   return h(`<div class="r-hero">
@@ -1129,9 +1122,9 @@ function oosSpec(m) {
 function categoryChart(m) {
   if (m.cats.length < 2 || !m.oos.length) return null;
   const MAX = 8;
-  // Where the most sales are lost first; without sales figures, the weakest first.
+  // Biggest-selling categories first; without sales figures, the weakest first.
   const sorted = NET.hasSales
-    ? [...m.cats].sort((a, b) => b.lost - a.lost || a.y / a.l - b.y / b.l)
+    ? [...m.cats].sort((a, b) => b.sales - a.sales || a.y / a.l - b.y / b.l)
     : [...m.cats].sort((a, b) => a.y / a.l - b.y / b.l || (b.l - b.y) - (a.l - a.y));
   const shown = sorted.slice(0, MAX);
   const t = settings.target;
@@ -1142,7 +1135,7 @@ function categoryChart(m) {
       <div class="cb-val"><strong>${pct0(r)}%</strong><span>${out ? `${fmtN(out)} out` : 'all in'}</span></div></div>`;
   }).join('');
   const more = sorted.length > MAX ? `<p class="cb-more">+ ${sorted.length - MAX} more ${plural(sorted.length - MAX, 'category', 'categories')} in the detail table</p>` : '';
-  return h(`<div class="r-sec"><div class="r-sec-head"><h3>Where you are losing</h3><p class="r-note">Categories, ${NET.hasSales ? 'biggest lost sales first' : 'weakest first'} · <span class="cb-key"></span> ${t}% target</p></div>
+  return h(`<div class="r-sec"><div class="r-sec-head"><h3>Where you are losing</h3><p class="r-note">Categories, ${NET.hasSales ? 'biggest sellers first' : 'weakest first'} · <span class="cb-key"></span> ${t}% target</p></div>
     <div class="cb">${rows}</div>${more}</div>`);
 }
 
@@ -1281,7 +1274,7 @@ function paginate(m, host) {
 
 /* ================= Priorities overview (all suppliers) ================= */
 // Filters and drill state for the overview. Store filter is a DATA store index.
-const OV = { store: -1, sup: '', cat: '', sub: '', status: 'all', q: '', sort: 'lost', open: new Set(), more: new Map() };
+const OV = { store: -1, sup: '', cat: '', sub: '', status: 'all', q: '', sort: 'sales', open: new Set(), more: new Map() };
 const GLYPH = { good: '', warn: '▲', crit: '●' };
 const storeCode = (k) => {
   const first = (n) => cleanText(n).charAt(0).toUpperCase();
@@ -1308,16 +1301,18 @@ function ovAgg(list, key) {
   for (const l of list) {
     const k = key(l);
     let g = m.get(k);
-    if (!g) m.set(k, (g = { k, n: 0, inn: 0, sales: 0, lost: 0 }));
-    g.n++; if (l.in) g.inn++; g.sales += l.rate; g.lost += l.lost;
+    if (!g) m.set(k, (g = { k, n: 0, inn: 0, sales: 0 }));
+    g.n++; if (l.in) g.inn++; g.sales += l.rate;
   }
   for (const g of m.values()) g.p = g.inn / g.n;
   return m;
 }
-function ovTotal(list) { const g = { n: 0, inn: 0, sales: 0, lost: 0 }; for (const l of list) { g.n++; if (l.in) g.inn++; g.sales += l.rate; g.lost += l.lost; } g.p = g.n ? g.inn / g.n : 0; return g; }
+function ovTotal(list) { const g = { n: 0, inn: 0, sales: 0 }; for (const l of list) { g.n++; if (l.in) g.inn++; g.sales += l.rate; } g.p = g.n ? g.inn / g.n : 0; return g; }
 const ovImportance = (a, b) => b.sales - a.sales || b.n - a.n;
-const ovByLost = (a, b) => b.lost - a.lost || b.sales - a.sales || a.p - b.p;
-const ovSorter = () => (OV.sort === 'sales' ? ovImportance : OV.sort === 'avail' ? (a, b) => a.p - b.p || b.sales - a.sales : ovByLost);
+const ovWeakest = (a, b) => a.p - b.p || b.sales - a.sales;
+// Not on target and biggest sellers first: where a gap matters most.
+const ovProblems = (a, b) => (status(a.p) === 'good') - (status(b.p) === 'good') || (NET.hasSales ? b.sales - a.sales : 0) || a.p - b.p;
+const ovSorter = () => (OV.sort === 'avail' || !NET.hasSales ? ovWeakest : ovImportance);
 
 // Suppliers ranked by daily sales; those that take the running total up to
 // (and including the one that passes) 90% of sales are the focus group.
@@ -1340,7 +1335,7 @@ function ovFocus(list) {
 function ovCell(g, attrs) {
   if (!g) return '<span class="na" title="Not listed">—</span>';
   const st = status(g.p);
-  const tip = `${pct1(g.p)}% · ${STATUS_LABEL[st]} · ${fmtN(g.inn)} of ${fmtN(g.n)} in stock${NET.hasSales ? ` · ${units(g.lost)} lost units/day` : ''}`;
+  const tip = `${pct1(g.p)}% · ${STATUS_LABEL[st]} · ${fmtN(g.inn)} of ${fmtN(g.n)} in stock${NET.hasSales ? ` · ${units(g.sales)} units/day` : ''}`;
   return `<button type="button" class="cellb" ${attrs} title="${esc(tip)}" aria-label="${esc(tip)}"><div class="mc ${st}"><b>${GLYPH[st] ? `<i aria-hidden="true">${GLYPH[st]}</i>` : ''}${pct0(g.p)}%</b></div></button>`;
 }
 
@@ -1423,7 +1418,7 @@ function ovKpis(list, t, st) {
       ${tile('Target', settings.target + '%', `On target ${settings.target}%+ · below target ${settings.critical}–${settings.target - 0.01}% · critical under ${settings.critical}%`)}
       ${tile('Below target', fmtN(band.warn.c), `supplier-store cells · ${fmtN(band.warn.n)} listings (${share1(t.n ? band.warn.n / t.n : 0)})`, 'warn')}
       ${tile('Critical', fmtN(band.crit.c), `supplier-store cells · ${fmtN(band.crit.n)} listings (${share1(t.n ? band.crit.n / t.n : 0)})`, 'crit')}
-      ${NET.hasSales ? tile('Sales at risk', units(t.lost), `units a day on empty shelves · ${share1(t.sales ? t.lost / t.sales : 0)} of ${units(t.sales)} a day`, 'crit') : tile('Out of stock', fmtN(t.n - t.inn), 'listings with no stock', 'crit')}
+      ${NET.hasSales ? tile('Focus suppliers', fmtN(ovFocus(list).count), `of ${fmtN(nSup)} make 90% of the ${units(t.sales)} units sold a day`) : tile('Out of stock', fmtN(t.n - t.inn), 'listings with no stock', 'crit')}
       ${tile('Product-store combinations', fmtN(t.n), `measured · ${fmtN(nSup)} ${plural(nSup, 'supplier', 'suppliers')} · ${nSt} ${plural(nSt, 'store', 'stores')}`)}
     </div>
   </div>`;
@@ -1438,18 +1433,17 @@ function ovMatrix(list, focus) {
   rows = rows.filter((r) => ovMatch(status(r.p)) || stores.some((k) => { const c = cells.get(r.k + '|' + k); return c && ovMatch(status(c.p)); }));
   const head = `<tr><th class="rk">#</th><th class="sp">Supplier${NET.hasSales ? ' <span style="text-transform:none;letter-spacing:0;font-weight:500">· by sales ↓</span>' : ''}</th>${NET.hasSales ? '<th class="r">Units/day</th>' : ''}`
     + stores.map((k) => `<th class="st${OV.store === k ? ' sel' : ''}"><button type="button" data-ov="store" data-s="${k}" title="Filter to ${esc(DATA.stores[k])}"><b>${esc(storeCode(k))}</b><small>${esc(DATA.stores[k])}</small></button></th>`).join('')
-    + `<th class="c">Total</th>${NET.hasSales ? '<th class="r">Lost/day</th>' : ''}</tr>`;
+    + '<th class="c">Total</th></tr>';
   const body = rows.map((r, i) => {
     const s2 = NET.byAcct.get(r.k);
     return `<tr class="${OV.sup === r.k ? 'sel' : ''}"><td class="rk">${i + 1}</td>
       <td class="sp"><div class="spw"><button type="button" class="supb" data-ov="sup" data-p="${esc(r.k)}" title="Filter the page to ${esc(s2.name)}"><b>${esc(s2.name)}</b><small>${focus.set.has(r.k) ? '<span class="ftag">FOCUS</span>' : ''}<span>${esc(r.k)}</span></small></button><button type="button" class="ov-link rep" data-ov="open" data-p="${esc(r.k)}" title="Open ${esc(s2.name)}’s report pages">Report →</button></div></td>
       ${NET.hasSales ? `<td class="num">${units(r.sales)}</td>` : ''}
       ${stores.map((k) => `<td>${ovCell(cells.get(r.k + '|' + k), `data-ov="cell" data-p="${esc(r.k)}" data-s="${k}"`)}</td>`).join('')}
-      <td class="tot">${ovCell(r, `data-ov="sup" data-p="${esc(r.k)}"`)}</td>
-      ${NET.hasSales ? `<td class="num${r.lost > 0 ? ' lost' : ' dim'}">${units(r.lost)}</td>` : ''}</tr>`;
+      <td class="tot">${ovCell(r, `data-ov="sup" data-p="${esc(r.k)}"`)}</td></tr>`;
   }).join('');
-  const cols = stores.length + (NET.hasSales ? 5 : 3);
-  const foot = `<tr><td class="rk"></td><td class="sp">All suppliers</td>${NET.hasSales ? `<td class="num">${units(t.sales)}</td>` : ''}${stores.map((k) => `<td>${ovCell(storeAgg.get(k), `data-ov="store" data-s="${k}"`)}</td>`).join('')}<td class="tot">${ovCell(t, 'disabled')}</td>${NET.hasSales ? `<td class="num lost">${units(t.lost)}</td>` : ''}</tr>`;
+  const cols = stores.length + (NET.hasSales ? 4 : 3);
+  const foot = `<tr><td class="rk"></td><td class="sp">All suppliers</td>${NET.hasSales ? `<td class="num">${units(t.sales)}</td>` : ''}${stores.map((k) => `<td>${ovCell(storeAgg.get(k), `data-ov="store" data-s="${k}"`)}</td>`).join('')}<td class="tot">${ovCell(t, 'disabled')}</td></tr>`;
   return `<div class="r-sec">
     <div class="r-sec-head"><div><div class="ov-q">Which suppliers have the biggest problems?</div><h3>Supplier × store availability</h3>
       <p class="ov-sub">${NET.hasSales ? 'Biggest sellers first' : 'Most listings first'}. Click a supplier, a store or a cell to filter the whole page. The Total column and the bottom row are counted from all listings, not averaged.</p></div></div>
@@ -1491,20 +1485,20 @@ function ovDrill(list, T) {
   const sort = ovSorter();
   const rows = [];
   const av = (p) => { const st = status(p); return `<div class="avb"><span class="cb-track"><i class="${st}" style="width:${(p * 100).toFixed(2)}%"></i><b style="left:${settings.target}%"></b></span><strong class="${st}">${pct1(p)}%</strong></div>`; };
-  const shareCell = (lost) => (NET.hasSales ? `<td class="num">${share1(T.lost ? lost / T.lost : 0)}<span class="shb"><i style="width:${T.lost ? (lost / T.lost) * 100 : 0}%"></i></span></td>` : '');
+  // Share of the selection's daily sales: how much of the business this row carries.
+  const shareCell = (x) => (NET.hasSales ? `<td class="num">${share1(T.sales ? x / T.sales : 0)}<span class="shb"><i style="width:${T.sales ? (x / T.sales) * 100 : 0}%"></i></span></td>` : '');
   const salesCell = (x) => (NET.hasSales ? `<td class="num">${units(x)}</td>` : '');
-  const lostCell = (x) => (NET.hasSales ? `<td class="num${x > 0 ? ' lost' : ' dim'}">${units(x)}</td>` : '');
   const group = (lvl, tag, key, label, g) => {
     const open = OV.open.has(key);
     rows.push(`<tr class="l${lvl}" data-ov="toggle" data-key="${esc(key)}">
       <td class="nm"><div class="nmw"><button type="button" class="caret" aria-expanded="${open}" aria-label="${open ? 'Close' : 'Open'} ${esc(tag)}" data-ov="toggle" data-key="${esc(key)}">▶</button><span class="lv">${tag}</span><span>${label}</span></div></td>
-      ${salesCell(g.sales)}<td class="num">${fmtN(g.n)}</td><td class="num">${fmtN(g.n - g.inn)}</td><td>${av(g.p)}</td><td>${chip(status(g.p))}</td>${lostCell(g.lost)}${shareCell(g.lost)}</tr>`);
+      ${salesCell(g.sales)}<td class="num">${fmtN(g.n)}</td><td class="num">${fmtN(g.n - g.inn)}</td><td>${av(g.p)}</td><td>${chip(status(g.p))}</td>${shareCell(g.sales)}</tr>`);
     return open;
   };
   const by = (arr, key) => { const m = new Map(); for (const l of arr) { const k = key(l); let a2 = m.get(k); if (!a2) m.set(k, (a2 = [])); a2.push(l); } return m; };
   const pOf = (arr) => { let i = 0; for (const l of arr) if (l.in) i++; return i / arr.length; };
   const anyStore = (arr) => [...by(arr, (l) => l.s).values()].some((x) => ovMatch(status(pOf(x))));
-  const cols = NET.hasSales ? 8 : 5;
+  const cols = NET.hasSales ? 7 : 5;
   const catMap = by(list, (l) => l.cat);
   for (const cg of [...ovAgg(list, (l) => l.cat).values()].sort(sort)) {
     const cl = catMap.get(cg.k);
@@ -1524,13 +1518,14 @@ function ovDrill(list, T) {
         if (!group(2, 'Store', kt, `<b>${esc(storeCode(tg.k))}</b> · ${esc(DATA.stores[tg.k])}`, tg)) continue;
         let its = stMap.get(tg.k).slice();
         if (OV.status !== 'all') its = its.filter((l) => !l.in);
-        its.sort(OV.sort === 'sales' ? (x, y) => y.rate - x.rate : OV.sort === 'avail' ? (x, y) => (x.in - y.in) || y.rate - x.rate : (x, y) => y.lost - x.lost || (x.in - y.in) || y.rate - x.rate);
+        // Out-of-stock items first, biggest sellers first within each group.
+        its.sort((x, y) => (x.in - y.in) || y.rate - x.rate);
         const lim = OV.more.get(kt) || 25;
         for (const l of its.slice(0, lim)) {
           const it = l.it, s2 = NET.byAcct.get(l.p);
           rows.push(`<tr class="l3"><td class="nm"><div class="nmw"><span class="lv">Item</span><span><span class="code">${esc(it.code)}</span> ${esc(it.name)}<span class="it-sub">${esc(s2 ? s2.name : l.p)} · ${(TYPE[it.tier] || ['Regular'])[0]}${NET.hasSales && it.stock ? ` · ${fmtN(it.stock[l.s])} units on hand` : ''}</span></span></div></td>
             ${salesCell(l.rate)}<td class="num">1</td><td class="num">${l.in ? '0' : '1'}</td><td>${av(l.in ? 1 : 0)}</td>
-            <td>${l.in ? `<span class="chip good">${ICON.good}In stock</span>` : '<span class="out">OUT</span>'}</td>${lostCell(l.lost)}${shareCell(l.lost)}</tr>`);
+            <td>${l.in ? `<span class="chip good">${ICON.good}In stock</span>` : '<span class="out">OUT</span>'}</td>${shareCell(l.rate)}</tr>`);
         }
         if (its.length > lim) rows.push(`<tr class="more"><td colspan="${cols}"><button type="button" class="ov-link" data-ov="more" data-key="${esc(kt)}">Show ${Math.min(50, its.length - lim)} more of ${its.length - lim} remaining items</button></td></tr>`);
         if (!its.length) rows.push(`<tr class="more"><td colspan="${cols}" class="dim">No out-of-stock items here.</td></tr>`);
@@ -1541,45 +1536,45 @@ function ovDrill(list, T) {
   return `<div class="r-sec ov-drill" style="border-bottom:1px solid var(--p-rule)">
     <div class="r-sec-head"><div><div class="ov-q">Which category, sub-category, store and item?</div><h3>Category → Sub-category → Store → Item</h3>
       <p class="ov-sub">Open a category, then its sub-category, then the store, down to the exact item. Every level is sorted by the order you pick.</p></div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><div class="ov-seg" role="group" aria-label="Sort the drilldown">${NET.hasSales ? seg('lost', 'Lost sales ↓') + seg('sales', 'Daily sales ↓') : ''}${seg('avail', 'Availability ↑')}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><div class="ov-seg" role="group" aria-label="Sort the drilldown">${NET.hasSales ? seg('sales', 'Daily sales ↓') : ''}${seg('avail', 'Availability ↑')}</div>
       <button type="button" class="ov-link" data-ov="expand">Open the 3 biggest problems</button><button type="button" class="ov-link" data-ov="collapse">Close all</button></div></div>
-    <div class="ov-scroll" style="max-height:760px"><table class="ovt ovd"><thead><tr><th>Category / sub-category / store / item</th>${NET.hasSales ? '<th class="r">Units/day</th>' : ''}<th class="r">Listings</th><th class="r">Out</th><th class="r">Availability</th><th>Status</th>${NET.hasSales ? '<th class="r">Lost/day</th><th class="r">Share of lost</th>' : ''}</tr></thead>
+    <div class="ov-scroll" style="max-height:760px"><table class="ovt ovd"><thead><tr><th>Category / sub-category / store / item</th>${NET.hasSales ? '<th class="r">Units/day</th>' : ''}<th class="r">Listings</th><th class="r">Out</th><th class="r">Availability</th><th>Status</th>${NET.hasSales ? '<th class="r">Share of sales</th>' : ''}</tr></thead>
     <tbody>${rows.join('') || `<tr><td colspan="${cols}"><div class="ov-empty">Nothing matches the status filter.</div></td></tr>`}</tbody></table></div>
   </div>`;
 }
 
 function ovStores(list, t) {
-  const gs = [...ovAgg(list, (l) => l.s).values()].sort(NET.hasSales ? ovByLost : (a, b) => a.p - b.p);
-  const max = Math.max(...gs.map((g) => (NET.hasSales ? g.lost : g.n - g.inn)), 1e-9);
-  return `<div class="r-sec"><div class="r-sec-head"><div><div class="ov-q">Which stores cause the biggest issues?</div><h3>Stores${NET.hasSales ? ' by lost sales' : ''}</h3></div></div>
+  const gs = [...ovAgg(list, (l) => l.s).values()].sort(ovWeakest);
+  const max = Math.max(...gs.map((g) => g.n - g.inn), 1);
+  return `<div class="r-sec"><div class="r-sec-head"><div><div class="ov-q">Which stores cause the biggest issues?</div><h3>Stores, weakest first</h3></div></div>
     <div class="ov-stores">${gs.map((g) => {
-      const st = status(g.p), v = NET.hasSales ? g.lost : g.n - g.inn;
+      const st = status(g.p), v = g.n - g.inn;
       return `<button type="button" class="ov-store${OV.store === g.k ? ' sel' : ''}" data-ov="store" data-s="${g.k}">
         <span class="code-b ${st}">${esc(storeCode(g.k))}</span><span class="nm">${esc(DATA.stores[g.k])} <span class="chip ${st}" style="padding:2px 6px">${pct1(g.p)}%</span></span>
-        <span class="lostv">${NET.hasSales ? `${units(g.lost)}/day` : `${fmtN(v)} out`}</span>
-        <span class="meta"><span class="bar"><i style="width:${(v / max) * 100}%"></i></span>${NET.hasSales ? `${share1(t.lost ? g.lost / t.lost : 0)} of lost sales · ` : ''}${fmtN(g.n - g.inn)} empty</span></button>`;
+        <span class="sv">${NET.hasSales ? `${units(g.sales)} units/day` : ''}</span>
+        <span class="meta"><span class="bar"><i style="width:${(v / max) * 100}%"></i></span>${fmtN(v)} of ${fmtN(g.n)} listings out of stock</span></button>`;
     }).join('')}</div></div>`;
 }
 
 function ovFixFirst(list) {
-  const top = list.filter((l) => !l.in).sort((a, b) => b.lost - a.lost || tierRank(a.it.tier) - tierRank(b.it.tier)).slice(0, 20);
-  return `<div class="r-sec"><div class="r-sec-head"><div><div class="ov-q">What should I fix first?</div><h3>Empty shelves losing the most sales</h3>
-    <p class="ov-sub">Out-of-stock listings ranked by what they sell on a normal day. Click one to open it in the drilldown.</p></div></div>
-    ${top.length ? `<div class="ov-scroll" style="max-height:560px"><table class="ovt ovl"><thead><tr><th class="r">#</th><th>Item</th><th>Store</th>${NET.hasSales ? '<th class="r">Lost/day</th>' : '<th>Type</th>'}</tr></thead><tbody>
+  const top = list.filter((l) => !l.in).sort((a, b) => b.rate - a.rate || tierRank(a.it.tier) - tierRank(b.it.tier)).slice(0, 20);
+  return `<div class="r-sec"><div class="r-sec-head"><div><div class="ov-q">What should I fix first?</div><h3>Best-selling products that are out of stock</h3>
+    <p class="ov-sub">Out-of-stock listings, ${NET.hasSales ? 'biggest sellers' : 'top-seller tiers'} first. Click one to open it in the drilldown.</p></div></div>
+    ${top.length ? `<div class="ov-scroll" style="max-height:560px"><table class="ovt ovl"><thead><tr><th class="r">#</th><th>Item</th><th>Store</th>${NET.hasSales ? '<th class="r">Units/day</th>' : '<th>Type</th>'}</tr></thead><tbody>
     ${top.map((l, i) => { const s2 = NET.byAcct.get(l.p); return `<tr data-ov="reveal" data-cat="${esc(l.cat)}" data-sub="${esc(l.sub)}" data-s="${l.s}" tabindex="0"><td class="num dim">${i + 1}</td>
       <td class="nm"><span class="code">${esc(l.it.code)}</span> ${esc(l.it.name)}<span class="it-sub">${esc(s2 ? s2.name : l.p)} · ${esc(l.sub)}</span></td>
-      <td><b>${esc(storeCode(l.s))}</b> <span class="dim">${esc(DATA.stores[l.s])}</span></td>${NET.hasSales ? `<td class="num lost">${units(l.lost)}</td>` : `<td>${typePill(l.it.tier)}</td>`}</tr>`; }).join('')}
+      <td><b>${esc(storeCode(l.s))}</b> <span class="dim">${esc(DATA.stores[l.s])}</span></td>${NET.hasSales ? `<td class="num">${units(l.rate)}</td>` : `<td>${typePill(l.it.tier)}</td>`}</tr>`; }).join('')}
     </tbody></table></div>` : '<div class="ov-empty">No empty shelves in this selection.</div>'}</div>`;
 }
 
 function ovCells(list) {
   const cells = [...ovAgg(list, (l) => l.p + '|' + l.s).values()].filter((g) => status(g.p) !== 'good' && g.n > g.inn)
-    .sort(NET.hasSales ? ovByLost : (a, b) => a.p - b.p || b.n - a.n).slice(0, 15);
+    .sort(NET.hasSales ? (a, b) => b.sales - a.sales || a.p - b.p : (a, b) => a.p - b.p || b.n - a.n).slice(0, 15);
   return `<div class="r-sec"><div class="r-sec-head"><div><div class="ov-q">Who needs to act?</div><h3>Supplier-store cells to escalate</h3>
-    <p class="ov-sub">Below-target and critical cells, ${NET.hasSales ? 'biggest lost sales' : 'weakest'} first. Click one to filter.</p></div></div>
-    ${cells.length ? `<div class="ov-scroll" style="max-height:560px"><table class="ovt ovl"><thead><tr><th>Supplier</th><th>Store</th><th class="c">Avail.</th>${NET.hasSales ? '<th class="r">Lost/day</th>' : ''}</tr></thead><tbody>
+    <p class="ov-sub">Below-target and critical cells, ${NET.hasSales ? 'biggest sellers' : 'weakest'} first. Click one to filter.</p></div></div>
+    ${cells.length ? `<div class="ov-scroll" style="max-height:560px"><table class="ovt ovl"><thead><tr><th>Supplier</th><th>Store</th><th class="c">Avail.</th>${NET.hasSales ? '<th class="r">Units/day</th>' : ''}</tr></thead><tbody>
     ${cells.map((g) => { const [p, sk] = g.k.split('|'); const s2 = NET.byAcct.get(p); const st = status(g.p); return `<tr data-ov="cell" data-p="${esc(p)}" data-s="${sk}" tabindex="0"><td class="nm">${esc(s2 ? s2.name : p)}<span class="it-sub">${fmtN(g.n - g.inn)} of ${fmtN(g.n)} listings empty</span></td>
-      <td><b>${esc(storeCode(+sk))}</b> <span class="dim">${esc(DATA.stores[+sk])}</span></td><td class="c"><span class="chip ${st}" style="padding:2px 6px">${GLYPH[st]} ${pct0(g.p)}%</span></td>${NET.hasSales ? `<td class="num lost">${units(g.lost)}</td>` : ''}</tr>`; }).join('')}
+      <td><b>${esc(storeCode(+sk))}</b> <span class="dim">${esc(DATA.stores[+sk])}</span></td><td class="c"><span class="chip ${st}" style="padding:2px 6px">${GLYPH[st]} ${pct0(g.p)}%</span></td>${NET.hasSales ? `<td class="num">${units(g.sales)}</td>` : ''}</tr>`; }).join('')}
     </tbody></table></div>` : '<div class="ov-empty">Every supplier-store cell here is on target.</div>'}</div>`;
 }
 
@@ -1589,8 +1584,8 @@ function ovMethod() {
     <dt>Listing</dt><dd>One product in one store (a product-store combination). It is in stock when the store holds at least one unit.</dd>
     <dt>Availability</dt><dd>Listings in stock ÷ all listings. Every total (supplier, store, category and the grand total) is counted from listings, so it is weighted rather than an average of the percentages shown.</dd>
     <dt>Status</dt><dd>On target ${settings.target}% and above · Below target ${settings.critical}–${settings.target - 0.01}% · Critical under ${settings.critical}%. Percentages are rounded down, so 84.99% shows as 84% and stays amber.</dd>
-    <dt>Daily sales</dt><dd>${NET.hasSales ? `Average units sold a day for each listing: Lifetime Qty Sold ÷ days since its first sale (at least ${MIN_SALES_DAYS} days, so new listings are not inflated). The Tableau data holds lifetime sales, not a single day’s sales.` : 'Not in this data. Reload from Tableau to rank by sales.'}</dd>
-    ${NET.hasSales ? '<dt>Lost sales / day</dt><dd>Daily sales of the listings that are out of stock now. The fix-first lists and the drilldown use it: it is high only when a listing both sells well and is empty, so a 70% supplier that barely sells ranks below a big supplier with a smaller gap.</dd><dt>90% focus group</dt><dd>Suppliers ranked by daily sales, highest first, with their shares added up in that order. Every supplier up to and including the one that takes the running total past 90% is marked Focus. It follows the store, category, sub-category and item filters, not the supplier filter.</dd>' : ''}
+    <dt>Daily sales</dt><dd>${NET.hasSales ? `Average units sold a day for each listing: Lifetime Qty Sold ÷ days since its first sale (at least ${MIN_SALES_DAYS} days, so new listings are not inflated). The Tableau data holds lifetime sales, not a single day’s sales. Suppliers, stores, categories, sub-categories and items are ordered by it, biggest first.` : 'Not in this data. Reload from Tableau to rank by sales.'}</dd>
+    ${NET.hasSales ? '<dt>90% focus group</dt><dd>Suppliers ranked by daily sales, highest first, with their shares added up in that order. Every supplier up to and including the one that takes the running total past 90% is marked Focus. It follows the store, category, sub-category and item filters, not the supplier filter.</dd>' : ''}
     <dt>Left out</dt><dd>Items tiered ${esc(settings.excludedTiers.join(' or ') || 'nothing')} in the item master (change under Settings).${hidden}</dd>
     <dt>Source</dt><dd>${esc(DATA.source || 'Tableau')}${DATA.origin === 'live' ? ', read live through your Tableau Cloud connector' : DATA.origin === 'snapshot' ? ', saved snapshot' : ''}. Suppliers are grouped by Supplier Account; category and sub-category come from the item master (Google Sheet).</dd>
   </dl>`;
@@ -1599,7 +1594,7 @@ function ovMethod() {
 function ovExpandTop() {
   const list = ovFiltered(false);
   OV.open.clear();
-  const sortL = NET.hasSales ? ovByLost : (a, b) => a.p - b.p;
+  const sortL = ovProblems;
   for (const c of [...ovAgg(list, (l) => l.cat).values()].sort(sortL).slice(0, 3)) {
     const kc = 'c:' + c.k; OV.open.add(kc);
     const cl = list.filter((l) => l.cat === c.k);
@@ -1609,7 +1604,6 @@ function ovExpandTop() {
     const stg = [...ovAgg(cl.filter((l) => l.sub === sub.k), (l) => l.s).values()].sort(sortL)[0];
     if (stg) OV.open.add(ks + '|t:' + stg.k);
   }
-  if (NET.hasSales) OV.sort = 'lost';
 }
 
 function ovAct(el) {
@@ -1629,7 +1623,6 @@ function ovAct(el) {
   else if (a === 'reveal') {
     const kc = 'c:' + el.dataset.cat, ks = kc + '|s:' + el.dataset.sub;
     OV.open.add(kc); OV.open.add(ks); OV.open.add(ks + '|t:' + el.dataset.s);
-    if (NET.hasSales) OV.sort = 'lost';
     renderOverview();
     const d = els.ov.querySelector('.ov-drill');
     if (d) d.scrollIntoView({ block: 'start' });
@@ -1664,7 +1657,7 @@ function renderNet() {
     <div class="net-bar">${seg('crit')}${seg('warn')}${seg('good')}</div>
     <div class="filters">${chipBtn('all', 'All', total)}${chipBtn('crit', 'Critical', c.crit)}${chipBtn('warn', 'Below target', c.warn)}${chipBtn('good', 'On target', c.good)}</div>
     <p class="net-cap" style="margin:10px 0 0">Stores: ${esc(stores)}${hiddenStores.length ? `<br>Not shown: ${esc(hiddenStores.join(', '))}${settings.storeAuto ? ' (no stock anywhere yet)' : ''}` : ''}</p>`;
-  if (NET.hasSales) els.net.querySelector('.net-cap').insertAdjacentHTML('beforeend', `<br>${units(NET.lost)} of ${units(NET.sales)} units a day on empty shelves`);
+  if (NET.hasSales) els.net.querySelector('.net-cap').insertAdjacentHTML('beforeend', `<br>${units(NET.sales)} units sold a day`);
 }
 
 function visibleSuppliers() {
@@ -1674,7 +1667,6 @@ function visibleSuppliers() {
   const by = els.sort.value;
   const name = (a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' });
   if (by === 'sales') list.sort((a, b) => b.sales - a.sales || b.l - a.l || name(a, b));
-  else if (by === 'lost') list.sort((a, b) => b.lost - a.lost || a.r - b.r || name(a, b));
   else if (by === 'low') list.sort((a, b) => a.r - b.r || b.oos - a.oos || name(a, b));
   else if (by === 'high') list.sort((a, b) => b.r - a.r || name(a, b));
   else if (by === 'oos') list.sort((a, b) => b.oos - a.oos || a.r - b.r);
@@ -1724,7 +1716,7 @@ function showSupplier(acct) {
   currentPages = paginate(m, els.pages);
   for (const p of currentPages) { const f = document.createElement('div'); f.className = 'frame'; p.replaceWith(f); f.append(p); }
   fitPages();
-  els.note.innerHTML = `<button class="btn small stage-back" type="button" data-overview>← All suppliers</button><span><strong>${esc(m.name)}</strong> · ${currentPages.length} ${plural(currentPages.length, 'page', 'pages')}</span><span>${pct0(m.r)}% available · ${fmtN(m.oosN)} listings out${NET.hasSales ? ` · ${units(m.lost)} units/day lost` : ''} · rank ${m.rank} of ${m.rankOf}</span>`;
+  els.note.innerHTML = `<button class="btn small stage-back" type="button" data-overview>← All suppliers</button><span><strong>${esc(m.name)}</strong> · ${currentPages.length} ${plural(currentPages.length, 'page', 'pages')}</span><span>${pct0(m.r)}% available · ${fmtN(m.oosN)} listings out${NET.hasSales ? ` · ${units(m.sales)} units sold a day` : ''} · rank ${m.rank} of ${m.rankOf}</span>`;
   for (const li of els.list.querySelectorAll('.sup')) li.classList.toggle('is-active', li.dataset.acct === acct);
   try { history.replaceState(null, '', '#s' + acct); } catch { /* not allowed in some frames */ }
   return currentPages.length;
