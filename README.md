@@ -24,6 +24,12 @@ availability per store and in all stores.
 - Filter by store or category. Four figures on top: availability, how many
   suppliers make 90% of sales qty and of GMV, and the critical and
   below-target supplier-store cells.
+- **Excel** and **PDF** buttons on each table download it as it is on screen
+  (scope, filters, sort). The categories Excel holds every category,
+  sub-category and product; the categories PDF holds categories and
+  sub-categories plus the products you have opened.
+- The view uses the Circle look of Allocation Control: light page, white
+  cards, magenta for what is selected.
 
 When opened in Claude with the Tableau Cloud connector, the report reads
 "Supplier's Availability Data" live (Load data → Reload from Tableau to

@@ -14,15 +14,15 @@
   color-scheme:light;
   --f-sans:"Archivo","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
-  --ui-bg:#E8ECF2;
+  --ui-bg:#F4F5F7;
   --ui-panel:#FFFFFF;
   --ui-panel-2:#F4F6FA;
   --ui-line:#D8DEE8;
   --ui-text:#0E1A2B;
   --ui-text-2:#46536B;
   --ui-text-3:#6B778F;
-  --ui-accent:#2F5BEA;
-  --ui-accent-soft:#E7EDFE;
+  --ui-accent:#E40071;
+  --ui-accent-soft:#FCE8F2;
   --ui-accent-ink:#FFFFFF;
   --ui-crit:#D92D20;
   --ui-warn:#E39A10;
@@ -39,8 +39,8 @@
     --ui-text:#E7ECF4;
     --ui-text-2:#A9B4C7;
     --ui-text-3:#8490A5;
-    --ui-accent:#7F9DFF;
-    --ui-accent-soft:#1B2847;
+    --ui-accent:#FF5AA8;
+    --ui-accent-soft:#3A1428;
     --ui-accent-ink:#0A0F17;
     --ui-crit:#F2675D;
     --ui-warn:#F2B03D;
@@ -57,8 +57,8 @@
   --ui-text:#E7ECF4;
   --ui-text-2:#A9B4C7;
   --ui-text-3:#8490A5;
-  --ui-accent:#7F9DFF;
-  --ui-accent-soft:#1B2847;
+  --ui-accent:#FF5AA8;
+  --ui-accent-soft:#3A1428;
   --ui-accent-ink:#0A0F17;
   --ui-crit:#F2675D;
   --ui-warn:#F2B03D;
@@ -600,6 +600,62 @@ dialog::backdrop{background:rgba(8,14,24,.55)}
 .ov-key i.warn{background:var(--warn-tint);box-shadow:inset 0 0 0 1px var(--warn)}
 .ov-key i.crit{background:var(--crit-tint);box-shadow:inset 0 0 0 1px var(--crit)}
 @media (max-width:760px){.ov-tile{padding:14px 16px}.ov .r-sec{overflow-x:auto}}
+
+/* =====================================================================
+   All suppliers view in the Circle look (same as Allocation Control):
+   light page, white rounded cards, magenta for what is selected.
+   ===================================================================== */
+.page.ov.cx{--cx-pink:#E40071;--cx-pink-2:#A8005A;--cx-tint:#FCE8F2;--cx-ink:#1B1530;--cx-ink-2:#4A4458;--cx-ink-3:#7A7287;--cx-line:#E5E7EB;--cx-head:#5B6475;
+  background:transparent;box-shadow:none;max-width:1320px;gap:16px;color:var(--cx-ink)}
+.cx-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 24px;padding:4px 2px 0}
+.cx-eyebrow{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--cx-pink)}
+.cx-head h1{margin:4px 0 0;font-size:30px;font-weight:700;letter-spacing:-.01em;color:var(--cx-ink)}
+.cx-head p{margin:4px 0 0;font-size:13.5px;color:var(--cx-ink-3)}
+.cx-seg{display:inline-flex;gap:4px;padding:4px;background:#fff;border:1px solid var(--cx-line);border-radius:12px;flex-wrap:wrap}
+.cx-seg button{border:0;background:none;border-radius:9px;padding:8px 14px;font:inherit;font-size:13px;font-weight:600;color:var(--cx-ink-2);cursor:pointer;white-space:nowrap}
+.cx-seg button:hover{background:#F4F5F7}
+.cx-seg button[aria-pressed="true"]{background:var(--cx-pink);color:#fff}
+.cx-filters{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end}
+.cx-filters .ov-f label{color:var(--cx-head);font-size:11px;letter-spacing:.06em}
+.cx-filters .ov-f select{border:1px solid var(--cx-line);border-radius:9px;padding:8px 10px;background:#fff;color:var(--cx-ink);font-size:13.5px;width:210px}
+.cx-filters .ov-f select:focus-visible{outline:2px solid var(--cx-pink);outline-offset:1px}
+.cx-card{background:#fff;border:1px solid var(--cx-line);border-radius:12px;box-shadow:0 1px 2px rgba(27,21,48,.04)}
+.cx-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.cx-tile{padding:16px 18px}
+.cx-lbl{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cx-head)}
+.cx-lbl i{width:9px;height:9px;border-radius:2px}
+.cx-lbl i.crit{background:var(--crit)}.cx-lbl i.warn{background:var(--warn)}
+.cx-tile .v{font-size:34px;font-weight:700;line-height:1.1;margin-top:8px;color:var(--cx-ink)}
+.cx-tile .v small{font-size:18px;color:var(--cx-ink-3)}
+.cx-tile .v.crit{color:var(--crit-ink)}.cx-tile .v.warn{color:var(--warn-ink)}.cx-tile .v.good{color:var(--good-ink)}
+.cx-tile .s{font-size:12.5px;color:var(--cx-ink-3);margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cx-card-h{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--cx-line)}
+.cx-card-h h3{margin:0;font-size:15px;font-weight:700;color:var(--cx-ink)}
+.cx-card-h p{margin:2px 0 0;font-size:12.5px;color:var(--cx-ink-3)}
+.cx-card-b{padding:6px 18px 16px}
+.cx-dl{display:flex;gap:8px}
+.cx-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--cx-line);background:#fff;color:var(--cx-ink);border-radius:9px;padding:7px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.cx-btn svg{width:15px;height:15px;color:var(--cx-pink)}
+.cx-btn:hover{border-color:var(--cx-pink);color:var(--cx-pink)}
+.cx-btn:disabled{opacity:.6;cursor:progress}
+.cx .ovm{font-size:13.5px}
+.cx .ovm th,.cx .ovm thead th{background:#fff;color:var(--cx-head);font-size:11px;letter-spacing:.06em;font-weight:700;border-bottom:1px solid var(--cx-line)}
+.cx .ovm th.sortable button:hover{background:#F7F7F9;color:var(--cx-ink)}
+.cx .ovm th.sortable.on button{color:var(--cx-pink)}
+.cx .ovm tbody td{border-bottom:1px solid #F0F1F4}
+.cx .ovm tbody tr:hover td,.cx .ovm tbody tr:focus-visible td{background:#FDF2F8}
+.cx .ovm tbody tr:hover .supn{color:var(--cx-pink)}
+.cx .ovm tr.cut td{background:var(--cx-tint);color:var(--cx-pink-2);border-bottom:2px solid var(--cx-pink)}
+.cx .ovm tfoot td{background:#FAF8F6;border-top:1px solid var(--cx-line)}
+.cx .ovc tr.lv0 td{background:#FAF8F6;border-bottom-color:var(--cx-line)}
+.cx .ovc tr.lv0:hover td{background:#FDF2F8}
+.cx .car.on{color:var(--cx-pink)}
+.cx .ov-link{color:var(--cx-pink)}
+.cx .ov-cats{border-top:1px solid var(--cx-line)}
+@media (min-width:1100px){
+  .page.ov.cx .ovm thead th{background:#fff;box-shadow:inset 0 -1px 0 var(--cx-line),0 6px 10px -10px rgba(27,21,48,.4)}
+  .page.ov.cx .ovm tfoot td{background:#FAF8F6;box-shadow:inset 0 1px 0 var(--cx-line)}
+}
 
 /* Capture mode: used by tools/render-reports.js to screenshot pages at 1:1 */
 body.capture .topbar,body.capture .sidebar,body.capture .stage-note,body.capture .ov-host{display:none}
@@ -1459,36 +1515,220 @@ function renderOverview() {
   const segB = (v, label) => `<button type="button" data-ov-scope="${v}" aria-pressed="${scope === v}">${label}</button>`;
   const head = `<tr><th class="rk">#</th>${ovSortHead('Supplier', 'name', OV.sort, 's', 'sp')}${S ? ovSortHead('Sales qty', 'qty', OV.sort, 's') + ovSortHead('Cum. qty', 'qty', { key: OV.sort.key === 'qty' ? 'qty' : '', dir: OV.sort.dir }, 's') + ovSortHead('GMV', 'gmv', OV.sort, 's') + ovSortHead('Cum. GMV', 'gmv', { key: OV.sort.key === 'gmv' ? 'gmv' : '', dir: OV.sort.dir }, 's') : ''}${stores.map((k) => ovSortHead(esc(DATA.stores[k]), 's:' + k, OV.sort, 's', 'st')).join('')}${ovSortHead('All stores', 'p', OV.sort, 's', 'c')}</tr>`;
 
-  host.innerHTML = `<section class="page ov ${st}">
-    <header class="r-head">
+  const dl = (table) => `<div class="cx-dl"><button type="button" class="cx-btn" data-ov-dl="${table}-xlsx" title="Download this table as an Excel file">${ICON_XLS}Excel</button><button type="button" class="cx-btn" data-ov-dl="${table}-pdf" title="Download this table as a PDF">${ICON_PDF}PDF</button></div>`;
+  OVX = { rows, stores, t, scope, cq, cg, list, S, G };
+  host.innerHTML = `<section class="page ov cx ${st}">
+    <header class="cx-head">
       <div>
-        <div class="r-eyebrow">${settings.company ? esc(settings.company) + ' · ' : ''}Supplier availability report</div>
-        <h1 class="r-supplier">All suppliers</h1>
-        <div class="r-meta"><span>Click a column to sort</span><i>/</i><span>Click a supplier to open its report</span></div>
+        <div class="cx-eyebrow">${settings.company ? esc(settings.company) + ' · ' : ''}Supplier availability</div>
+        <h1>All suppliers</h1>
+        <p>Stock position ${a ? `${a.date} · ${a.weekday} ${a.time} Kuwait time` : '—'} · Click a column to sort, a supplier to open its report.</p>
       </div>
-      <div class="r-date"><div class="r-eyebrow">Stock position</div><div class="d">${a ? a.date : '—'}</div><div class="t">${a ? `${a.weekday} · ${a.time} Kuwait time` : ''}</div></div>
+      ${S ? `<div class="cx-seg" role="group" aria-label="Which suppliers">${segB('qty', 'Top suppliers (90% of sales qty)')}${G ? segB('gmv', 'Top suppliers (90% of GMV)') : ''}${segB('all', `All ${fmtN(supAll.length)} suppliers`)}</div>` : ''}
     </header>
-    <div class="r-stripe"></div>
-    <div class="ov-bar">
-      ${S ? `<div class="ov-seg" role="group" aria-label="Which suppliers">${segB('qty', 'Top suppliers (90% of sales qty)')}${G ? segB('gmv', 'Top suppliers (90% of GMV)') : ''}${segB('all', `All ${fmtN(supAll.length)} suppliers`)}</div>` : ''}
+    <div class="cx-filters">
       <div class="ov-f"><label for="ov-store">Store</label><select id="ov-store" data-ovf="store">${opt(-1, 'All stores', OV.store < 0)}${NET.active.map((k) => opt(k, DATA.stores[k], OV.store === k)).join('')}</select></div>
       <div class="ov-f"><label for="ov-cat">Category</label><select id="ov-cat" data-ovf="cat">${opt('', 'All categories', !OV.cat)}${cats.map((c) => opt(c, c, OV.cat === c)).join('')}</select></div>
     </div>
-    <div class="ov-tiles">
-      <div class="ov-tile"><div class="r-lbl">Availability</div><div class="v ${st}">${pct1(t.p)}%</div><div class="s">${chip(st)} target ${settings.target}%</div></div>
-      ${S ? `<div class="ov-tile"><div class="r-lbl">Top suppliers</div><div class="v">${fmtN(cq.count)}${G ? `<small> · ${fmtN(cg.count)}</small>` : ''}</div><div class="s">${G ? `make 90% of sales qty · of GMV` : 'make 90% of sales qty'} (of ${fmtN(supAll.length)})</div></div>` : ''}
-      <div class="ov-tile"><div class="r-lbl"><i class="crit"></i>Critical</div><div class="v crit">${fmtN(crit)}</div><div class="s">supplier-store cells under ${settings.critical}%</div></div>
-      <div class="ov-tile"><div class="r-lbl"><i class="warn"></i>Below target</div><div class="v warn">${fmtN(warn)}</div><div class="s">supplier-store cells ${settings.critical}–${settings.target - 0.01}%</div></div>
+    <div class="cx-tiles">
+      <div class="cx-card cx-tile"><div class="cx-lbl">Availability</div><div class="v ${st}">${pct1(t.p)}%</div><div class="s">${chip(st)} target ${settings.target}%</div></div>
+      ${S ? `<div class="cx-card cx-tile"><div class="cx-lbl">Top suppliers</div><div class="v">${fmtN(cq.count)}${G ? `<small> · ${fmtN(cg.count)}</small>` : ''}</div><div class="s">${G ? 'make 90% of sales qty · of GMV' : 'make 90% of sales qty'} (of ${fmtN(supAll.length)})</div></div>` : ''}
+      <div class="cx-card cx-tile"><div class="cx-lbl"><i class="crit"></i>Critical</div><div class="v crit">${fmtN(crit)}</div><div class="s">supplier-store cells under ${settings.critical}%</div></div>
+      <div class="cx-card cx-tile"><div class="cx-lbl"><i class="warn"></i>Below target</div><div class="v warn">${fmtN(warn)}</div><div class="s">supplier-store cells ${settings.critical}–${settings.target - 0.01}%</div></div>
     </div>
-    <div class="r-sec">
-      <div class="ov-h"><h3>Suppliers</h3><p>${scope === 'all' ? 'All suppliers' : `The ${fmtN(rows.length)} suppliers that make 90% of ${METRIC[scope]}`}. Click a column to sort, a supplier to open its report.</p></div>
+    <div class="cx-card">
+      <div class="cx-card-h"><div><h3>Suppliers</h3><p>${scope === 'all' ? 'All suppliers' : `The ${fmtN(rows.length)} suppliers that make 90% of ${METRIC[scope]}`}</p></div>${dl('sup')}</div>
+      <div class="cx-card-b">
       <div class="ov-wide"><table class="ovt ovm"><thead>${head}</thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>
       <p class="ov-foot-note"><span class="ov-key"><i class="good"></i>On target ${settings.target}%+</span><span class="ov-key"><i class="warn"></i>▲ Below target ${settings.critical}–${settings.target - 0.01}%</span><span class="ov-key"><i class="crit"></i>● Critical under ${settings.critical}%</span>${S ? '<span>Sales qty = Lifetime Qty Sold · GMV = Lifetime GMV (KWD) · Cum. = running total from the biggest down, with each row’s own share below it.</span>' : ''}</p>
+      </div>
     </div>
     ${ovCategories(list, stores)}
   </section>`;
   window.scrollTo(0, y);
   if (ovFocusKey) { const el = [...host.querySelectorAll('[data-ov-toggle],[data-ov-sort]')].find((x) => (x.dataset.ovToggle || x.dataset.ovTable + x.dataset.ovSort) === ovFocusKey); if (el) el.focus({ preventScroll: true }); ovFocusKey = null; }
+}
+
+/* ---------- Downloads: each table as Excel or PDF, exactly as filtered and sorted ---------- */
+let OVX = null;   // what the overview shows now, for the download buttons
+const ICON_XLS = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 1.5h6l3 3v10h-9z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="m6 7.5 4 5m0-5-4 5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+const ICON_PDF = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 1.5h6l3 3v10h-9z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M6 8h4M6 10.5h4M6 13h2.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+const LIB = {
+  xlsx: 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+  jspdf: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  autotable: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',
+};
+function loadLib(src, ready) {
+  if (ready()) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const el = document.createElement('script');
+    el.src = src;
+    el.onload = () => (ready() ? resolve() : reject(new Error('The download library did not load. Reload the page and try again.')));
+    el.onerror = () => reject(new Error('Downloads need an internet connection to load their library. Check the connection and try again.'));
+    document.head.append(el);
+  });
+}
+const ratio1 = (p) => Math.floor(p * 1000 + 1e-7) / 1000;   // rounded down to 0.1%, like the screen
+
+function ovScopeText() {
+  const s = OVX.scope === 'all' ? 'All suppliers' : `Top suppliers (90% of ${METRIC[OVX.scope]})`;
+  return [s, OV.store >= 0 ? DATA.stores[OV.store] : 'All stores', OV.cat || 'All categories'].join(' · ');
+}
+function metricCols() {
+  return OVX.S ? [
+    { h: 'Sales qty', k: 'int' }, { h: 'Share of sales qty', k: 'pct', pdf: false }, { h: 'Cum. sales qty', k: 'pct' },
+    { h: 'GMV (KWD)', k: 'money' }, { h: 'Share of GMV', k: 'pct', pdf: false }, { h: 'Cum. GMV', k: 'pct' },
+  ] : [];
+}
+const metricVals = (r) => (OVX.S ? [r.qty, r.qtyShare, r.qtyCum, r.gmv, r.gmvShare, r.gmvCum] : []);
+function availCols() {
+  return [...OVX.stores.map((k) => ({ h: DATA.stores[k], k: 'pct', avail: true })), { h: 'All stores', k: 'pct', avail: true },
+    { h: 'In stock', k: 'int', pdf: false }, { h: 'Listings', k: 'int', pdf: false }, { h: 'Status', k: 't', pdf: false }];
+}
+const availVals = (r) => [...OVX.stores.map((k) => { const b = r.by.get(k); return b ? ratio1(b.p) : null; }), ratio1(r.p), r.inn, r.n, STATUS_LABEL[status(r.p)]];
+
+function ovSupplierTable() {
+  const { rows, t, cq, cg, S } = OVX;
+  const cols = [{ h: '#', k: 'int' }, { h: 'Supplier', k: 't', wide: true }, { h: 'Account', k: 't', pdf: false }, ...metricCols(), ...availCols()];
+  const body = rows.map((r, i) => [i + 1, r.label, r.k, ...metricVals(r), ...availVals(r)]);
+  const foot = ['', OVX.scope === 'all' ? `All ${rows.length} suppliers` : `These ${rows.length} suppliers`, '',
+    ...(S ? [t.qty, cq.T ? t.qty / cq.T : 0, '', t.gmv, cg.T ? t.gmv / cg.T : 0, ''] : []), ...availVals(t)];
+  return { name: 'Suppliers', cols, body, foot };
+}
+
+// One level of the category tree, with its own cumulative contribution, in the on-screen order.
+function ovLevelRows(arr, key) {
+  const rows = [...ovAgg(arr, key).values()];
+  rows.forEach((r) => { r.label = r.k; });
+  if (NET.hasSales) { ovCum(rows, 'qty'); ovCum(rows, 'gmv'); }
+  return ovSortRows(rows, OV.csort);
+}
+// Excel: every category, sub-category and product. PDF: categories and
+// sub-categories, plus the products of the sub-categories opened on screen.
+function ovCategoryTable(forPdf) {
+  const { list, stores } = OVX;
+  const cols = [{ h: 'Level', k: 't', pdf: false }, { h: 'Category', k: 't', pdf: false }, { h: 'Sub-category', k: 't', pdf: false },
+    { h: 'Item code', k: 't', pdf: false }, { h: 'Product', k: 't', pdf: false, wide: true }, { h: 'Supplier', k: 't', pdf: false, wide: true },
+    { h: 'Category / sub-category / product', k: 't', xlsx: false, wide: true }, ...metricCols(), ...availCols()];
+  const body = [];
+  const group = (arr, key) => { const m = new Map(); for (const l of arr) { const k = key(l); let a2 = m.get(k); if (!a2) m.set(k, (a2 = [])); a2.push(l); } return m; };
+  const catMap = group(list, (l) => l.cat);
+  for (const cgR of ovLevelRows(list, (l) => l.cat)) {
+    body.push({ lvl: 0, v: ['Category', cgR.k, '', '', '', '', cgR.k, ...metricVals(cgR), ...availVals(cgR)] });
+    const subMap = group(catMap.get(cgR.k), (l) => l.sub);
+    for (const sg of ovLevelRows(catMap.get(cgR.k), (l) => l.sub)) {
+      body.push({ lvl: 1, v: ['Sub-category', cgR.k, sg.k, '', '', '', '   ' + sg.k, ...metricVals(sg), ...availVals(sg)] });
+      if (forPdf && !OV.open.has('c\u0001' + cgR.k + '\u0001' + sg.k)) continue;
+      const sl = subMap.get(sg.k);
+      const first = new Map();
+      for (const l of sl) { const k = l.p + '|' + l.it.code; if (!first.has(k)) first.set(k, l); }
+      for (const pr of ovLevelRows(sl, (l) => l.p + '|' + l.it.code)) {
+        const l0 = first.get(pr.k), sup = NET.byAcct.get(l0.p);
+        const marks = stores.map((k) => { const b = pr.by.get(k); return !b ? '' : b.inn ? 'In stock' : 'OUT'; });
+        body.push({ lvl: 2, v: ['Product', cgR.k, sg.k, l0.it.code, l0.it.name, sup ? sup.name : l0.p, `      ${l0.it.code} ${l0.it.name}`,
+          ...metricVals(pr), ...marks, ratio1(pr.p), pr.inn, pr.n, STATUS_LABEL[status(pr.p)]] });
+      }
+    }
+  }
+  return { name: 'Categories', cols, body: body.map((b) => b.v), levels: body.map((b) => b.lvl) };
+}
+
+async function ovXlsx(tbl, title, sub) {
+  await loadLib(LIB.xlsx, () => window.XLSX);
+  const X = window.XLSX;
+  const keep = tbl.cols.map((c, i) => (c.xlsx === false ? -1 : i)).filter((i) => i >= 0);
+  const cols = keep.map((i) => tbl.cols[i]);
+  const pick = (row) => keep.map((i) => (row[i] === null || row[i] === undefined ? '' : row[i]));
+  const aoa = [[title], [sub], [], cols.map((c) => c.h), ...tbl.body.map(pick)];
+  if (tbl.foot) aoa.push(pick(tbl.foot));
+  const ws = X.utils.aoa_to_sheet(aoa);
+  for (let r = 4; r < aoa.length; r++) {
+    cols.forEach((c, ci) => {
+      const cell = ws[X.utils.encode_cell({ r, c: ci })];
+      if (!cell || typeof cell.v !== 'number') return;
+      cell.z = c.k === 'pct' ? '0.0%' : c.k === 'money' ? '#,##0.00' : '#,##0';
+    });
+  }
+  ws['!cols'] = cols.map((c) => ({ wch: c.wide ? 42 : c.k === 't' ? 16 : 13 }));
+  ws['!autofilter'] = { ref: X.utils.encode_range({ s: { r: 3, c: 0 }, e: { r: aoa.length - 1, c: cols.length - 1 } }) };
+  const wb = X.utils.book_new();
+  X.utils.book_append_sheet(wb, ws, tbl.name);
+  return new Blob([X.write(wb, { bookType: 'xlsx', type: 'array' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+
+async function ovPdf(tbl, title, sub) {
+  await loadLib(LIB.jspdf, () => window.jspdf && window.jspdf.jsPDF);
+  await loadLib(LIB.autotable, () => window.jspdf.jsPDF.API.autoTable);
+  const keep = tbl.cols.map((c, i) => (c.pdf === false ? -1 : i)).filter((i) => i >= 0);
+  const cols = keep.map((i) => tbl.cols[i]);
+  const fmt = (v, c) => (v === null || v === undefined || v === '' ? '' : typeof v !== 'number' ? String(v)
+    : c.k === 'pct' ? (c.avail ? (Math.floor(v * 1000 + 1e-7) / 10).toFixed(1) + '%' : share1(v)) : nf.format(Math.round(v)));
+  const doc = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+  const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
+  const raw = tbl.body;
+  const TINT = { good: [227, 245, 234], warn: [254, 244, 220], crit: [253, 236, 234] };
+  const INK = { good: [11, 95, 51], warn: [122, 77, 0], crit: [154, 28, 19] };
+  doc.autoTable({
+    head: [cols.map((c) => c.h)],
+    body: raw.map((row) => keep.map((i) => fmt(row[i], tbl.cols[i]))),
+    foot: tbl.foot ? [keep.map((i) => fmt(tbl.foot[i], tbl.cols[i]))] : undefined,
+    startY: 84, margin: { left: 28, right: 28, top: 40, bottom: 34 },
+    theme: 'plain', showFoot: 'lastPage',
+    styles: { font: 'helvetica', fontSize: 7.5, cellPadding: { top: 3.5, bottom: 3.5, left: 4, right: 4 }, textColor: [27, 21, 48], lineColor: [231, 225, 230], lineWidth: { bottom: 0.5 } },
+    headStyles: { fillColor: [228, 0, 113], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7.5 },
+    footStyles: { fillColor: [252, 232, 242], textColor: [27, 21, 48], fontStyle: 'bold' },
+    columnStyles: Object.fromEntries(cols.map((c, j) => [j, { halign: c.k === 't' ? 'left' : c.avail ? 'center' : 'right', cellWidth: c.wide ? 190 : 'auto' }])),
+    didParseCell: (d) => {
+      const c = cols[d.column.index];
+      if (d.section === 'body') {
+        const lvl = tbl.levels ? tbl.levels[d.row.index] : -1;
+        if (lvl === 0) { d.cell.styles.fontStyle = 'bold'; d.cell.styles.fillColor = [250, 248, 246]; }
+        if (lvl === 2) d.cell.styles.textColor = [74, 68, 88];
+        const v = raw[d.row.index][keep[d.column.index]];
+        if (c.avail && typeof v === 'number') { const st2 = status(v); d.cell.styles.fillColor = TINT[st2]; d.cell.styles.textColor = INK[st2]; d.cell.styles.fontStyle = 'bold'; }
+        if (c.avail && v === 'OUT') { d.cell.styles.textColor = [154, 28, 19]; d.cell.styles.fontStyle = 'bold'; }
+      }
+      if (d.section === 'head' && c.k !== 't') d.cell.styles.halign = c.avail ? 'center' : 'right';
+    },
+    didDrawPage: () => {
+      doc.setFillColor(228, 0, 113); doc.rect(0, 0, W, 5, 'F');
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(122, 114, 135);
+      doc.text(`Circle · Supplier availability · ${sub}`, 28, H - 16);
+      doc.text(`Page ${doc.internal.getNumberOfPages()}`, W - 28, H - 16, { align: 'right' });
+    },
+  });
+  // Title block on the first page (drawn after so the page count is known).
+  doc.setPage(1);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(17); doc.setTextColor(27, 21, 48); doc.text(title, 28, 40);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(74, 68, 88); doc.text(sub, 28, 57);
+  doc.setFillColor(228, 0, 113); doc.rect(28, 66, 36, 3, 'F');
+  const n = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFillColor(255, 255, 255); doc.rect(W - 120, H - 26, 92, 14, 'F'); doc.setFontSize(8); doc.setTextColor(122, 114, 135); doc.text(`Page ${i} of ${n}`, W - 28, H - 16, { align: 'right' }); }
+  return doc.output('blob');
+}
+
+async function ovDownload(kind, btn) {
+  if (!OVX) return;
+  const [table, fmt] = kind.split('-');
+  const label = btn.innerHTML;
+  btn.disabled = true;
+  btn.textContent = 'Preparing…';
+  try {
+    const tbl = table === 'sup' ? ovSupplierTable() : ovCategoryTable(fmt === 'pdf');
+    const a = kuwaitParts(DATA.asOf) || {};
+    const title = table === 'sup' ? 'Supplier availability by store' : 'Category availability by store';
+    const sub = `${ovScopeText()} · Stock position ${a.date || ''} ${a.time || ''}`.trim();
+    const blob = fmt === 'xlsx' ? await ovXlsx(tbl, title, sub) : await ovPdf(tbl, title, sub);
+    const scopeName = OVX.scope === 'all' ? 'all suppliers' : `top 90% ${OVX.scope === 'qty' ? 'sales qty' : 'GMV'}`;
+    await saveBlob(blob, `${a.ymd || 'report'} ${tbl.name} - ${scopeName}.${fmt}`);
+    btn.innerHTML = label;
+  } catch (err) {
+    btn.textContent = 'Download failed';
+    btn.title = err.message || String(err);
+    setTimeout(() => { btn.innerHTML = label; btn.title = ''; }, 4000);
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 // Categories → sub-categories → products with the same columns. Cumulative
@@ -1538,9 +1778,9 @@ function ovCategories(list, stores) {
     }
   });
   const head = `<tr><th class="rk">#</th>${ovSortHead('Category', 'name', OV.csort, 'c', 'sp')}${S ? ovSortHead('Sales qty', 'qty', OV.csort, 'c') + ovSortHead('Cum. qty', 'qty', { key: OV.csort.key === 'qty' ? 'qty' : '', dir: OV.csort.dir }, 'c') + ovSortHead('GMV', 'gmv', OV.csort, 'c') + ovSortHead('Cum. GMV', 'gmv', { key: OV.csort.key === 'gmv' ? 'gmv' : '', dir: OV.csort.dir }, 'c') : ''}${stores.map((k) => ovSortHead(esc(DATA.stores[k]), 's:' + k, OV.csort, 'c', 'st')).join('')}${ovSortHead('All stores', 'p', OV.csort, 'c', 'c')}</tr>`;
-  return `<div class="r-sec ov-cats">
-    <div class="ov-h"><h3>Categories</h3><p>Click a category for its sub-categories, a sub-category for its products. Cum. runs within each level: sub-categories within their category, products within their sub-category.</p></div>
-    <div class="ov-wide"><table class="ovt ovm ovc"><thead>${head}</thead><tbody>${out.join('')}</tbody></table></div>
+  return `<div class="cx-card ov-cats">
+    <div class="cx-card-h"><div><h3>Categories</h3><p>Click a category for its sub-categories, a sub-category for its products. Cum. runs within each level.</p></div><div class="cx-dl"><button type="button" class="cx-btn" data-ov-dl="cat-xlsx" title="Every category, sub-category and product as an Excel file">${ICON_XLS}Excel</button><button type="button" class="cx-btn" data-ov-dl="cat-pdf" title="Categories and sub-categories, plus the products you have opened, as a PDF">${ICON_PDF}PDF</button></div></div>
+    <div class="cx-card-b"><div class="ov-wide"><table class="ovt ovm ovc"><thead>${head}</thead><tbody>${out.join('')}</tbody></table></div></div>
   </div>`;
 }
 
@@ -1725,6 +1965,8 @@ els.net.addEventListener('click', (e) => {
 els.search.addEventListener('input', renderList);
 document.addEventListener('click', (e) => { if (e.target.closest('[data-overview]')) showOverview(); });
 els.ov.addEventListener('click', (e) => {
+  const dlb = e.target.closest('[data-ov-dl]');
+  if (dlb) { ovDownload(dlb.dataset.ovDl, dlb); return; }
   const sc = e.target.closest('[data-ov-scope]');
   if (sc) {
     OV.scope = sc.dataset.ovScope;
