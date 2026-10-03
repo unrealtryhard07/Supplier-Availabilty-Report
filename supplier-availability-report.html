@@ -172,6 +172,7 @@ dialog::backdrop{background:rgba(8,14,24,.55)}
 .page .mono{font-family:var(--f-mono)}
 
 .r-head{background:var(--p-band);color:#fff;padding:32px 40px 28px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:end}
+.r-logo{display:block;height:24px;width:auto;margin-bottom:14px}
 .r-eyebrow{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--p-band-2)}
 .r-supplier{font-size:38px;line-height:1.06;font-weight:700;font-stretch:87.5%;letter-spacing:-.005em;margin-top:10px!important;text-wrap:balance;overflow-wrap:anywhere}
 .r-meta{margin-top:12px!important;font-size:14px;color:#D2DBE8;display:flex;flex-wrap:wrap;gap:4px 12px}
@@ -1284,6 +1285,7 @@ function headerFull(m) {
   const a = m.asOf;
   return h(`<header class="r-head">
     <div>
+      <img class="r-logo" src="${LOGO.white}" alt="Circle" width="125" height="24">
       <div class="r-eyebrow">${eyebrow}</div>
       <h1 class="r-supplier">${esc(m.name)}</h1>
       <div class="r-meta"><span>Account ${esc(m.acct)}</span><i>/</i><span>${fmtN(m.skus)} ${plural(m.skus, 'product', 'products')}</span><i>/</i><span>Stores: ${m.stores.map((s) => esc(s.name)).join(', ')}</span></div>

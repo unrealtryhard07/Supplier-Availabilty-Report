@@ -83,8 +83,9 @@ link to each part at the top.
    - Category scorecard.
    - Concentration.
 
-The Circle logo appears in the top bar and on PDF downloads, not inside page
-headers.
+The Circle logo appears in the top bar, in the header of every supplier's
+report pages, and on PDF downloads. The overview and Deep analysis headers have
+no logo.
 
 Definitions:
 
