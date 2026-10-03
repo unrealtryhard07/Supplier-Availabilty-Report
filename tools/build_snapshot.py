@@ -144,7 +144,8 @@ def pivot_query(stores, day):
         return (f"IFNULL(MAX(IF {w} THEN (IF [Items in Stock]='Yes' THEN 'Y' ELSE 'N' END) END)"
                 f"+','+IFNULL(STR(INT(ROUND(MAX(IF {w} THEN [Lifetime Qty Sold] END),0))),'0')"
                 f"+','+IFNULL(STR(INT(ROUND(MAX(IF {w} THEN [Current Stock] END),0))),'0')"
-                f"+','+IFNULL(STR(MIN(IF {w} THEN DATEDIFF('day',[First Sale Date],#{day}#) END)),''),'-')")
+                f"+','+IFNULL(STR(MIN(IF {w} THEN DATEDIFF('day',[First Sale Date],#{day}#) END)),'')"
+                f"+','+IFNULL(STR(ROUND(MAX(IF {w} THEN [Lifetime GMV] END),2)),'0'),'-')")
     return {
         "fields": [
             {"fieldCaption": "Supplier Account", "fieldAlias": "a"}, {"fieldCaption": "Supplier Name", "fieldAlias": "sn"},

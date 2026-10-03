@@ -7,20 +7,23 @@ Claude), pick a supplier, and export the pages as PNG files.
 
 ## All suppliers view
 
-The report opens on **All suppliers**: one table of suppliers ranked by
-**sales qty** (Tableau's Lifetime Qty Sold), biggest first, with their
-availability in each store and in all stores.
+The report opens on **All suppliers**: suppliers with **Sales qty** (Lifetime
+Qty Sold), **GMV** (Lifetime GMV, KWD), the cumulative contribution of each
+(running total from the biggest down, with the row's own share under it), and
+availability per store and in all stores.
 
-- By default it shows the **top suppliers that together make 90% of sales
-  qty**; switch to *All suppliers* to see everyone (a line marks the 90% point).
+- Choose **Top suppliers (90% of sales qty)**, **Top suppliers (90% of GMV)**
+  or **All suppliers**. A top group is every supplier up to and including the
+  one that takes the running total past 90%.
+- Click any column header to sort (again to reverse). Click a supplier to open
+  its report; "← All suppliers" brings you back to the same place.
+- **Categories** below, with the same columns and sorting. Click a category for
+  its sub-categories and a sub-category for its products (OUT per store).
+  Cumulative contribution runs within each level; hover a row for its share of
+  all sales qty and GMV.
 - Filter by store or category. Four figures on top: availability, how many
-  suppliers make 90% of sales, and the critical and below-target
-  supplier-store cells.
-- Click a supplier to open its report (the pages you send). "← All suppliers"
-  brings you back to the same place in the list.
-- **Categories** below the suppliers, ranked by sales qty with the same store
-  columns. Click a category to open its sub-categories, and a sub-category to
-  see its products: which stores are OUT, best sellers first.
+  suppliers make 90% of sales qty and of GMV, and the critical and
+  below-target supplier-store cells.
 
 When opened in Claude with the Tableau Cloud connector, the report reads
 "Supplier's Availability Data" live (Load data → Reload from Tableau to
