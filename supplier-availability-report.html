@@ -1112,7 +1112,7 @@ function fromPivot(snap, origin) {
   }
   const list = [...items.values()];
   list.forEach((it) => { it.st = it.st.join(''); });
-  return { asOf: snap.asOf, source: snap.source || 'Tableau Cloud · Supplier’s Availability Data', origin, stores, suppliers, items: list, hiddenStores: snap.deadStores || [],
+  return { refreshedAt: snap.refreshedAt || null, asOf: snap.asOf, source: snap.source || 'Tableau Cloud · Supplier’s Availability Data', origin, stores, suppliers, items: list, hiddenStores: snap.deadStores || [],
     names, hasDeep, hist: snap.hist ? parseHistory(snap.hist) : null };
 }
 const nameKey = (n) => cleanSupplier(n).toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]+/g, '');
@@ -3199,11 +3199,49 @@ function showDeep() {
 
 function updatePill() {
   const a = kuwaitParts(DATA.asOf);
+  if (DATA.origin === 'hosted') {
+    // Hosted copy: refreshed every hour from 08:00 to 20:00 Kuwait time.
+    const r = kuwaitParts(DATA.refreshedAt || DATA.asOf);
+    els.pillText.textContent = `Updated ${r ? `${r.date}, ${r.time}` : 'unknown'} · refreshes hourly 8:00–20:00`;
+    const ageH = (Date.now() - new Date(DATA.refreshedAt || DATA.asOf).getTime()) / 36e5;
+    const now = kuwaitParts(new Date().toISOString());
+    const hour = now ? Number(now.time.slice(0, 2)) + Number(now.time.slice(3)) / 60 : 12;
+    const stale = ageH > (hour >= 8.5 && hour <= 20.5 ? 2.5 : 14);
+    els.pill.classList.toggle('stale', stale);
+    els.pill.title = stale ? 'The hourly update has not arrived. The data shown is the last one read from Tableau.' : `Stock position ${a ? `${a.date}, ${a.time}` : ''}`;
+    return;
+  }
   const origin = DATA.origin === 'live' ? 'Live from Tableau' : DATA.origin === 'snapshot' ? 'Tableau snapshot' : 'Loaded files';
   els.pillText.textContent = `Stock as of ${a ? `${a.date}, ${a.time}` : 'unknown'} · ${origin}`;
   const ageDays = (Date.now() - new Date(DATA.asOf).getTime()) / 864e5;
   els.pill.classList.toggle('stale', ageDays > 1.5);
   els.pill.title = ageDays > 1.5 ? 'This stock position is more than a day old. Load today’s data before sending reports.' : 'Change the data source';
+}
+
+/* ================= Hosted copy: data file refreshed hourly ================= */
+// When the snapshot element names a data file (data-src), the page loads it,
+// then checks every 10 minutes for a newer one and redraws in place.
+const HOSTED_SRC = ($('#snapshot') && $('#snapshot').dataset.src) || '';
+let hostedStamp = '';
+async function loadHosted(quiet) {
+  try {
+    const res = await fetch(HOSTED_SRC + (HOSTED_SRC.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const snap = await res.json();
+    const stamp = snap.refreshedAt || snap.asOf;
+    if (stamp && stamp === hostedStamp) return { ok: true, changed: false, message: 'Already showing the latest data.' };
+    const d = loadSnapshot(snap);
+    if (!d) throw new Error('The data file is empty.');
+    d.origin = 'hosted';
+    hostedStamp = stamp;
+    DATA = d;
+    refreshAll(true);
+    return { ok: true, changed: true, message: 'Loaded the latest data.' };
+  } catch (err) {
+    if (!quiet) console.warn('Data file not loaded:', err);
+    if (DATA) updatePill();
+    return { ok: false, message: `Could not load the latest data (${err.message || err}).` };
+  }
 }
 
 function renderEmpty() {
@@ -3743,8 +3781,8 @@ async function loadLive(fresh) {
 }
 $('#btn-live').addEventListener('click', async () => {
   const box = $('#data-msg');
-  showMsg(box, '', 'Reading Tableau…');
-  const r = await loadLive(true);
+  showMsg(box, '', HOSTED_SRC ? 'Checking for new data…' : 'Reading Tableau…');
+  const r = HOSTED_SRC ? await loadHosted(false) : await loadLive(true);
   showMsg(box, r.ok ? 'ok' : 'err', esc(r.message));
   if (r.ok) dataCloseTimer = setTimeout(() => dlgData.close(), 900);
 });
@@ -3913,6 +3951,14 @@ async function boot() {
   const hash = (location.hash.match(/^#s(\w+)$/) || [])[1];
   if (hash) { store.set('current', hash); view = 'supplier'; }
   else if (location.hash === '#deep') view = 'deep';
+  if (HOSTED_SRC) {
+    $('#btn-live').textContent = 'Check for new data';
+    const r = await loadHosted(false);
+    if (!r.ok) refreshAll(false);
+    setInterval(() => { if (!document.hidden) loadHosted(true); }, 10 * 60 * 1000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) loadHosted(true); });
+    return;
+  }
   refreshAll(false);
   // Then read today's data from Tableau; the saved data stays up until it arrives.
   if (!document.body.classList.contains('capture')) loadLive(false);

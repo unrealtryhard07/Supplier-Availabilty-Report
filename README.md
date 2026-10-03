@@ -193,6 +193,18 @@ python3 tools/build_snapshot.py --meta meta.json pivot.json --history hdates.jso
 This writes `dist/supplier-availability-report.html` with the data inside,
 so it opens ready to use with no file to load.
 
+## Hosting for everyone (refreshed hourly)
+
+`cloudflare/README.md` explains how to put the report on Cloudflare Pages behind
+a company email login, free.
+
+- GitHub Actions reads Tableau every hour from 08:00 to 20:00 Kuwait time
+  (`tools/refresh.py`, `.github/workflows/refresh-data.yml`).
+- The data goes to Cloudflare KV.
+- The page (`tools/build_site.py`) loads it from `/data.json`, served only to
+  signed-in people by `cloudflare/functions/data.json.js`.
+- Open pages pick up new data on their own.
+
 ## Keep supplier data out of this repository
 
 This repository is public. `supplier-availability-report.html` here holds no

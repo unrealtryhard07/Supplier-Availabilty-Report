@@ -1,0 +1,51 @@
+name: Refresh report data
+
+# Every hour from 08:00 to 20:00 Kuwait time (UTC+3, no daylight saving):
+# 05:07–17:07 UTC. Minute 7 avoids the busy top of the hour on GitHub.
+on:
+  schedule:
+    - cron: '7 5-17 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      # The data holds every supplier's stock and sales. This repository is
+      # public, so the job prints counts only and never uploads it as an artifact.
+      - name: Read Tableau
+        env:
+          TABLEAU_SERVER: ${{ vars.TABLEAU_SERVER }}
+          TABLEAU_SITE: ${{ vars.TABLEAU_SITE }}
+          TABLEAU_PAT_NAME: ${{ secrets.TABLEAU_PAT_NAME }}
+          TABLEAU_PAT_SECRET: ${{ secrets.TABLEAU_PAT_SECRET }}
+        run: python3 tools/refresh.py --out "$RUNNER_TEMP/data.json"
+
+      - name: Upload to Cloudflare KV
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ vars.CF_KV_NAMESPACE_ID }}
+        run: |
+          code=$(curl -sS -o "$RUNNER_TEMP/kv.json" -w '%{http_code}' -X PUT \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/data" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H 'Content-Type: application/json' \
+            --data-binary @"$RUNNER_TEMP/data.json")
+          if [ "$code" != "200" ]; then
+            echo "Cloudflare KV upload failed (HTTP $code):"
+            python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print([e.get('message') for e in d.get('errors', [])])" "$RUNNER_TEMP/kv.json" || true
+            exit 1
+          fi
+          echo "Uploaded."
+          rm -f "$RUNNER_TEMP/data.json" "$RUNNER_TEMP/kv.json"
