@@ -29,42 +29,7 @@
   --ui-good:#16A05A;
   --ui-shadow:0 1px 2px rgba(14,26,43,.06),0 12px 32px rgba(14,26,43,.12);
 }
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    color-scheme:dark;
-    --ui-bg:#0A0F17;
-    --ui-panel:#111925;
-    --ui-panel-2:#172132;
-    --ui-line:#26324A;
-    --ui-text:#E7ECF4;
-    --ui-text-2:#A9B4C7;
-    --ui-text-3:#8490A5;
-    --ui-accent:#FF5AA8;
-    --ui-accent-soft:#3A1428;
-    --ui-accent-ink:#0A0F17;
-    --ui-crit:#F2675D;
-    --ui-warn:#F2B03D;
-    --ui-good:#3CC47C;
-    --ui-shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.5);
-  }
-}
-:root[data-theme="dark"]{
-  color-scheme:dark;
-  --ui-bg:#0A0F17;
-  --ui-panel:#111925;
-  --ui-panel-2:#172132;
-  --ui-line:#26324A;
-  --ui-text:#E7ECF4;
-  --ui-text-2:#A9B4C7;
-  --ui-text-3:#8490A5;
-  --ui-accent:#FF5AA8;
-  --ui-accent-soft:#3A1428;
-  --ui-accent-ink:#0A0F17;
-  --ui-crit:#F2675D;
-  --ui-warn:#F2B03D;
-  --ui-good:#3CC47C;
-  --ui-shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.5);
-}
+/* One light look in every theme, like Circle's Allocation Control. */
 
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -615,7 +580,9 @@ dialog::backdrop{background:rgba(8,14,24,.55)}
 .cx-seg button{border:0;background:none;border-radius:9px;padding:8px 14px;font:inherit;font-size:13px;font-weight:600;color:var(--cx-ink-2);cursor:pointer;white-space:nowrap}
 .cx-seg button:hover{background:#F4F5F7}
 .cx-seg button[aria-pressed="true"]{background:var(--cx-pink);color:#fff}
-.cx-filters{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end}
+.cx-filters{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;padding:14px 18px}
+.cx-filters .ov-f .l{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cx-head)}
+.cx-filters .cx-seg{background:#F4F5F7;border-color:#F4F5F7}
 .cx-filters .ov-f label{color:var(--cx-head);font-size:11px;letter-spacing:.06em}
 .cx-filters .ov-f select{border:1px solid var(--cx-line);border-radius:9px;padding:8px 10px;background:#fff;color:var(--cx-ink);font-size:13.5px;width:210px}
 .cx-filters .ov-f select:focus-visible{outline:2px solid var(--cx-pink);outline-offset:1px}
@@ -639,6 +606,9 @@ dialog::backdrop{background:rgba(8,14,24,.55)}
 .cx-btn:hover{border-color:var(--cx-pink);color:var(--cx-pink)}
 .cx-btn:disabled{opacity:.6;cursor:progress}
 .cx .ovm{font-size:13.5px}
+.cx .ovm .num,.cx .ovm .rk{font-family:var(--f-sans);font-variant-numeric:tabular-nums;font-size:13.5px}
+.cx .ovm td.cumc small{font-family:var(--f-sans)}
+.cx .ovm td .mc b{font-family:var(--f-sans);font-variant-numeric:tabular-nums}
 .cx .ovm th,.cx .ovm thead th{background:#fff;color:var(--cx-head);font-size:11px;letter-spacing:.06em;font-weight:700;border-bottom:1px solid var(--cx-line)}
 .cx .ovm th.sortable button:hover{background:#F7F7F9;color:var(--cx-ink)}
 .cx .ovm th.sortable.on button{color:var(--cx-pink)}
@@ -1524,9 +1494,9 @@ function renderOverview() {
         <h1>All suppliers</h1>
         <p>Stock position ${a ? `${a.date} · ${a.weekday} ${a.time} Kuwait time` : '—'} · Click a column to sort, a supplier to open its report.</p>
       </div>
-      ${S ? `<div class="cx-seg" role="group" aria-label="Which suppliers">${segB('qty', 'Top suppliers (90% of sales qty)')}${G ? segB('gmv', 'Top suppliers (90% of GMV)') : ''}${segB('all', `All ${fmtN(supAll.length)} suppliers`)}</div>` : ''}
     </header>
-    <div class="cx-filters">
+    <div class="cx-card cx-filters">
+      ${S ? `<div class="ov-f"><span class="l">Suppliers</span><div class="cx-seg" role="group" aria-label="Which suppliers">${segB('qty', 'Top suppliers (90% of sales qty)')}${G ? segB('gmv', 'Top suppliers (90% of GMV)') : ''}${segB('all', `All ${fmtN(supAll.length)} suppliers`)}</div></div>` : ''}
       <div class="ov-f"><label for="ov-store">Store</label><select id="ov-store" data-ovf="store">${opt(-1, 'All stores', OV.store < 0)}${NET.active.map((k) => opt(k, DATA.stores[k], OV.store === k)).join('')}</select></div>
       <div class="ov-f"><label for="ov-cat">Category</label><select id="ov-cat" data-ovf="cat">${opt('', 'All categories', !OV.cat)}${cats.map((c) => opt(c, c, OV.cat === c)).join('')}</select></div>
     </div>
