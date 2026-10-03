@@ -35,34 +35,51 @@ availability per store and in all stores.
 
 The **Deep analysis** button (top bar, after Export images) opens one page that
 combines today's stock and sales with the daily "Supplier Availability History"
-source. It has the same supplier, store and category filters as the overview,
-and every table downloads as Excel or PDF.
+source (from 28 Sep 2026; the days before are one backfilled copy and are left
+out). It has the same supplier, store and category filters as the overview, and
+every table downloads as Excel (every row) or PDF (first 300 rows).
 
-- **The story in numbers**: plain sentences worked out from the data.
-- **Availability trend**: every day since 28 Sep 2026 (the days before are one
-  backfilled copy and are left out). Each day's change is split in two:
-  - *real change*: in-stock change on supplier/store/category cells whose
-    listings did not change;
-  - *range change*: the rest, i.e. listings removed or added.
-  A bridge chart shows the same split from the first day to today.
-- **Heat map**: availability per day by store, category or supplier.
-- **Movers**: suppliers that gained or lost the most listings in stock, like
-  for like, plus the biggest range changes.
-- **Supplier reliability**: days on the target, real change, like-for-like
-  swing, and a verdict (steady, improving, mixed, volatile, slipping, never on
-  target).
-- **Run-out radar**: listings in stock that run out within the 3-day delivery
-  time, with a list of suppliers to call today.
-  - Sells per day = GMV 90D ÷ the lifetime average price ÷ 90 (or the
-    product's age, if younger).
-  - Days of cover = current stock ÷ sells per day.
-- **Ghost stock**: listings in stock with no sale for 30+ days (or never).
-  They are ranked by lifetime GMV, so the shelves worth most are counted first.
-- **Momentum vs availability**: suppliers plotted by availability and sales
-  momentum (GMV per day over the last 90 days vs the lifetime average), sized by
-  GMV 90D. Also shows Discount 90D ÷ GMV 90D.
-- **Category scorecard** and **Concentration** (how many suppliers make 50, 80
-  and 90% of sales qty and GMV).
+The page is split into four chapters, one per leader, plus **Everything**:
+
+- **Executive summary (CEO)**
+  - Decisions for today, each with an owner.
+  - One card per leader.
+  - The story in numbers.
+  - The availability pulse with a bridge chart (real change vs listings
+    removed/added).
+- **Commercial (CMO)**
+  - Four ways to read availability: by listings, weighted by sales qty,
+    weighted by GMV 90D, and stock that sells.
+  - Best-sellers on empty shelves, with a quick fix for each (a store transfer
+    or an order).
+  - Momentum vs availability.
+  - Availability by tier.
+  - Category scorecard.
+  - Concentration.
+- **Operations (COO)**
+  - Store league table.
+  - Availability trend: each day's change split into *real change* (cells whose
+    listings did not change) and *range change* (listings removed or added).
+  - Heat map.
+  - Store transfers: empty listings another store can refill from spare stock.
+    The giving store keeps 3 weeks of its own sales.
+  - How long shelves stay empty.
+  - Movers, ranked like for like.
+- **Replenishment (Replenishment Director)**
+  - Run-out radar for a 3-day delivery time, with units to order. Units cover
+    3 days of delivery plus 7 days until the next order, minus stock on hand.
+  - Supplier scorecard with A–E grades. The score is out of 100: availability
+    vs target 40, days on target 20, real change 10, run-out share 15, ghost
+    share 15.
+  - Supplier reliability.
+  - Ghost stock: in stock, no sale for 30+ days.
+  - Overstock: stock beyond 90 days of cover, at retail value.
+
+Definitions:
+
+- **Sells per day** = GMV 90D ÷ the lifetime average price ÷ 90 (or the
+  product's age, if younger).
+- **Days of cover** = current stock ÷ sells per day.
 
 When opened in Claude with the Tableau Cloud connector, the report reads
 "Supplier's Availability Data" and "Supplier Availability History" live (Load data → Reload from Tableau to
