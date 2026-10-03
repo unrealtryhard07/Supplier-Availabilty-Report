@@ -827,6 +827,45 @@ dialog::backdrop{background:rgba(8,14,24,.55)}
   .da-chap{break-before:page}
 }
 
+/* Deep analysis: fix plan and chapter banners */
+.da-tabs{grid-template-columns:repeat(6,minmax(0,1fr))}
+@media (max-width:1100px){.da-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:600px){.da-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.da-chap-h{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 28px;align-items:start}
+.da-chap-h .txt{min-width:0}
+.da-chap-h .da-nav{grid-column:1/-1}
+.da-chap-k{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.da-chap-k div{min-width:150px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16)}
+.da-chap-k b{display:block;font-size:22px;line-height:1.15;color:#fff}
+.da-chap-k b.crit{color:#FF9B93}.da-chap-k b.warn{color:#FFD27A}.da-chap-k b.good{color:#8FE3B0}
+.da-chap-k span{font-size:12px;color:rgba(255,255,255,.75)}
+@media (max-width:900px){.da-chap-h{grid-template-columns:minmax(0,1fr)}.da-chap-k{justify-content:flex-start}}
+.da-callout{margin:12px 0 0;padding:12px 14px;border-radius:10px;background:#F3FBF6;border-left:4px solid var(--good);font-size:13.5px;line-height:1.5;color:var(--cx-ink)}
+.da-causes{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px}
+.da-causes div{padding:14px 16px;border-radius:12px;background:#FAF8F6;border-top:4px solid var(--c)}
+.da-causes .k{display:block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--c)}
+.da-causes b{display:block;font-size:30px;line-height:1.15;color:var(--cx-ink);margin:4px 0 2px}
+.da-causes span{font-size:12.5px;color:var(--cx-ink-2)}
+.da-causes em{display:block;font-style:normal;font-size:12px;color:var(--cx-ink-3);margin-top:4px}
+.da-mini{display:flex;height:10px;border-radius:5px;overflow:hidden;background:#F0EDF3;min-width:120px}
+.da-mini span{display:block;height:100%}
+.da-cause-stores{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px 20px}
+.da-cause-stores div{display:grid;gap:4px;font-size:13px}
+.da-act{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff);white-space:nowrap}
+.da-mini-stores{display:flex;flex-wrap:wrap;gap:6px 14px}
+.da-mini-stores em{font-style:normal;font-size:13px;color:var(--cx-ink-2)}
+.da-mini-stores b{display:inline;font-size:15px;color:var(--cx-pink-2)}
+.da-abc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.da-abc>div{padding:16px;border-radius:12px;background:#FAF8F6}
+.da-abc .h{display:flex;gap:12px;align-items:center}
+.da-abc .h b{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:20px;color:#fff;background:#1B1530}
+.da-abc .cl-A .h b{background:var(--cx-pink)}.da-abc .cl-B .h b{background:#7A4CD9}
+.da-abc .h span{font-size:12.5px;color:var(--cx-ink-2);line-height:1.4}
+.da-abc .v{font-size:32px;font-weight:700;margin:10px 0 2px}
+.da-abc .v.good{color:var(--good-ink)}.da-abc .v.crit{color:var(--crit-ink)}
+.da-abc .sl{font-size:12.5px;color:var(--cx-ink-3)}
+@media (max-width:760px){.da-abc{grid-template-columns:minmax(0,1fr)}}
+
 /* Capture mode: used by tools/render-reports.js to screenshot pages at 1:1 */
 body.capture .topbar,body.capture .sidebar,body.capture .stage-note,body.capture .ov-host{display:none}
 body.capture .app{display:block}
@@ -2071,7 +2110,7 @@ const SVG_STATUS = { good: 'var(--good)', warn: 'var(--warn)', crit: 'var(--crit
 function niceStep(span) { return span <= 0.06 ? 0.01 : span <= 0.14 ? 0.02 : span <= 0.3 ? 0.05 : 0.1; }
 
 // Availability lines over the days, with the target and critical lines.
-function svgLines(days, series) {
+function svgLines(days, series, fmtX = dayLabel) {
   const W = 1000, H = 300, P = { l: 46, r: 150, t: 14, b: 30 };
   const vals = series.flatMap((s) => s.vals.filter((v) => v != null));
   if (!vals.length) return '';
@@ -2092,14 +2131,14 @@ function svgLines(days, series) {
     if (v < lo || v > hi) continue;
     out.push(`<line x1="${P.l}" x2="${W - P.r}" y1="${y(v)}" y2="${y(v)}" class="da-ref" style="stroke:${SVG_STATUS[cls]}"/><text x="${P.l + 6}" y="${y(v) - 5}" class="da-ax" style="fill:${SVG_STATUS[cls]}">${lbl}</text>`);
   }
-  days.forEach((d, i) => out.push(`<text x="${x(i)}" y="${H - 8}" class="da-ax" text-anchor="middle">${dayLabel(d)}</text>`));
+  days.forEach((d, i) => out.push(`<text x="${x(i)}" y="${H - 8}" class="da-ax" text-anchor="middle">${fmtX(d)}</text>`));
   // End labels, pushed apart so they never overlap.
   const ends = series.map((s, si) => ({ si, v: s.vals[n - 1], y: s.vals[n - 1] == null ? -1 : y(s.vals[n - 1]) })).filter((e) => e.y >= 0).sort((a, b) => a.y - b.y);
   for (let i = 1; i < ends.length; i++) ends[i].y = Math.max(ends[i].y, ends[i - 1].y + 15);
   for (const s of [...series].reverse()) {
     const ptsXY = s.vals.map((v, i) => (v == null ? null : [x(i), y(v)])).filter(Boolean);
     out.push(`<polyline points="${ptsXY.map((q) => q.join(',')).join(' ')}" fill="none" style="stroke:${s.color}" stroke-width="${s.w || 2}" stroke-linejoin="round" stroke-linecap="round"/>`);
-    s.vals.forEach((v, i) => { if (v != null) out.push(`<circle cx="${x(i)}" cy="${y(v)}" r="${s.w > 2 ? 4.5 : 3}" style="fill:${s.color}"><title>${esc(`${s.name} · ${dayLabel(days[i])}: ${pctTxt(v)}`)}</title></circle>`); });
+    s.vals.forEach((v, i) => { if (v != null) out.push(`<circle cx="${x(i)}" cy="${y(v)}" r="${s.w > 2 ? 4.5 : 3}" style="fill:${s.color}"><title>${esc(`${s.name} · ${fmtX(days[i])}: ${pctTxt(v)}`)}</title></circle>`); });
   }
   for (const e of ends) { const s = series[e.si]; out.push(`<text x="${W - P.r + 10}" y="${e.y + 4}" class="da-lbl${s.w > 2 ? ' b' : ''}" style="fill:${s.color}">${esc(s.name)} ${pctTxt(e.v)}</text>`); }
   return `<svg class="da-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Availability by day">${out.join('')}</svg>`;
@@ -2247,14 +2286,14 @@ function deepModel() {
   return { H, S, all, supAll, cq, cg, scope, keep, list, cells, deep, nD: H ? H.days.length : 0 };
 }
 
-const DA_DL_LABEL = { runsup: 'Suppliers', runout: 'Listings', ghostsup: 'Suppliers', ghost: 'Listings' };
+const DA_DL_LABEL = { runsup: 'Suppliers', runout: 'Listings', ghostsup: 'Suppliers', ghost: 'Listings', cause: 'Suppliers', causelist: 'Listings', plan: 'Suppliers', planlines: 'Lines' };
 function daCard(id, title, sub, body, dlKey) {
   const keys = dlKey ? dlKey.split(' ') : [];
   const dl = keys.length ? `<div class="cx-dl">${keys.map((k) => `${keys.length > 1 ? `<span class="da-dl-l">${DA_DL_LABEL[k] || ''}</span>` : ''}<button type="button" class="cx-btn" data-da-dl="${k}-xlsx" title="Download as Excel">${ICON_XLS}Excel</button><button type="button" class="cx-btn" data-da-dl="${k}-pdf" title="Download as PDF">${ICON_PDF}PDF</button>`).join('')}</div>` : '';
   return `<section class="cx-card da-sec" id="da-${id}"><div class="cx-card-h"><div><h3>${title}</h3><p>${sub}</p></div>${dl}</div><div class="cx-card-b">${body}</div></section>`;
 }
 const daHow = (txt) => `<p class="da-how"><b>How to read it</b> ${txt}</p>`;
-const daMore = (key, shown, total, step = 50) => (total > shown ? `<button type="button" class="ov-link da-more" data-da-more="${key}">Show ${Math.min(step, total - shown)} more of ${fmtN(total - shown)}</button>` : '');
+const daMore = (key, shown, total, step = 50) => (total > shown ? `<button type="button" class="ov-link da-more" data-da-more="${key}">Show ${Math.min(step, total - shown)} more · ${fmtN(total - shown)} not shown</button>` : '');
 const supLink = (acct, label) => (acct ? `<button type="button" class="da-sup" data-open-sup="${esc(acct)}" title="Open ${esc(label)}’s report">${esc(label)}</button>` : `<span class="da-sup na">${esc(label)}</span>`);
 const avCell = (p, inn, n) => (p == null ? '<span class="na">—</span>' : ovCell({ p, inn: inn ?? 0, n: n ?? 0 }));
 const ptsCell = (x, title = '') => `<td class="num da-pts ${ptsCls(x)}"${title ? ` title="${esc(title)}"` : ''}>${pts(x)}</td>`;
@@ -2740,6 +2779,219 @@ function renderDeep() {
       ${daHow(`One grade per supplier, biggest sellers first. Score out of 100: availability against the ${settings.target}% target (40), days on target (20), real change (10), share of stock running out within ${LEAD_DAYS} days (15) and ghost stock share (15). A ≥ 90, B ≥ 80, C ≥ 70, D ≥ 60, E below.`)}`;
   }
 
+  // ================= Fix plan: how a replenishment director takes the gaps apart =================
+  // Every empty listing gets one root cause, in this order:
+  //  dead      no sale for 90+ days (or never): a range question, not a replenishment one
+  //  transfer  another store holds spare stock of it (keeps 3 weeks for itself)
+  //  supplier  empty in every store: nothing in the network, the supplier did not deliver
+  //  store     other stores have it but none to spare: we ordered too little
+  const CAUSE = {
+    transfer: { label: 'Move from another store', action: 'Transfer', color: '#13A38B' },
+    supplier: { label: 'Empty in every store', action: 'Chase the supplier', color: '#D92D20' },
+    store: { label: 'Too little ordered', action: 'Raise order quantity', color: '#E08A00' },
+    dead: { label: 'No sale in 90+ days', action: 'Review or delist', color: '#4A4458' },
+  };
+  const CAUSES = ['transfer', 'supplier', 'store', 'dead'];
+  const causeOf = new Map();
+  for (const l of oos) {
+    const sib = byItem.get(l.p + '|' + l.it.code) || [];
+    causeOf.set(l, l.last < 0 || l.last > 90 ? 'dead' : trByListing.has(l) ? 'transfer' : !sib.some((o) => o.in) ? 'supplier' : 'store');
+  }
+  const cN = Object.fromEntries(CAUSES.map((c) => [c, 0])), cG = Object.fromEntries(CAUSES.map((c) => [c, 0]));
+  for (const [l, c] of causeOf) { cN[c]++; cG[c] += l.g90; }
+  const N = list.length, I0 = t.inn;
+  const tgt = settings.target / 100;
+  const needT = Math.max(0, Math.ceil(tgt * N - 1e-9) - I0);
+  const pAfter = { transfer: (I0 + cN.transfer) / N, supplier: (I0 + cN.transfer + cN.supplier) / N, store: (I0 + cN.transfer + cN.supplier + cN.store) / N };
+  const pDelist = N - cN.dead > 0 ? I0 / (N - cN.dead) : 0;
+  const stepReach = CAUSES.slice(0, 3).find((c) => pAfter[c] >= tgt - 1e-9);
+
+  // Path to target: a staircase from today to what is achievable.
+  function svgPath() {
+    const W = 1000, H = 300, P = { l: 50, r: 20, t: 34, b: 56 };
+    const steps = [
+      { lbl: 'Today', a: 0, b: t.p, cls: 'da-b-ink', txt: pctTxt(t.p) },
+      { lbl: CAUSE.transfer.action, a: t.p, b: pAfter.transfer, color: CAUSE.transfer.color, txt: pts(pAfter.transfer - t.p), sub: `${fmtN(cN.transfer)} listings` },
+      { lbl: CAUSE.supplier.action, a: pAfter.transfer, b: pAfter.supplier, color: CAUSE.supplier.color, txt: pts(pAfter.supplier - pAfter.transfer), sub: `${fmtN(cN.supplier)} listings` },
+      { lbl: CAUSE.store.action, a: pAfter.supplier, b: pAfter.store, color: CAUSE.store.color, txt: pts(pAfter.store - pAfter.supplier), sub: `${fmtN(cN.store)} listings` },
+      { lbl: 'Achievable', a: 0, b: pAfter.store, cls: 'da-b-ink', txt: pctTxt(pAfter.store) },
+    ];
+    const lo = Math.max(0, Math.floor((Math.min(t.p, tgt) - 0.08) * 20) / 20), hi = 1;
+    const ih = H - P.t - P.b, y = (v) => P.t + ih - ((Math.max(lo, v) - lo) / (hi - lo)) * ih;
+    const slot = (W - P.l - P.r) / steps.length, bw = Math.min(130, slot * 0.6);
+    const out = [];
+    for (let v = lo; v <= hi + 1e-9; v += 0.05) out.push(`<line x1="${P.l}" x2="${W - P.r}" y1="${y(v)}" y2="${y(v)}" class="da-grid"/><text x="${P.l - 8}" y="${y(v) + 4}" class="da-ax" text-anchor="end">${Math.round(v * 100)}%</text>`);
+    out.push(`<line x1="${P.l}" x2="${W - P.r}" y1="${y(tgt)}" y2="${y(tgt)}" class="da-ref" style="stroke:var(--good)"/><text x="${P.l + 6}" y="${y(tgt) - 6}" class="da-ax" style="fill:var(--good)">Target ${settings.target}%</text>`);
+    steps.forEach((s, i) => {
+      const cx = P.l + slot * i + slot / 2, top = y(Math.max(s.a, s.b)), h0 = Math.max(2, y(Math.min(s.a, s.b)) - top);
+      out.push(`<rect x="${cx - bw / 2}" y="${top}" width="${bw}" height="${h0}" rx="4" ${s.cls ? `class="${s.cls}"` : `style="fill:${s.color}"`}/>`);
+      out.push(`<text x="${cx}" y="${top - 9}" class="da-val" text-anchor="middle">${s.txt}</text>`);
+      out.push(`<text x="${cx}" y="${H - 30}" class="da-lbl" text-anchor="middle" style="fill:#1B1530">${esc(s.lbl)}</text>`);
+      if (s.sub) out.push(`<text x="${cx}" y="${H - 12}" class="da-ax" text-anchor="middle">${s.sub}</text>`);
+      if (i < steps.length - 1) { const nx = P.l + slot * (i + 1) + slot / 2; out.push(`<line x1="${cx + bw / 2}" x2="${nx - bw / 2}" y1="${y(s.b)}" y2="${y(s.b)}" class="da-conn"/>`); }
+    });
+    return `<svg class="da-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Path to the availability target">${out.join('')}</svg>`;
+  }
+  let pathHtml = '';
+  if (deep && N) {
+    pathHtml = `<div class="da-hero-strip">
+        <div><b>${fmtN(needT)}</b><span>more listings in stock to reach ${settings.target}% (${fmtN(Math.ceil(tgt * N))} of ${fmtN(N)})</span></div>
+        <div><b>${pctTxt(pAfter.transfer)}</b><span>after store transfers alone: ${needT ? share1(Math.min(1, cN.transfer / needT)) : '100%'} of the gap closed with no purchase order</span></div>
+        <div><b>${pctTxt(pAfter.store)}</b><span>achievable when every empty listing that still sells is refilled</span></div>
+      </div>
+      <div class="da-chart">${svgPath()}</div>
+      <p class="da-callout">${stepReach ? `The target is reached at step <b>“${CAUSE[stepReach].action}”</b>.` : 'Even refilling every listing that still sells stays under target.'} The ${fmtN(cN.dead)} listings with no sale in 90+ days are left out on purpose: delisting them would lift availability to ${pctTxt(pDelist)} on paper, but that is a range change, not one more product on the shelf.</p>
+      ${daHow('Each step adds the empty listings of one root cause, cheapest fix first: moving stock between stores, then chasing suppliers for products empty everywhere, then raising order quantities where the network has too little.')}`;
+  }
+
+  // Root cause per supplier, per store.
+  let causeHtml = '';
+  if (deep && oos.length) {
+    const bySup = [...groupBy([...causeOf.keys()], (l) => l.p)].map(([acct, ls]) => {
+      const n = Object.fromEntries(CAUSES.map((c) => [c, 0])); let g = 0;
+      for (const l of ls) { n[causeOf.get(l)]++; g += l.g90; }
+      const main = CAUSES.slice(0, 3).reduce((m, c) => (n[c] > n[m] ? c : m), 'transfer');
+      return { acct, label: supName(acct), total: ls.length, n, g, main: n[main] ? main : 'dead' };
+    }).sort((p, q) => q.g - p.g);
+    const lim = DA.more.get('cause') || 20;
+    const mini = (n, total) => `<div class="da-mini">${CAUSES.map((c) => (n[c] ? `<span style="flex:${n[c]};background:${CAUSE[c].color}" title="${esc(`${CAUSE[c].label}: ${n[c]}`)}"></span>` : '')).join('')}</div><small class="dim">${CAUSES.map((c) => n[c]).join(' · ')} of ${total}</small>`;
+    const byStore = DA.store < 0 ? NET.active.map((k) => { const n = Object.fromEntries(CAUSES.map((c) => [c, 0])); let tot = 0; for (const [l, c] of causeOf) if (l.s === k) { n[c]++; tot++; } return { k, n, tot }; }) : [];
+    DAX.cause = () => ({ name: 'Root causes', title: 'Why every empty listing is empty, by supplier',
+      cols: [{ h: 'Supplier', k: 't', wide: true }, { h: 'Empty listings', k: 'int' }, ...CAUSES.map((c) => ({ h: CAUSE[c].label, k: 'int' })), { h: 'GMV 90D on empty shelves (KWD)', k: 'money' }, { h: 'Main action', k: 't' }],
+      body: bySup.map((r) => [r.label, r.total, ...CAUSES.map((c) => r.n[c]), r.g, CAUSE[r.main].action]) });
+    DAX.causelist = () => ({ name: 'Empty listings and causes', title: 'Every empty listing with its root cause',
+      cols: [{ h: 'Item code', k: 't' }, { h: 'Product', k: 't', wide: true }, { h: 'Supplier', k: 't', wide: true }, { h: 'Store', k: 't' }, { h: 'Category', k: 't' }, { h: 'Days since last sale', k: 'int' }, { h: 'GMV 90D (KWD)', k: 'money' }, { h: 'Root cause', k: 't' }, { h: 'Action', k: 't' }],
+      body: [...causeOf].sort((p, q) => q[0].g90 - p[0].g90).map(([l, c]) => [l.it.code, l.it.name, supName(l.p), storeName(l.s), l.cat, l.last < 0 ? 'Never sold' : l.last, l.g90, CAUSE[c].label, CAUSE[c].action]) });
+    causeHtml = `<div class="da-causes">${CAUSES.map((c) => `<div style="--c:${CAUSE[c].color}"><span class="k">${CAUSE[c].action}</span><b>${fmtN(cN[c])}</b><span>${CAUSE[c].label}</span><em>${c === 'dead' ? 'no GMV in 90 days' : `${kwd(cG[c])} KWD GMV 90D`}</em></div>`).join('')}</div>
+      <div class="da-stack">${CAUSES.map((c) => (cN[c] ? `<span style="flex:${cN[c]};background:${CAUSE[c].color}">${cN[c] / oos.length > 0.07 ? share1(cN[c] / oos.length) : ''}</span>` : '')).join('')}</div>
+      ${byStore.length ? `<h4 class="da-h4">By store</h4><div class="da-cause-stores">${byStore.map((r) => `<div><b>${esc(storeName(r.k))}</b>${mini(r.n, r.tot)}</div>`).join('')}</div>` : ''}
+      <h4 class="da-h4">By supplier: biggest GMV 90D on empty shelves first</h4>
+      <div class="ov-wide"><table class="ovt ovm da-t"><thead><tr><th class="rk">#</th><th class="sp">Supplier</th><th class="r">Empty</th><th style="min-width:200px">Causes (${CAUSES.map((c) => CAUSE[c].action.split(' ')[0].toLowerCase()).join(' · ')})</th><th class="r">GMV 90D empty</th><th>Main action</th></tr></thead>
+      <tbody>${bySup.slice(0, lim).map((r, i) => `<tr><td class="rk">${i + 1}</td><td class="sp">${supLink(r.acct, r.label)}</td><td class="num">${fmtN(r.total)}</td><td>${mini(r.n, r.total)}</td><td class="num">${kwd(r.g)}</td><td><span class="da-act" style="--c:${CAUSE[r.main].color}">${CAUSE[r.main].action}</span></td></tr>`).join('')}</tbody></table></div>
+      ${daMore('cause', Math.min(lim, bySup.length), bySup.length)}
+      ${daHow('Fixing availability starts with the reason, because each reason has a different owner. A supplier whose gaps are mostly <b>empty in every store</b> needs a call about deliveries; mostly <b>too little ordered</b> means our order quantities are wrong; mostly <b>transfer</b> means the stock is in the wrong store. The Excel “listings” file has every empty listing with its cause.')}`;
+  }
+
+  // Who causes the gaps: Pareto of empty-shelf GMV 90D by supplier.
+  let whoHtml = '';
+  if (deep && oos.length) {
+    const g = [...groupBy(oos.filter((l) => causeOf.get(l) !== 'dead'), (l) => l.p)].map(([acct, ls]) => ({ acct, g: ls.reduce((s, l) => s + l.g90, 0), n: ls.length })).sort((p, q) => q.g - p.g);
+    const T = g.reduce((s, r) => s + r.g, 0) || 1; let c = 0;
+    const curve = g.map((r) => (c += r.g) / T);
+    const n80 = curve.findIndex((v) => v >= 0.8 - 1e-9) + 1;
+    whoHtml = `<div class="da-hero-strip"><div><b>${fmtN(n80)}</b><span>suppliers hold 80% of the GMV 90D sitting on empty shelves (of ${fmtN(g.length)} with gaps)</span></div><div><b>${share1(g.slice(0, 10).reduce((s, r) => s + r.g, 0) / T)}</b><span>comes from the top 10 alone</span></div></div>
+      <div class="da-chart">${svgPareto([{ name: 'empty-shelf GMV 90D', vals: curve, color: 'var(--crit)' }])}</div>
+      <div class="da-pills">${g.slice(0, n80 > 12 ? 12 : n80).map((r, i) => `<span class="da-pill"><b>${i + 1}</b>${supLink(r.acct, supName(r.acct))} ${share1(r.g / T)}</span>`).join('')}</div>
+      ${daHow('The availability problem is concentrated too. A weekly review with only the suppliers left of the 80% dot covers most of the money on empty shelves.')}`;
+  }
+
+  // Forecast: availability over the next 10 days with and without this week's order.
+  let foreHtml = '';
+  if (deep && N) {
+    const H2 = LEAD_DAYS + REVIEW_DAYS;
+    const fdays = Array.from({ length: H2 + 1 }, (_, i) => i);
+    const sellIn = list.filter((l) => l.in).map((l) => { const du = dailyUnits(l); return du > 0 ? l.stk / du : Infinity; });
+    // The order refills what the supplier is delivering: not products empty in every store, not dead listings.
+    const orderable = list.filter((l) => dailyUnits(l) > 0 && !(l.in && l.stk / dailyUnits(l) > H2) && (l.in || ['transfer', 'store'].includes(causeOf.get(l)))).length;
+    const noAct = fdays.map((d) => sellIn.filter((c) => c > d).length / N);
+    const withOrder = fdays.map((d, i) => (d < LEAD_DAYS ? noAct[i] : Math.min(1, (sellIn.filter((c) => c > H2).length + orderable) / N)));
+    const lbl = (d) => (d === 0 ? 'Today' : `Day ${d}`);
+    foreHtml = `<div class="da-hero-strip"><div><b>${pctTxt(noAct[7])}</b><span>in 7 days if nothing arrives (today ${pctTxt(noAct[0])})</span></div><div><b>${fmtN(Math.round((noAct[0] - noAct[7]) * N))}</b><span>listings in stock today that run out within the week</span></div><div><b>${pctTxt(withOrder[LEAD_DAYS])}</b><span>from day ${LEAD_DAYS} if this week’s order plan arrives in full</span></div></div>
+      <div class="da-chart">${svgLines(fdays, [{ name: 'With order', vals: withOrder, color: 'var(--good)', w: 2.4 }, { name: 'No delivery', vals: noAct, color: 'var(--crit)', w: 3.5 }], lbl)}</div>
+      ${daHow(`Each listing in stock runs down at its own sales per day. “No delivery” is the floor: what customers see if no delivery comes. “With order” assumes this week’s order plan (chapter 3) is delivered in full after the ${LEAD_DAYS}-day delivery time, so the gap between the lines is what this week’s order is worth. Products empty in every store are left out of “With order”: they only come back once the supplier delivers again.`)}`;
+  }
+
+  // Suspected phantom stock: in stock, sells steadily, yet no sale for so long that it is almost impossible.
+  let phantomHtml = '';
+  const phantom = [];
+  if (deep) {
+    for (const l of inn) {
+      if (l.last < 1 || l.age <= 0 || !(l.rate > 0)) continue;
+      const rate = l.rate / Math.max(1, l.age), exp = rate * l.last;
+      if (exp >= 4.6) phantom.push({ l, rate, exp, pr: Math.exp(-exp) });
+    }
+    phantom.sort((p, q) => q.exp - p.exp);
+    const lim = DA.more.get('phantom') || 25;
+    const chance = (pr) => (pr < 1e-6 ? '< 1 in a million' : pr < 1e-3 ? `1 in ${fmtN(Math.round(1 / pr / 1000) * 1000)}` : `1 in ${fmtN(Math.round(1 / pr))}`);
+    DAX.phantom = () => ({ name: 'Phantom stock', title: 'Suspected phantom stock: count these shelves',
+      cols: [{ h: 'Item code', k: 't' }, { h: 'Product', k: 't', wide: true }, { h: 'Supplier', k: 't', wide: true }, { h: 'Store', k: 't' }, { h: 'Stock in system', k: 'int' }, { h: 'Days since last sale', k: 'int' }, { h: 'Usual sales per day', k: 'dec' }, { h: 'Sales expected in that time', k: 'int' }, { h: 'Chance of no sale if really on shelf', k: 't' }],
+      body: phantom.map((x) => [x.l.it.code, x.l.it.name, supName(x.l.p), storeName(x.l.s), x.l.stk, x.l.last, x.rate, Math.round(x.exp), chance(x.pr)]) });
+    const bySt = DA.store < 0 ? NET.active.map((k) => ({ k, n: phantom.filter((x) => x.l.s === k).length })) : [];
+    phantomHtml = `<div class="da-hero-strip"><div><b>${fmtN(phantom.length)}</b><span>listings show stock but have almost certainly been empty</span></div><div><b>${fmtN(Math.round(phantom.reduce((s, x) => s + x.l.stk, 0)))}</b><span>units in the system that may not exist</span></div>${bySt.length ? `<div><span class="da-mini-stores">${bySt.map((r) => `<em>${esc(storeName(r.k))} <b>${fmtN(r.n)}</b></em>`).join('')}</span></div>` : ''}</div>
+      <div class="ov-wide"><table class="ovt ovm da-t"><thead><tr><th class="rk">#</th><th class="sp">Product</th><th>Store</th><th class="r">Stock</th><th class="r">No sale for</th><th class="r">Usual / day</th><th class="r">Expected sales</th><th class="r">Chance if on shelf</th></tr></thead>
+      <tbody>${phantom.slice(0, lim).map((x, i) => `<tr><td class="rk">${i + 1}</td><td class="sp"><span class="pcode">${esc(x.l.it.code)}</span> ${esc(x.l.it.name)}<span class="psub">${esc(supName(x.l.p))}</span></td><td>${esc(storeName(x.l.s))}</td><td class="num">${fmtN(x.l.stk)}</td><td class="num">${fmtN(x.l.last)} days</td><td class="num">${dec1(x.rate)}</td><td class="num"><b>${fmtN(Math.round(x.exp))}</b></td><td class="num da-hot">${chance(x.pr)}</td></tr>`).join('')}</tbody></table></div>
+      ${daMore('phantom', Math.min(lim, phantom.length), phantom.length)}
+      ${daHow('A product that normally sells 5 a day cannot go 10 days without a single sale if it is really on the shelf. Using the product’s own lifetime sales rate, this lists every listing where a zero-sale run that long has less than a 1% chance (a Poisson test). These are the shelves to count first: the system will never reorder them because it thinks they are full.')}`;
+  }
+
+  // ABC service levels: A = products making 80% of GMV 90D, B = next 15%, C = the rest.
+  let abcHtml = '';
+  if (deep && g90T > 0) {
+    const pg = [...groupBy(list, (l) => l.p + '|' + l.it.code)].map(([k, ls]) => ({ k, g: ls.reduce((s, l) => s + l.g90, 0) })).sort((p, q) => q.g - p.g);
+    const cls = new Map(); let c = 0;
+    for (const r of pg) { cls.set(r.k, c / g90T < 0.8 ? 'A' : c / g90T < 0.95 ? 'B' : 'C'); c += r.g; }
+    const SL = { A: 0.95, B: 0.9, C: tgt };
+    const rows = ['A', 'B', 'C'].map((k) => {
+      const ls = list.filter((l) => cls.get(l.p + '|' + l.it.code) === k), i2 = ls.filter((l) => l.in).length;
+      const by = NET.active.map((s) => { const x = ls.filter((l) => l.s === s); return x.length ? { p: x.filter((l) => l.in).length / x.length, inn: x.filter((l) => l.in).length, n: x.length } : null; });
+      return { k, prods: pg.filter((r) => cls.get(r.k) === k).length, n: ls.length, inn: i2, p: ls.length ? i2 / ls.length : 0, sl: SL[k], gap: Math.max(0, Math.ceil(SL[k] * ls.length) - i2), by };
+    });
+    DAX.abc = () => ({ name: 'ABC service levels', title: 'Availability by ABC class (GMV 90D) against service levels',
+      cols: [{ h: 'Class', k: 't' }, { h: 'Products', k: 'int' }, { h: 'Listings', k: 'int' }, { h: 'Availability', k: 'pct', avail: true }, { h: 'Service level', k: 'pct' }, { h: 'Listings short of it', k: 'int' }, ...NET.active.map((s) => ({ h: storeName(s), k: 'pct', avail: true }))],
+      body: rows.map((r) => [r.k, r.prods, r.n, r.p, r.sl, r.gap, ...r.by.map((b) => (b ? b.p : ''))]) });
+    abcHtml = `<div class="da-abc">${rows.map((r) => `<div class="cl-${r.k}"><div class="h"><b>${r.k}</b><span>${r.k === 'A' ? 'Top 80% of GMV 90D' : r.k === 'B' ? 'Next 15%' : 'Last 5%'}<br>${fmtN(r.prods)} products · ${fmtN(r.n)} listings</span></div><div class="v ${r.p >= r.sl ? 'good' : 'crit'}">${pctTxt(r.p)}</div><div class="sl">Service level ${Math.round(r.sl * 100)}% · <b>${fmtN(r.gap)}</b> listings short</div></div>`).join('')}</div>
+      <div class="ov-wide"><table class="ovt ovm da-t"><thead><tr><th class="sp">Class</th>${NET.active.map((s) => `<th class="c">${esc(storeName(s))}</th>`).join('')}<th class="c">All stores</th></tr></thead>
+      <tbody>${rows.map((r) => `<tr><td class="sp"><b>${r.k}</b> <span class="dim">service level ${Math.round(r.sl * 100)}%</span></td>${r.by.map((b) => `<td>${b ? avCell(b.p, b.inn, b.n) : '<span class="na">—</span>'}</td>`).join('')}<td class="tot">${avCell(r.p, r.inn, r.n)}</td></tr>`).join('')}</tbody></table></div>
+      ${daHow(`Not every product deserves the same effort. The few products that make 80% of GMV in the last 90 days (class A) should almost never be empty, so they get a 95% service level; B gets 90% and C the normal ${settings.target}% target. Close the A gap first.`)}`;
+  }
+
+  // Order mix: suppliers running out of some products while holding months of others.
+  let mixHtml = '';
+  if (deep) {
+    const rows = [...groupBy(inn, (l) => l.p)].map(([acct, ls]) => {
+      let r3 = 0, ov = 0, ovV = 0;
+      for (const l of ls) { const du = dailyUnits(l), pr = priceOf(l); if (du > 0 && l.stk / du <= LEAD_DAYS) r3++; const ex = l.stk - du * 90; if (pr && ex > 0 && (du === 0 || l.stk / du > 90)) { ov++; ovV += ex * pr; } }
+      return { acct, label: supName(acct), n: ls.length, r3, ov, ovV };
+    }).filter((r) => r.r3 >= 3 && r.ov >= 3).sort((p, q) => Math.min(q.r3 / q.n, q.ov / q.n) - Math.min(p.r3 / p.n, p.ov / p.n) || q.ovV - p.ovV);
+    DAX.mix = () => ({ name: 'Order mix', title: 'Suppliers with run-outs and overstock at the same time',
+      cols: [{ h: 'Supplier', k: 't', wide: true }, { h: 'Listings in stock', k: 'int' }, { h: `Run out ≤ ${LEAD_DAYS} days`, k: 'int' }, { h: 'Over 90 days of cover', k: 'int' }, { h: 'Retail value beyond 90 days (KWD)', k: 'money' }],
+      body: rows.map((r) => [r.label, r.n, r.r3, r.ov, r.ovV]) });
+    mixHtml = `<div class="ov-wide"><table class="ovt ovm da-t"><thead><tr><th class="rk">#</th><th class="sp">Supplier</th><th class="r">In stock</th><th class="r">Run out ≤ ${LEAD_DAYS}d</th><th class="r">Over 90 days</th><th class="r">Value beyond 90d</th><th style="min-width:180px">Mix</th></tr></thead>
+      <tbody>${rows.slice(0, 15).map((r, i) => `<tr><td class="rk">${i + 1}</td><td class="sp">${supLink(r.acct, r.label)}</td><td class="num">${fmtN(r.n)}</td><td class="num da-hot">${fmtN(r.r3)}</td><td class="num">${fmtN(r.ov)}</td><td class="num">${kwd(r.ovV)}</td><td><div class="da-mini"><span style="flex:${r.r3};background:var(--crit)"></span><span style="flex:${Math.max(0, r.n - r.r3 - r.ov)};background:#E5E2EA"></span><span style="flex:${r.ov};background:#7A4CD9"></span></div></td></tr>`).join('') || '<tr><td colspan="7" class="dim">No supplier is short and overstocked at the same time.</td></tr>'}</tbody></table></div>
+      ${daHow('Red = listings running out within the delivery time, purple = listings with more than 90 days of stock. Both at once means the money is there but in the wrong products: rebalance the next order (order less of the purple, more of the red) instead of ordering more in total.')}`;
+  }
+
+  // Weekly order plan (Replenishment team).
+  const plan = [];
+  if (deep) {
+    for (const l of list) {
+      const du = dailyUnits(l);
+      if (!(du > 0)) continue;
+      const q = Math.ceil(du * (LEAD_DAYS + REVIEW_DAYS) - l.stk);
+      if (q <= 0) continue;
+      const cover = l.in ? l.stk / du : 0;
+      plan.push({ l, du, q, cover, val: q * priceOf(l), why: !l.in ? (causeOf.get(l) === 'supplier' ? 'Empty in every store' : 'Empty here') : cover <= LEAD_DAYS ? `Runs out ≤ ${LEAD_DAYS} days` : `Under ${LEAD_DAYS + REVIEW_DAYS} days of cover`, urgent: !l.in || cover <= LEAD_DAYS });
+    }
+  }
+  let planHtml = '';
+  if (deep) {
+    const bySup = [...groupBy(plan, (x) => x.l.p)].map(([acct, xs]) => ({ acct, label: supName(acct), lines: xs.length, units: xs.reduce((s, x) => s + x.q, 0), val: xs.reduce((s, x) => s + x.val, 0), urgent: xs.filter((x) => x.urgent).length, empty: xs.filter((x) => !x.l.in).length })).sort((p, q) => q.val - p.val);
+    const tot = { lines: plan.length, units: plan.reduce((s, x) => s + x.q, 0), val: plan.reduce((s, x) => s + x.val, 0), urgent: plan.filter((x) => x.urgent).length };
+    const lim = DA.more.get('plan') || 25;
+    DAX.plan = () => ({ name: 'Weekly order plan by supplier', title: `Weekly order plan by supplier (${LEAD_DAYS} days delivery + ${REVIEW_DAYS} days to the next order)`,
+      cols: [{ h: 'Supplier', k: 't', wide: true }, { h: 'Order lines', k: 'int' }, { h: 'Units', k: 'int' }, { h: 'Value at selling price (KWD)', k: 'money' }, { h: 'Urgent lines', k: 'int' }, { h: 'Lines for empty shelves', k: 'int' }],
+      body: bySup.map((r) => [r.label, r.lines, r.units, r.val, r.urgent, r.empty]), foot: ['All suppliers', tot.lines, tot.units, tot.val, tot.urgent, plan.filter((x) => !x.l.in).length] });
+    DAX.planlines = () => ({ name: 'Weekly order plan lines', title: 'Weekly order plan, line by line',
+      cols: [{ h: 'Supplier', k: 't', wide: true }, { h: 'Item code', k: 't' }, { h: 'Product', k: 't', wide: true }, { h: 'Store', k: 't' }, { h: 'Stock', k: 'int' }, { h: 'Sells per day', k: 'dec' }, { h: 'Days of cover', k: 'dec' }, { h: 'Order units', k: 'int' }, { h: 'Value at selling price (KWD)', k: 'money' }, { h: 'Why', k: 't' }, { h: 'Urgent', k: 't' }],
+      body: [...plan].sort((p, q) => supName(p.l.p).localeCompare(supName(q.l.p)) || storeName(p.l.s).localeCompare(storeName(q.l.s)) || q.q - p.q).map((x) => [supName(x.l.p), x.l.it.code, x.l.it.name, storeName(x.l.s), x.l.stk, x.du, x.cover, x.q, x.val, x.why, x.urgent ? 'Yes' : '']) });
+    planHtml = `<div class="da-hero-strip"><div><b>${fmtN(tot.lines)}</b><span>order lines from ${fmtN(bySup.length)} suppliers</span></div><div><b>${fmtN(tot.units)}</b><span>units · ${kwd(tot.val)} KWD at selling price</span></div><div><b>${fmtN(tot.urgent)}</b><span>urgent lines: empty now or gone before delivery</span></div></div>
+      <div class="ov-wide"><table class="ovt ovm da-t"><thead><tr><th class="rk">#</th><th class="sp">Supplier</th><th class="r">Lines</th><th class="r">Units</th><th class="r">Value</th><th class="r">Urgent</th><th class="r">For empty shelves</th></tr></thead>
+      <tbody>${bySup.slice(0, lim).map((r, i) => `<tr><td class="rk">${i + 1}</td><td class="sp">${supLink(r.acct, r.label)}</td><td class="num">${fmtN(r.lines)}</td><td class="num"><b>${fmtN(r.units)}</b></td><td class="num">${kwd(r.val)}</td><td class="num${r.urgent ? ' da-hot' : ''}">${fmtN(r.urgent)}</td><td class="num">${fmtN(r.empty)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td class="rk"></td><td class="sp">All suppliers</td><td class="num">${fmtN(tot.lines)}</td><td class="num">${fmtN(tot.units)}</td><td class="num">${kwd(tot.val)}</td><td class="num">${fmtN(tot.urgent)}</td><td class="num">${fmtN(plan.filter((x) => !x.l.in).length)}</td></tr></tfoot></table></div>
+      ${daMore('plan', Math.min(lim, bySup.length), bySup.length)}
+      ${daHow(`Order up to ${LEAD_DAYS + REVIEW_DAYS} days of sales (${LEAD_DAYS} days delivery + ${REVIEW_DAYS} days until next week’s order arrives), minus the stock on hand, for every listing that sold in the last 90 days. The “lines” Excel is ready to send: one row per product and store, sorted by supplier. Check suspected phantom stock first: those shelves need a count, not an order.`)}`;
+  }
+
   // Pulse for the summary: one line and the bridge.
   let pulse = '';
   if (hs && nD > 1) {
@@ -2752,7 +3004,9 @@ function renderDeep() {
   const runSup = [...groupBy(run3, (x) => x.l.p)].map(([acct, xs]) => ({ acct, label: supName(acct), g: xs.reduce((s, x) => s + x.l.g90, 0), u: xs.reduce((s, x) => s + orderQty(x), 0) })).sort((p, q) => q.g - p.g);
   const runUnits = run3.reduce((s, x) => s + orderQty(x), 0);
   const decisions = [];
-  if (deep && run3.length) decisions.push({ who: 'Replenishment', ch: 'replen', html: `Order <b>${fmtN(run3.length)}</b> listings from <b>${fmtN(runSup.length)}</b> suppliers today, about <b>${fmtN(runUnits)}</b> units. Start with ${runSup.slice(0, 3).map((r) => esc(r.label)).join(', ')}.` });
+  if (deep && N && needT > 0) decisions.push({ who: 'Replenishment Director', ch: 'fix', html: `Close the gap to ${settings.target}%: <b>${fmtN(needT)}</b> more listings in stock. Store transfers alone reach <b>${pctTxt(pAfter.transfer)}</b>; chasing suppliers for the ${fmtN(cN.supplier)} products empty everywhere reaches <b>${pctTxt(pAfter.supplier)}</b>.` });
+  if (deep && run3.length) decisions.push({ who: 'Replenishment', ch: 'replen', html: `Order <b>${fmtN(run3.length)}</b> listings from <b>${fmtN(runSup.length)}</b> suppliers today, about <b>${fmtN(runUnits)}</b> units: they run out before a delivery ordered later can arrive. Start with ${runSup.slice(0, 3).map((r) => esc(r.label)).join(', ')}.` });
+  if (deep && phantom.length) decisions.push({ who: 'Operations', ch: 'fix', html: `Count <b>${fmtN(phantom.length)}</b> shelves that show stock but have almost certainly been empty (no sale for far longer than their normal rate allows). The system will not reorder them by itself.` });
   if (deep && transfers.length) decisions.push({ who: 'Operations', ch: 'ops', html: `Move <b>${fmtN(trUnits)}</b> units between stores to refill <b>${fmtN(transfers.length)}</b> empty listings, with no new purchase order.` });
   if (deep && top100.length) decisions.push({ who: 'Commercial', ch: 'commercial', html: `<b>${fmtN(top100Out)}</b> of the top 100 products are empty in at least one store. The biggest: ${hotEmpty.slice(0, 2).map((l) => `${esc(l.it.name)} (${esc(storeName(l.s))})`).join(', ')}.` });
   if (hs && nD > 1) decisions.push({ who: 'Leadership', ch: 'summary', html: Math.abs(hs.rangeT) >= 0.002 ? `Read availability like for like: <b>${pts(hs.realT)}</b> since ${dayLabel(days[0])}. The headline <b>${pts(hs.totT)}</b> includes <b>${pts(hs.rangeT)}</b> from removing listings.` : `Availability moved <b>${pts(hs.realT)}</b> like for like since ${dayLabel(days[0])}.` });
@@ -2764,7 +3018,8 @@ function renderDeep() {
       ${leader('CEO', 'Executive summary', hs ? pts(hs.realT) : pctTxt(t.p), hs ? (ptsCls(hs.realT) === 'down' ? 'crit' : 'good') : status(t.p), hs ? `real change since ${dayLabel(days[0])}; availability ${pctTxt(t.p)} today` : `availability today`, 'summary')}
       ${deep ? leader('CMO', 'Commercial', `${fmtN(top100Out)}<small>/100</small>`, top100Out ? 'crit' : 'good', 'top products empty in at least one store', 'commercial') : ''}
       ${leader('COO', 'Operations', deep ? fmtN(transfers.length) : pctTxt(t.p), 'warn', deep ? `empty listings another store can refill (${fmtN(trUnits)} units)` : 'availability today', 'ops')}
-      ${deep ? leader('Replenishment Director', 'Replenishment', fmtN(run3.length), run3.length ? 'crit' : 'good', `listings run out within ${LEAD_DAYS} days · ${fmtN(runUnits)} units to order`, 'replen') : ''}
+      ${deep ? leader('Replenishment Director', 'Fix plan', pctTxt(pAfter.store), 'good', `achievable availability · ${fmtN(needT)} listings short of ${settings.target}% today`, 'fix') : ''}
+      ${deep ? leader('Replenishment team', 'Replenishment', fmtN(run3.length), run3.length ? 'crit' : 'good', `listings run out within ${LEAD_DAYS} days · order them today`, 'replen') : ''}
     </div>`;
 
   // Run-out table and call list carry order quantities.
@@ -2776,14 +3031,49 @@ function renderDeep() {
     body: run3.map((x) => [x.l.it.code, x.l.it.name, supName(x.l.p), storeName(x.l.s), x.l.stk, x.du, x.cover, orderQty(x), x.l.g90]) });
 
   // ================= Chapters =================
+  const kpi = (v, l, cls = '') => ({ v, l, cls });
+  const ws = DA.store < 0 && NET.active.length > 1 ? NET.active.map((k) => { const ls = list.filter((l) => l.s === k); return { k, p: ls.length ? ls.filter((l) => l.in).length / ls.length : 0 }; }).sort((p, q) => p.p - q.p) : [];
   const CHAPTERS = [
     { id: 'summary', role: 'CEO', title: 'Executive summary', lead: 'The whole picture on one screen: where availability really stands, what moved it, and the decisions for today.',
+      kpis: [kpi(pctTxt(t.p), 'availability today', status(t.p)), ...(hs ? [kpi(pts(hs.realT), `real change since ${dayLabel(days[0])}`, ptsCls(hs.realT) === 'down' ? 'crit' : 'good')] : []), ...(deep ? [kpi(pctTxt(pAfter.store), 'achievable with the fix plan', 'good')] : [])],
       secs: [
         ['decide', 'Decisions for today', 'One owner each, worked out from today’s stock and sales', decisionsHtml + leaders, ''],
         ['story', 'The story in numbers', 'What the data says today, from both Tableau sources', story, ''],
         ...(pulse ? [['pulse', 'Availability pulse', `Every day since ${dayLabel(days[0])}, and what really moved it`, pulse, '']] : []),
       ] },
+    { id: 'fix', role: 'Replenishment Director', title: 'Fix plan', lead: 'Why every shelf is empty, who has to act, and the cheapest route to the target. The diagnosis behind the order.',
+      kpis: deep ? [kpi(fmtN(needT), `listings short of ${settings.target}%`, needT ? 'crit' : 'good'), kpi(pctTxt(pAfter.transfer), 'after store transfers alone', pAfter.transfer >= tgt ? 'good' : 'warn'), kpi(fmtN(phantom.length), 'suspected phantom shelves', 'warn')] : [],
+      secs: [
+        ...(pathHtml ? [['path', 'Path to target', `From ${pctTxt(t.p)} today to ${settings.target}%: what each fix adds`, pathHtml, '']] : []),
+        ...(causeHtml ? [['cause', 'Root cause of every empty shelf', 'Four reasons, four owners, four different fixes', causeHtml, 'cause causelist']] : []),
+        ...(foreHtml ? [['fore', 'Availability forecast', `The next ${LEAD_DAYS + REVIEW_DAYS} days with and without this week’s order`, foreHtml, '']] : []),
+        ...(abcHtml ? [['abc', 'ABC service levels', 'The products that make the money, held to a higher standard', abcHtml, 'abc']] : []),
+        ...(phantomHtml ? [['phantom', 'Suspected phantom stock', 'In stock on the system, but statistically almost impossible', phantomHtml, 'phantom']] : []),
+        ...(whoHtml ? [['who', 'Who causes the gaps', 'The few suppliers that hold most of the GMV on empty shelves', whoHtml, '']] : []),
+        ...(mixHtml ? [['mix', 'Order mix', 'Suppliers that are short and overstocked at the same time', mixHtml, 'mix']] : []),
+      ] },
+    { id: 'replen', role: 'Replenishment team', title: 'Replenishment', lead: 'What to order this week, what cannot wait until tomorrow, and how each supplier performs.',
+      kpis: deep ? [kpi(fmtN(plan.length), 'order lines this week'), kpi(fmtN(run3.length), `run out within ${LEAD_DAYS} days`, run3.length ? 'crit' : 'good'), kpi(share1(inn.length ? ghosts.length / inn.length : 0), 'of stock is ghost stock', 'warn')] : [],
+      secs: [
+        ...(planHtml ? [['plan', 'Weekly order plan', 'Every listing that needs stock to last until next week’s order arrives', planHtml, 'plan planlines']] : []),
+        ['runout', `Run-out radar · ${LEAD_DAYS}-day delivery time`, 'Stock on the shelf today that will be gone before a new order can arrive', runout, deep ? 'runsup runout' : ''],
+        ...(scoreHtml ? [['score', 'Supplier scorecard', 'One grade per supplier from availability, reliability, trend, run-out and ghost stock', scoreHtml, 'score']] : []),
+        ...(reliab ? [['reliab', 'Supplier reliability', `How many days each supplier held the ${settings.target}% target`, reliab, 'reliab']] : []),
+        ['ghost', 'Ghost stock', `On the shelf according to the system, but no sale for ${GHOST_DAYS}+ days`, ghost, deep ? 'ghostsup ghost' : ''],
+        ...(overHtml ? [['over', 'Overstock', 'Stock beyond 90 days of cover, at retail value', overHtml, 'over']] : []),
+      ] },
+    { id: 'ops', role: 'COO', title: 'Operations', lead: 'How the stores and the supply chain perform day by day, and the stock that can be moved today.',
+      kpis: [...(ws.length ? [kpi(`${storeName(ws[ws.length - 1].k)} ${pctTxt(ws[ws.length - 1].p)}`, 'best store', status(ws[ws.length - 1].p)), kpi(`${storeName(ws[0].k)} ${pctTxt(ws[0].p)}`, 'weakest store', status(ws[0].p))] : []), ...(deep ? [kpi(fmtN(transfers.length), `listings to refill by transfer (${fmtN(trUnits)} units)`)] : [])],
+      secs: [
+        ...(storesHtml ? [['stores', 'Store league table', 'Every store on the same measures, best first', storesHtml, 'stores']] : []),
+        ['transfers', 'Store transfers', 'Empty shelves that another store can refill today from spare stock', transfersHtml, deep ? 'transfers' : ''],
+        ['trend', 'Availability trend', hs ? `Every day since ${dayLabel(days[0])}, each change split into real change and range change` : 'Daily history', trend, hs ? 'daily' : ''],
+        ...(hs ? [['heat', 'Heat map', 'Availability per day: find the day, store or category where it went wrong', heat, 'heat']] : []),
+        ...(ageHtml ? [['age', 'How long shelves stay empty', 'Days since the last sale of every empty listing', ageHtml, '']] : []),
+        ...(movers ? [['movers', 'Movers', `Who filled and who emptied shelves since ${dayLabel(days[0])}, like for like`, movers, 'movers']] : []),
+      ] },
     { id: 'commercial', role: 'CMO', title: 'Commercial', lead: 'Demand and availability together: which best-sellers are missing, where demand is rising, and how availability looks to a shopper.',
+      kpis: deep ? [kpi(`${fmtN(top100Out)}/100`, 'top products empty somewhere', top100Out ? 'crit' : 'good'), kpi(custP == null ? '—' : pctTxt(custP), 'availability weighted by GMV 90D', custP == null ? '' : status(custP)), kpi(pctTxt(sellingP), 'stock that sells', status(sellingP))] : [],
       secs: [
         ...(lenses ? [['lenses', 'Four ways to read availability', 'The same shelves counted by listings, by sales and by what really sells', lenses, '']] : []),
         ['best', 'Best-sellers on empty shelves', 'The products customers came for and did not find', bestHtml, deep ? 'best' : ''],
@@ -2792,31 +3082,16 @@ function renderDeep() {
         ['cats', 'Category scorecard', 'Availability, trend, run-out, ghost stock and momentum per category', catsHtml, 'cats'],
         ...(conc ? [['conc', 'Concentration', 'How few suppliers carry most of the sales', conc, '']] : []),
       ] },
-    { id: 'ops', role: 'COO', title: 'Operations', lead: 'How the stores and the supply chain perform day by day, and the stock that can be moved today.',
-      secs: [
-        ...(storesHtml ? [['stores', 'Store league table', 'Every store on the same measures, best first', storesHtml, 'stores']] : []),
-        ['trend', 'Availability trend', hs ? `Every day since ${dayLabel(days[0])}, each change split into real change and range change` : 'Daily history', trend, hs ? 'daily' : ''],
-        ...(hs ? [['heat', 'Heat map', 'Availability per day: find the day, store or category where it went wrong', heat, 'heat']] : []),
-        ['transfers', 'Store transfers', 'Empty shelves that another store can refill today from spare stock', transfersHtml, deep ? 'transfers' : ''],
-        ...(ageHtml ? [['age', 'How long shelves stay empty', 'Days since the last sale of every empty listing', ageHtml, '']] : []),
-        ...(movers ? [['movers', 'Movers', `Who filled and who emptied shelves since ${dayLabel(days[0])}, like for like`, movers, 'movers']] : []),
-      ] },
-    { id: 'replen', role: 'Replenishment Director', title: 'Replenishment', lead: 'What to order today, which suppliers to chase, and where stock is too much or not really there.',
-      secs: [
-        ['runout', `Run-out radar · ${LEAD_DAYS}-day delivery time`, 'Stock on the shelf today that will be gone before a new order can arrive', runout, deep ? 'runsup runout' : ''],
-        ...(scoreHtml ? [['score', 'Supplier scorecard', 'One grade per supplier from availability, reliability, trend, run-out and ghost stock', scoreHtml, 'score']] : []),
-        ...(reliab ? [['reliab', 'Supplier reliability', `How many days each supplier held the ${settings.target}% target`, reliab, 'reliab']] : []),
-        ['ghost', 'Ghost stock', `On the shelf according to the system, but no sale for ${GHOST_DAYS}+ days`, ghost, deep ? 'ghostsup ghost' : ''],
-        ...(overHtml ? [['over', 'Overstock', 'Stock beyond 90 days of cover, at retail value', overHtml, 'over']] : []),
-      ] },
   ];
-  if (!['summary', 'commercial', 'ops', 'replen', 'all'].includes(DA.chapter)) DA.chapter = 'summary';
+  CHAPTERS.forEach((c, ci) => c.secs.forEach((x, si) => { x[1] = `${ci + 1}.${si + 1} ${x[1]}`; }));
+  if (!['summary', 'fix', 'commercial', 'ops', 'replen', 'all'].includes(DA.chapter)) DA.chapter = 'summary';
   const chapHtml = CHAPTERS.map((c) => `<div class="da-chap" data-chap="${c.id}"${DA.chapter === 'all' || DA.chapter === c.id ? '' : ' hidden'}>
-      <div class="da-chap-h"><span class="role">For the ${esc(c.role)}</span><h2>${esc(c.title)}</h2><p>${esc(c.lead)}</p>
+      <div class="da-chap-h"><div class="txt"><span class="role">Chapter ${CHAPTERS.indexOf(c) + 1} · for the ${esc(c.role)}</span><h2>${esc(c.title)}</h2><p>${esc(c.lead)}</p></div>
+        ${c.kpis.length ? `<div class="da-chap-k">${c.kpis.map((k) => `<div><b class="${k.cls}">${k.v}</b><span>${esc(k.l)}</span></div>`).join('')}</div>` : ''}
         <nav class="da-nav" aria-label="Sections in ${esc(c.title)}">${c.secs.map(([id, title]) => `<button type="button" data-da-jump="${id}">${esc(title.replace(/ ·.*$/, ''))}</button>`).join('')}</nav></div>
       ${c.secs.map(([id, title, sub, body, dl]) => daCard(id, title, sub, body, dl)).join('')}
     </div>`).join('');
-  const tabs = `<nav class="da-tabs" role="tablist" aria-label="Chapters">${CHAPTERS.map((c) => `<button type="button" role="tab" data-da-chapter="${c.id}" aria-selected="${DA.chapter === c.id}"><span class="role">${esc(c.role)}</span><span class="t">${esc(c.title)}</span></button>`).join('')}<button type="button" role="tab" data-da-chapter="all" aria-selected="${DA.chapter === 'all'}"><span class="role">Everyone</span><span class="t">Everything</span></button></nav>`;
+  const tabs = `<nav class="da-tabs" role="tablist" aria-label="Chapters">${CHAPTERS.map((c) => `<button type="button" role="tab" data-da-chapter="${c.id}" aria-selected="${DA.chapter === c.id}"><span class="role">${CHAPTERS.indexOf(c) + 1} · ${esc(c.role)}</span><span class="t">${esc(c.title)}</span></button>`).join('')}<button type="button" role="tab" data-da-chapter="all" aria-selected="${DA.chapter === 'all'}"><span class="role">Everyone</span><span class="t">Everything</span></button></nav>`;
 
   host.innerHTML = `<section class="page ov cx da">
     <header class="cx-head">

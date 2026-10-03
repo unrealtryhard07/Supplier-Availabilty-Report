@@ -39,41 +39,54 @@ source (from 28 Sep 2026; the days before are one backfilled copy and are left
 out). It has the same supplier, store and category filters as the overview, and
 every table downloads as Excel (every row) or PDF (first 300 rows).
 
-The page is split into four chapters, one per leader, plus **Everything**:
+The page is split into five numbered chapters, one per audience, plus
+**Everything**. Each chapter opens with a banner showing three headline numbers.
+Sections are numbered (2.1, 2.2, …) so they are easy to point to in a meeting.
 
-- **Executive summary (CEO)**
-  - Decisions for today, each with an owner.
-  - One card per leader.
-  - The story in numbers.
-  - The availability pulse with a bridge chart (real change vs listings
-    removed/added).
-- **Commercial (CMO)**
-  - Four ways to read availability: by listings, weighted by sales qty,
-    weighted by GMV 90D, and stock that sells.
-  - Best-sellers on empty shelves, with a quick fix for each (a store transfer
-    or an order).
-  - Momentum vs availability.
-  - Availability by tier.
-  - Category scorecard.
-  - Concentration.
-- **Operations (COO)**
-  - Store league table.
-  - Availability trend: each day's change split into *real change* (cells whose
-    listings did not change) and *range change* (listings removed or added).
-  - Heat map.
-  - Store transfers: empty listings another store can refill from spare stock.
-    The giving store keeps 3 weeks of its own sales.
-  - How long shelves stay empty.
-  - Movers, ranked like for like.
-- **Replenishment (Replenishment Director)**
-  - Run-out radar for a 3-day delivery time, with units to order. Units cover
-    3 days of delivery plus 7 days until the next order, minus stock on hand.
-  - Supplier scorecard with A–E grades. The score is out of 100: availability
-    vs target 40, days on target 20, real change 10, run-out share 15, ghost
-    share 15.
-  - Supplier reliability.
-  - Ghost stock: in stock, no sale for 30+ days.
-  - Overstock: stock beyond 90 days of cover, at retail value.
+1. **Executive summary (CEO)**
+   - Decisions for today, each with an owner.
+   - One card per leader.
+   - The story in numbers.
+   - The availability pulse with a bridge chart.
+2. **Fix plan (Replenishment Director)**
+   - Path to target: a staircase from today to the target, cheapest fix first.
+   - Root cause of every empty shelf. Each one gets exactly one cause, checked
+     in this order:
+     - *no sale in 90+ days* → review or delist;
+     - *move from another store* → transfer;
+     - *empty in every store* → chase the supplier;
+     - *too little ordered* (other stores have it, none to spare) → raise the
+       order quantity.
+   - Availability forecast for the next 10 days, with and without this week's
+     order.
+   - ABC service levels: A = 80% of GMV 90D at 95%, B = next 15% at 90%,
+     C = the rest at the normal target.
+   - Suspected phantom stock: in stock, but a zero-sale run that long has under
+     a 1% chance at the product's own sales rate (a Poisson test).
+   - Who causes the gaps.
+   - Order mix: suppliers short and overstocked at once.
+3. **Replenishment (Replenishment team)**
+   - Weekly order plan by supplier, with a line-by-line Excel. Each line orders
+     up to 3 days of delivery + 7 days until next week's order, minus stock.
+   - Run-out radar.
+   - Supplier scorecard (A–E).
+   - Reliability.
+   - Ghost stock.
+   - Overstock.
+4. **Operations (COO)**
+   - Store league table.
+   - Store transfers.
+   - Trend with real vs range change.
+   - Heat map.
+   - How long shelves stay empty.
+   - Movers.
+5. **Commercial (CMO)**
+   - Four ways to read availability.
+   - Best-sellers on empty shelves.
+   - Momentum vs availability.
+   - Availability by tier.
+   - Category scorecard.
+   - Concentration.
 
 Definitions:
 
