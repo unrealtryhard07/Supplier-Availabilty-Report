@@ -628,6 +628,116 @@ dialog::backdrop{background:rgba(8,14,24,.55)}
   .page.ov.cx .ovm tfoot td{background:#FAF8F6;box-shadow:inset 0 1px 0 var(--cx-line)}
 }
 
+/* =====================================================================
+   Deep analysis: same Circle look, charts drawn as inline SVG.
+   ===================================================================== */
+.topbar .deep-btn[aria-pressed="true"]{background:#E40071;border-color:#E40071;color:#fff}
+.page.ov.da{max-width:1320px}
+.da-nav{display:flex;flex-wrap:wrap;gap:6px}
+.da-nav button{border:1px solid var(--cx-line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:12.5px;font-weight:600;color:var(--cx-ink-2);cursor:pointer}
+.da-nav button:hover{border-color:var(--cx-pink);color:var(--cx-pink)}
+.da-sec{scroll-margin-top:80px}
+.da .cx-card-b{padding:14px 18px 16px}
+.da-tiles .v.up{color:var(--good-ink)}.da-tiles .v.down{color:var(--crit-ink)}
+.da-facts{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:10px}
+.da-facts li{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:10px;background:#FAF8F6;border-left:4px solid #C9C3D3}
+.da-facts li.crit{border-left-color:var(--crit);background:#FFF6F5}
+.da-facts li.warn{border-left-color:var(--warn);background:#FFFAF0}
+.da-facts li.good{border-left-color:var(--good);background:#F3FBF6}
+.da-facts li.info{border-left-color:var(--cx-pink);background:var(--cx-tint)}
+.da-facts .n{flex:none;width:24px;height:24px;border-radius:50%;background:#fff;border:1px solid var(--cx-line);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--cx-ink-2)}
+.da-facts p{margin:0;font-size:14px;line-height:1.5;color:var(--cx-ink)}
+.da-facts b{font-weight:700}
+.da-chart{width:100%;overflow-x:auto}
+.da-svg{display:block;width:100%;min-width:640px;height:auto;font-family:var(--f-sans)}
+.da-grid{stroke:#EEECF1;stroke-width:1}
+.da-ref{stroke-width:1.4;stroke-dasharray:5 4}
+.da-axis0{stroke:#9A93A8;stroke-width:1.2}
+.da-conn{stroke:#9A93A8;stroke-width:1.2;stroke-dasharray:3 3}
+.da-ax{font-size:12px;fill:#7A7287}
+.da-ax.cut{fill:var(--crit-ink);font-weight:700}
+.da-lbl{font-size:12.5px;font-weight:600}
+.da-lbl.b{font-weight:800;font-size:13.5px}
+.da-val{font-size:15px;font-weight:700;fill:#1B1530}
+.da-bar{fill:#D9D4E0}.da-bar-cut{fill:#F4B4B0}
+.da-b-ink{fill:#1B1530}.da-b-up{fill:var(--good)}.da-b-down{fill:var(--crit)}.da-b-range{fill:#C9C3D3}
+.da-q-hot{fill:#FCE8F2}
+.da-q-lbl{font-size:12.5px;font-weight:700;fill:#9A93A8;letter-spacing:.02em}
+.da-q-lbl.hot{fill:#A8005A}
+.da-dot{fill-opacity:.45;stroke-width:1.4;cursor:pointer}
+.da-dot:hover{fill-opacity:.8}
+.da-dot-lbl{font-size:11px;font-weight:600;fill:#4A4458;pointer-events:none}
+.da-spark{width:110px;height:28px;vertical-align:middle}
+.da-h4{margin:18px 0 8px;font-size:13.5px;font-weight:700;color:var(--cx-ink)}
+.da-h4.down{color:var(--crit-ink)}.da-h4.up{color:var(--good-ink)}
+.da-how{margin:12px 0 0;font-size:12.5px;line-height:1.5;color:var(--cx-ink-3);max-width:980px}
+.da-how b{color:var(--cx-ink-2)}
+.da-how>b:first-child{display:inline-block;margin-right:6px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--cx-pink)}
+.da-note{margin:8px 0 0;font-size:12.5px;color:var(--cx-ink-3)}
+.da-empty{margin:0;padding:18px;border-radius:10px;background:#FAF8F6;color:var(--cx-ink-3);font-size:13.5px}
+.da-foot{font-size:12px;color:var(--cx-ink-3);margin:0;padding:0 2px 8px;line-height:1.5}
+.da-two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:8px 24px}
+.da-two.wide-l{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+@media (max-width:1100px){.da-two.wide-l{grid-template-columns:minmax(0,1fr)}}
+.da-toolbar{margin-bottom:10px}
+.da .ovm tbody tr{cursor:default}
+.da .ovm tbody tr:hover td{background:#FDF8FB}
+.da .ovm tbody tr[data-da-cat]{cursor:pointer}
+.da .ovm tbody tr[data-da-cat]:hover td{background:#FDF2F8}
+.da .ovm .sp{min-width:200px;width:auto}
+.da .ovm td,.da .ovm th{padding-left:8px;padding-right:8px}
+.da-heat td{padding:4px 4px}
+.da-heat td .mc{padding:5px 6px}
+.da-t td.num.da-pts.up{color:var(--good-ink)}
+.da-t td.num.da-pts.down{color:var(--crit-ink)}
+.da-t td.num.da-pts.flat{color:var(--cx-ink-3)}
+.da-t td.da-hot{color:var(--crit-ink);font-weight:700}
+.da-t td.dim{color:var(--cx-ink-3)}
+.da-sup{border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--cx-ink);text-align:left;cursor:pointer;line-height:1.25}
+.da-sup:hover{color:var(--cx-pink);text-decoration:underline}
+.da-sup.na{cursor:default;font-weight:600;color:var(--cx-ink-2)}
+.da-sup.na:hover{color:var(--cx-ink-2);text-decoration:none}
+.da-more{display:inline-block;margin-top:10px;border:0;background:none;font:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--cx-pink)}
+.da-pills{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
+.da-pill{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;background:#F4F5F7;font-size:12.5px;color:var(--cx-ink-2)}
+.da-pill b{color:var(--cx-ink)}
+.da-pill i{width:9px;height:9px;border-radius:50%;background:#C9C3D3}
+.da-pill.good i{background:var(--good)}.da-pill.warn i{background:var(--warn)}.da-pill.crit i{background:var(--crit)}
+.da-pill .da-sup{font-size:12.5px}
+.da-v{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;background:#F4F5F7;color:var(--cx-ink-2);white-space:nowrap}
+.da-v.good{background:var(--good-tint);color:var(--good-ink)}.da-v.warn{background:var(--warn-tint);color:var(--warn-ink)}.da-v.crit{background:var(--crit-tint);color:var(--crit-ink)}
+.da-on{display:inline-flex;gap:2px;vertical-align:middle}
+.da-on i{width:7px;height:12px;border-radius:2px;background:#E5E2EA}
+.da-on i.on{background:var(--good)}
+.da-cover{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;align-items:end;padding:6px 0 2px}
+.da-cv{display:flex;flex-direction:column;align-items:center;gap:6px}
+.da-cv b{font-size:15px;color:var(--cx-ink)}
+.da-cv span{width:70%;max-width:90px;border-radius:5px 5px 0 0;background:#D9D4E0}
+.da-cv.crit span{background:var(--crit)}.da-cv.crit b{color:var(--crit-ink)}
+.da-cv.warn span{background:var(--warn)}
+.da-cv em{font-style:normal;font-size:12px;color:var(--cx-ink-3);text-align:center}
+.da-stack{display:flex;height:34px;border-radius:8px;overflow:hidden;margin-top:4px}
+.da-stack span{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;min-width:2px}
+.da-stack .good,.da-legend i.good{background:var(--good)}
+.da-stack .ok,.da-legend i.ok{background:#8FD1A8}
+.da-stack .ok{color:#0B5F33}
+.da-stack .warn,.da-legend i.warn{background:var(--warn)}
+.da-stack .crit,.da-legend i.crit{background:var(--crit)}
+.da-stack .dark,.da-legend i.dark{background:#1B1530}
+.da-legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:12.5px;color:var(--cx-ink-2)}
+.da-legend span{display:inline-flex;align-items:center;gap:6px}
+.da-legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.da-barc{min-width:170px;position:relative}
+.da-barc span{display:block;height:10px;border-radius:5px;background:var(--cx-pink);opacity:.8}
+.da-barc em{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-style:normal;font-size:12px;font-weight:600;color:var(--cx-ink-2);background:rgba(255,255,255,.85);padding:0 3px;border-radius:3px}
+.da .cx-dl{flex-wrap:wrap;align-items:center}
+.da-dl-l{align-self:center;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cx-head);margin-left:8px}
+.da-conc{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.da-conc div{padding:12px 14px;border-radius:10px;background:#FAF8F6}
+.da-conc div>b{display:block;font-size:26px;color:var(--cx-pink);line-height:1.1}
+.da-conc span{font-size:12.5px;color:var(--cx-ink-2)}
+@media (max-width:760px){.da-cover{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
 /* Capture mode: used by tools/render-reports.js to screenshot pages at 1:1 */
 body.capture .topbar,body.capture .sidebar,body.capture .stage-note,body.capture .ov-host{display:none}
 body.capture .app{display:block}
@@ -649,6 +759,7 @@ body.capture .frame{box-shadow:none;border-radius:0}
       <button class="btn" id="btn-settings" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h6M11.5 4.5h2M2.5 11.5h2M7.5 11.5h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="4.5" r="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="11.5" r="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span>Settings</span></button>
       <button class="btn" id="btn-export-sel" type="button" disabled><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 6.5h6M5 9.5h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span id="btn-export-sel-text">Export selected</span></button>
       <button class="btn primary" id="btn-export" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.8 7.3 8 10.5l3.2-3.2M2.5 12.5h11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Export images</span></button>
+      <button class="btn deep-btn" id="btn-deep" type="button" data-deep aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 13.5h11M4 11V7.5M7 11V4M10 11V8.5M13 11V2.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>Deep analysis</span></button>
     </div>
   </header>
 
@@ -670,6 +781,7 @@ body.capture .frame{box-shadow:none;border-radius:0}
 
   <main class="stage" id="stage">
     <div class="ov-host" id="overview" hidden></div>
+    <div class="ov-host" id="deep" hidden></div>
     <div class="stage-note" id="stage-note"></div>
     <div class="pages" id="pages"></div>
   </main>
@@ -865,6 +977,7 @@ function fromPivot(snap, origin) {
   const nS = stores.length;
   const votes = new Map();
   const items = new Map();
+  let hasDeep = false;
   for (const raw of snap.rows) {
     const r = Array.isArray(raw) ? { a: raw[0], sn: raw[1], c: raw[2], k: raw[3], u: raw[4], t: raw[5], n: raw[6], p: raw[7] } : raw;
     if (r.a == null || r.c == null) continue;
@@ -877,25 +990,53 @@ function fromPivot(snap, origin) {
     let it = items.get(key);
     if (!it) {
       items.set(key, (it = { s: acct, code, name: cleanText(r.n) || code, cat: cleanText(r.k) || 'Uncategorised', sub: cleanText(r.u) || 'Uncategorised',
-        tier: cleanText(r.t).toUpperCase(), st: new Array(nS).fill('-'), b: new Array(nS).fill(0), rate: new Array(nS).fill(0), gmv: new Array(nS).fill(0), stock: new Array(nS).fill(0) }));
+        tier: cleanText(r.t).toUpperCase(), st: new Array(nS).fill('-'), b: new Array(nS).fill(0), rate: new Array(nS).fill(0), gmv: new Array(nS).fill(0), stock: new Array(nS).fill(0),
+        age: new Array(nS).fill(-1), last: new Array(nS).fill(-1), g90: new Array(nS).fill(0), d90: new Array(nS).fill(0) }));
     }
     const parts = String(r.p || '').split('|');
     for (let k = 0; k < nS; k++) {
       const x = parts[k];
       if (!x || x === '-') continue;
-      const [flag, qty, stk, , gmv] = x.split(',');
+      const [flag, qty, stk, age, gmv, last, g90, d90] = x.split(',');
       if (flag === 'Y') it.st[k] = 'Y'; else if (it.st[k] === '-') it.st[k] = 'N';
       // rate = sales qty of this product in this store (Lifetime Qty Sold)
       it.rate[k] = Math.max(it.rate[k], Number(qty) || 0);
       it.gmv[k] = Math.max(it.gmv[k], Number(gmv) || 0);   // Lifetime GMV
       it.stock[k] = Math.max(it.stock[k], Number(stk) || 0);
+      // Deep analysis: days since first / last sale (-1 = never sold), GMV and discount of the last 90 days.
+      if (age !== undefined && age !== '') it.age[k] = Math.max(it.age[k], Number(age) || 0);
+      if (last !== undefined && last !== '') it.last[k] = it.last[k] < 0 ? Number(last) || 0 : Math.min(it.last[k], Number(last) || 0);
+      it.g90[k] = Math.max(it.g90[k], Number(g90) || 0);
+      it.d90[k] = Math.max(it.d90[k], Number(d90) || 0);
+      if (g90 !== undefined) hasDeep = true;
     }
   }
   const suppliers = new Map();
-  for (const [a, v] of votes) suppliers.set(a, [...v.entries()].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0]))[0][0]);
+  // Every spelling of a supplier's name points at its account (the history source has names only).
+  const names = new Map();
+  for (const [a, v] of votes) {
+    suppliers.set(a, [...v.entries()].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0]))[0][0]);
+    for (const n of v.keys()) names.set(nameKey(n), a);
+  }
   const list = [...items.values()];
   list.forEach((it) => { it.st = it.st.join(''); });
-  return { asOf: snap.asOf, source: snap.source || 'Tableau Cloud · Supplier’s Availability Data', origin, stores, suppliers, items: list, hiddenStores: snap.deadStores || [] };
+  return { asOf: snap.asOf, source: snap.source || 'Tableau Cloud · Supplier’s Availability Data', origin, stores, suppliers, items: list, hiddenStores: snap.deadStores || [],
+    names, hasDeep, hist: snap.hist ? parseHistory(snap.hist) : null };
+}
+const nameKey = (n) => cleanSupplier(n).toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]+/g, '');
+// History source rows: [supplier name, store, category, "listings,inStock|..." one pair per day].
+function parseHistory(hist) {
+  const days = (hist.days || []).map(String);
+  const cells = [];
+  for (const raw of hist.rows || []) {
+    const r = Array.isArray(raw) ? { s: raw[0], t: raw[1], k: raw[2], h: raw[3] } : raw;
+    const parts = String(r.h || '').split('|');
+    if (parts.length !== days.length) continue;
+    const L = new Array(days.length), I = new Array(days.length);
+    parts.forEach((x, i) => { const [a, b] = x.split(','); L[i] = Number(a) || 0; I[i] = Number(b) || 0; });
+    cells.push({ name: cleanSupplier(r.s), store: cleanText(r.t), cat: cleanText(r.k) || 'Uncategorised', L, I });
+  }
+  return days.length && cells.length ? { days, cells } : null;
 }
 function loadSnapshot(snap) {
   if (snap && snap.v === 2 && Array.isArray(snap.rows)) return fromPivot(snap, 'snapshot');
@@ -954,7 +1095,8 @@ function computeNetwork() {
         const q = it.rate ? it.rate[k] : 0;
         sales += q;
         if (c === 'Y') iy++;
-        LST.push({ p: acct, s: k, it, cat: it.cat, sub: it.sub, in: c === 'Y', rate: q, gmv: it.gmv ? it.gmv[k] : 0 });
+        LST.push({ p: acct, s: k, it, cat: it.cat, sub: it.sub, in: c === 'Y', rate: q, gmv: it.gmv ? it.gmv[k] : 0,
+          stk: it.stock ? it.stock[k] : 0, age: it.age ? it.age[k] : -1, last: it.last ? it.last[k] : -1, g90: it.g90 ? it.g90[k] : 0, d90: it.d90 ? it.d90[k] : 0 });
       }
       if (!il) continue;
       skus++; l += il; y += iy;
@@ -1625,7 +1767,8 @@ async function ovXlsx(tbl, title, sub) {
     cols.forEach((c, ci) => {
       const cell = ws[X.utils.encode_cell({ r, c: ci })];
       if (!cell || typeof cell.v !== 'number') return;
-      cell.z = c.k === 'pct' ? '0.0%' : c.k === 'money' ? '#,##0.00' : '#,##0';
+      if (c.k === 'pts') { cell.v = Math.round(cell.v * 1000) / 10; cell.z = '+0.0" pts";-0.0" pts";0.0" pts"'; return; }
+      cell.z = c.k === 'pct' ? '0.0%' : c.k === 'money' ? '#,##0.00' : c.k === 'dec' ? '#,##0.0' : '#,##0';
     });
   }
   ws['!cols'] = cols.map((c) => ({ wch: c.wide ? 42 : c.k === 't' ? 16 : 13 }));
@@ -1641,7 +1784,7 @@ async function ovPdf(tbl, title, sub) {
   const keep = tbl.cols.map((c, i) => (c.pdf === false ? -1 : i)).filter((i) => i >= 0);
   const cols = keep.map((i) => tbl.cols[i]);
   const fmt = (v, c) => (v === null || v === undefined || v === '' ? '' : typeof v !== 'number' ? String(v)
-    : c.k === 'pct' ? (c.avail ? (Math.floor(v * 1000 + 1e-7) / 10).toFixed(1) + '%' : share1(v)) : nf.format(Math.round(v)));
+    : c.k === 'pts' ? pts(v) : c.k === 'pct' ? (c.avail ? (Math.floor(v * 1000 + 1e-7) / 10).toFixed(1) + '%' : share1(v)) : c.k === 'dec' ? (Math.round(v * 10) / 10).toFixed(1) : nf.format(Math.round(v)));
   const doc = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
   const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
   const raw = tbl.body;
@@ -1766,6 +1909,616 @@ function ovCategories(list, stores) {
 
 
 
+/* ================= Deep analysis ================= */
+// One page that reads both Tableau sources: today's stock and sales per listing
+// ("Supplier's Availability Data") and the daily position per supplier, store
+// and category ("Supplier Availability History", from 28 Sep 2026).
+const DA = { scope: 'qty', store: -1, cat: '', heat: 'store', more: new Map() };
+const LEAD_DAYS = 3;     // a delivery takes 3 days: stock that runs out sooner needs an order today
+const GHOST_DAYS = 30;   // "ghost stock": in stock, but no sale for 30 days or more (or never)
+let deepScrollY = 0;
+let DAX = {};            // the tables on screen, for the download buttons
+
+const dayLabel = (ymd) => { const [, m, d] = String(ymd).split('-').map(Number); return `${d} ${MONTHS[m - 1]}`; };
+const sgn = (x) => (x > 1e-9 ? '+' : x < -1e-9 ? '−' : '±');
+// Sign of the rounded value, so a tiny drop never reads "−0.0".
+const pts = (x, dp = 1) => { const v = Number((x * 100).toFixed(dp)); return `${sgn(v)}${Math.abs(v).toFixed(dp)} pts`; };
+const signedN = (n) => `${sgn(n)}${fmtN(Math.abs(Math.round(n)))}`;
+const kwd = (x) => nf.format(Math.round(x));
+const pctTxt = (r) => `${pct1(r)}%`;
+const dec1 = (x) => (Math.round(x * 10) / 10).toFixed(1);
+const clip = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
+const ptsCls = (x) => (x >= 0.0005 ? 'up' : x <= -0.0005 ? 'down' : 'flat');
+
+// Units sold per day: the last 90 days' GMV turned into units at the product's
+// lifetime average price (a product younger than 90 days: over its own age).
+function dailyUnits(l) {
+  if (!(l.rate > 0) || !(l.gmv > 0) || !(l.g90 > 0)) return 0;
+  const days = l.age >= 0 ? Math.min(90, Math.max(1, l.age)) : 90;
+  return l.g90 / (l.gmv / l.rate) / days;
+}
+const isGhost = (l) => l.in && (l.last < 0 || l.last >= GHOST_DAYS);
+
+// Daily totals of a set of history cells, and each day's change split in two:
+//  real  = in-stock change on supplier/store/category cells whose listings did not change,
+//  range = the rest, i.e. the effect of listings being removed or added.
+function histSeries(cells, nD) {
+  const z = () => new Array(nD).fill(0);
+  const L = z(), I = z(), lfl = z(), rem = z(), add = z();
+  for (const c of cells) {
+    for (let t = 0; t < nD; t++) {
+      L[t] += c.L[t]; I[t] += c.I[t];
+      if (!t) continue;
+      const dl = c.L[t] - c.L[t - 1];
+      if (dl === 0) lfl[t] += c.I[t] - c.I[t - 1];
+      else if (dl < 0) rem[t] -= dl;
+      else add[t] += dl;
+    }
+  }
+  const p = L.map((x, t) => (x ? I[t] / x : null));
+  const ch = z(), real = z(), range = z();
+  for (let t = 1; t < nD; t++) {
+    if (p[t] == null || p[t - 1] == null) continue;
+    ch[t] = p[t] - p[t - 1];
+    real[t] = lfl[t] / L[t - 1];
+    range[t] = ch[t] - real[t];
+  }
+  const sum = (a) => a.reduce((x, y) => x + y, 0);
+  const first = p.findIndex((x) => x != null);
+  return { L, I, p, ch, real, range, rem, add, lfl, realT: sum(real), rangeT: sum(range), lflT: sum(lfl),
+    totT: first >= 0 && p[nD - 1] != null ? p[nD - 1] - p[first] : 0, remT: sum(rem), addT: sum(add) };
+}
+function groupBy(arr, key) {
+  const m = new Map();
+  for (const x of arr) { const k = key(x); let a = m.get(k); if (!a) m.set(k, (a = [])); a.push(x); }
+  return m;
+}
+
+/* ---------- Small SVG charts ---------- */
+const SVG_STATUS = { good: 'var(--good)', warn: 'var(--warn)', crit: 'var(--crit)' };
+function niceStep(span) { return span <= 0.06 ? 0.01 : span <= 0.14 ? 0.02 : span <= 0.3 ? 0.05 : 0.1; }
+
+// Availability lines over the days, with the target and critical lines.
+function svgLines(days, series) {
+  const W = 1000, H = 300, P = { l: 46, r: 150, t: 14, b: 30 };
+  const vals = series.flatMap((s) => s.vals.filter((v) => v != null));
+  if (!vals.length) return '';
+  const tg = settings.target / 100, cr = settings.critical / 100;
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  if (tg - hi < 0.12) hi = Math.max(hi, tg);
+  if (lo - cr < 0.12 && lo > cr) lo = Math.min(lo, cr);
+  const step = niceStep(hi - lo + 0.04);
+  lo = Math.floor((lo - 0.01) / step) * step; hi = Math.ceil((hi + 0.01) / step) * step;
+  const n = days.length, iw = W - P.l - P.r, ih = H - P.t - P.b;
+  const x = (i) => P.l + (n > 1 ? (i * iw) / (n - 1) : iw / 2);
+  const y = (v) => P.t + ih - ((v - lo) / (hi - lo || 1)) * ih;
+  const out = [];
+  for (let v = lo; v <= hi + 1e-9; v += step) {
+    out.push(`<line x1="${P.l}" x2="${W - P.r}" y1="${y(v)}" y2="${y(v)}" class="da-grid"/><text x="${P.l - 8}" y="${y(v) + 4}" class="da-ax" text-anchor="end">${Math.round(v * 100)}%</text>`);
+  }
+  for (const [v, cls, lbl] of [[tg, 'good', `Target ${settings.target}%`], [cr, 'crit', `Critical ${settings.critical}%`]]) {
+    if (v < lo || v > hi) continue;
+    out.push(`<line x1="${P.l}" x2="${W - P.r}" y1="${y(v)}" y2="${y(v)}" class="da-ref" style="stroke:${SVG_STATUS[cls]}"/><text x="${P.l + 6}" y="${y(v) - 5}" class="da-ax" style="fill:${SVG_STATUS[cls]}">${lbl}</text>`);
+  }
+  days.forEach((d, i) => out.push(`<text x="${x(i)}" y="${H - 8}" class="da-ax" text-anchor="middle">${dayLabel(d)}</text>`));
+  // End labels, pushed apart so they never overlap.
+  const ends = series.map((s, si) => ({ si, v: s.vals[n - 1], y: s.vals[n - 1] == null ? -1 : y(s.vals[n - 1]) })).filter((e) => e.y >= 0).sort((a, b) => a.y - b.y);
+  for (let i = 1; i < ends.length; i++) ends[i].y = Math.max(ends[i].y, ends[i - 1].y + 15);
+  for (const s of [...series].reverse()) {
+    const ptsXY = s.vals.map((v, i) => (v == null ? null : [x(i), y(v)])).filter(Boolean);
+    out.push(`<polyline points="${ptsXY.map((q) => q.join(',')).join(' ')}" fill="none" style="stroke:${s.color}" stroke-width="${s.w || 2}" stroke-linejoin="round" stroke-linecap="round"/>`);
+    s.vals.forEach((v, i) => { if (v != null) out.push(`<circle cx="${x(i)}" cy="${y(v)}" r="${s.w > 2 ? 4.5 : 3}" style="fill:${s.color}"><title>${esc(`${s.name} · ${dayLabel(days[i])}: ${pctTxt(v)}`)}</title></circle>`); });
+  }
+  for (const e of ends) { const s = series[e.si]; out.push(`<text x="${W - P.r + 10}" y="${e.y + 4}" class="da-lbl${s.w > 2 ? ' b' : ''}" style="fill:${s.color}">${esc(s.name)} ${pctTxt(e.v)}</text>`); }
+  return `<svg class="da-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Availability by day">${out.join('')}</svg>`;
+}
+
+// Listings per day, with the days listings were removed called out.
+function svgListings(days, hs) {
+  const W = 1000, H = 130, P = { l: 46, r: 150, t: 22, b: 24 };
+  const n = days.length, iw = W - P.l - P.r, ih = H - P.t - P.b;
+  const max = Math.max(...hs.L, 1), min = Math.min(...hs.L);
+  const lo = Math.max(0, min - (max - min) * 1.5 - max * 0.02);
+  const x = (i) => P.l + (n > 1 ? (i * iw) / (n - 1) : iw / 2);
+  const bw = Math.min(56, (iw / Math.max(1, n)) * 0.5);
+  const out = [];
+  days.forEach((d, i) => {
+    const h0 = ((hs.L[i] - lo) / (max - lo || 1)) * ih;
+    const big = i > 0 && hs.rem[i] > hs.L[i - 1] * 0.01;
+    out.push(`<rect x="${x(i) - bw / 2}" y="${P.t + ih - h0}" width="${bw}" height="${h0}" rx="3" class="${big ? 'da-bar-cut' : 'da-bar'}"><title>${esc(`${dayLabel(d)}: ${fmtN(hs.L[i])} listings · ${fmtN(hs.rem[i])} removed · ${fmtN(hs.add[i])} added`)}</title></rect>`);
+    out.push(`<text x="${x(i)}" y="${P.t + ih - h0 - 5}" class="da-ax" text-anchor="middle">${(hs.L[i] / 1000).toFixed(1)}k</text>`);
+    if (big) out.push(`<text x="${x(i)}" y="${H - 6}" class="da-ax cut" text-anchor="middle">−${fmtN(hs.rem[i])} removed</text>`);
+  });
+  out.push(`<text x="${W - P.r + bw / 2 + 14}" y="${P.t + ih / 2}" class="da-lbl">Listings</text>`);
+  return `<svg class="da-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Listings by day">${out.join('')}</svg>`;
+}
+
+// From the first day to today: what really changed, and what the range change did.
+function svgBridge(first, real, range, last, d0, d1) {
+  const W = 1000, H = 230, P = { l: 30, r: 30, t: 34, b: 44 };
+  const steps = [first, first + real, first + real + range, last];
+  const lo0 = Math.min(...steps), hi0 = Math.max(...steps);
+  const pad = Math.max(0.01, (hi0 - lo0) * 0.6);
+  const lo = Math.max(0, lo0 - pad * 2), hi = hi0 + pad * 0.6;
+  const ih = H - P.t - P.b;
+  const y = (v) => P.t + ih - ((v - lo) / (hi - lo || 1)) * ih;
+  const bars = [
+    { lbl: `${dayLabel(d0)}`, a: lo, b: first, cls: 'da-b-ink', txt: pctTxt(first) },
+    { lbl: 'Real change', a: first, b: first + real, cls: real >= 0 ? 'da-b-up' : 'da-b-down', txt: pts(real) },
+    { lbl: 'Listings removed / added', a: first + real, b: first + real + range, cls: range >= 0 ? 'da-b-range' : 'da-b-down', txt: pts(range) },
+    { lbl: `${dayLabel(d1)}`, a: lo, b: last, cls: 'da-b-ink', txt: pctTxt(last) },
+  ];
+  const slot = (W - P.l - P.r) / bars.length, bw = Math.min(150, slot * 0.55);
+  const out = [];
+  bars.forEach((b, i) => {
+    const cx = P.l + slot * i + slot / 2;
+    const top = y(Math.max(b.a, b.b)), h0 = Math.max(2, Math.abs(y(b.a) - y(b.b)));
+    out.push(`<rect x="${cx - bw / 2}" y="${top}" width="${bw}" height="${h0}" rx="4" class="${b.cls}"/>`);
+    out.push(`<text x="${cx}" y="${top - 9}" class="da-val" text-anchor="middle">${b.txt}</text>`);
+    out.push(`<text x="${cx}" y="${H - 16}" class="da-ax" text-anchor="middle">${esc(b.lbl)}</text>`);
+    if (i < bars.length - 1) { const nx = P.l + slot * (i + 1) + slot / 2; const v = i === 0 ? first : i === 1 ? first + real : first + real + range; out.push(`<line x1="${cx + bw / 2}" x2="${nx - bw / 2}" y1="${y(v)}" y2="${y(v)}" class="da-conn"/>`); }
+  });
+  return `<svg class="da-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Availability bridge">${out.join('')}</svg>`;
+}
+
+function svgSpark(vals) {
+  const v = vals.filter((x) => x != null);
+  if (v.length < 2) return '';
+  const W = 110, H = 28, lo = Math.min(...v), hi = Math.max(...v), span = hi - lo || 0.01;
+  const xy = vals.map((x, i) => (x == null ? null : [(i * (W - 6)) / (vals.length - 1) + 3, H - 4 - ((x - lo) / span) * (H - 8)])).filter(Boolean);
+  const last = xy[xy.length - 1], col = SVG_STATUS[status(v[v.length - 1])];
+  return `<svg class="da-spark" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${xy.map((q) => q.map((z) => z.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="#9A93A8" stroke-width="1.6"/><circle cx="${last[0]}" cy="${last[1]}" r="3" style="fill:${col}"/></svg>`;
+}
+
+// Suppliers by availability (x) and sales momentum (y), sized by GMV of the last 90 days.
+function svgQuadrant(rows) {
+  const W = 1000, H = 460, P = { l: 56, r: 24, t: 24, b: 40 };
+  if (!rows.length) return '';
+  const tg = settings.target / 100;
+  const xlo = Math.max(0, Math.floor((Math.min(...rows.map((r) => r.p), tg) - 0.03) * 20) / 20), xhi = 1;
+  const ylo = Math.max(-1, Math.floor(Math.min(...rows.map((r) => r.mom), -0.2) * 10) / 10);
+  const yhi = Math.min(2, Math.ceil(Math.max(...rows.map((r) => r.mom), 0.2) * 10) / 10) + 0.1;
+  const iw = W - P.l - P.r, ih = H - P.t - P.b;
+  const x = (v) => P.l + ((v - xlo) / (xhi - xlo)) * iw;
+  const y = (v) => P.t + ih - ((Math.max(ylo, Math.min(yhi, v)) - ylo) / (yhi - ylo)) * ih;
+  const gmax = Math.max(...rows.map((r) => r.g90), 1);
+  const out = [];
+  out.push(`<rect x="${P.l}" y="${P.t}" width="${x(tg) - P.l}" height="${y(0) - P.t}" class="da-q-hot"/>`);
+  for (let v = Math.ceil(xlo * 10) / 10; v <= xhi + 1e-9; v += 0.1) out.push(`<line x1="${x(v)}" x2="${x(v)}" y1="${P.t}" y2="${H - P.b}" class="da-grid"/><text x="${x(v)}" y="${H - P.b + 18}" class="da-ax" text-anchor="middle">${Math.round(v * 100)}%</text>`);
+  const ys = niceStep((yhi - ylo) / 4) * 5;
+  for (let v = Math.ceil(ylo / ys) * ys; v <= yhi + 1e-9; v += ys) out.push(`<line x1="${P.l}" x2="${W - P.r}" y1="${y(v)}" y2="${y(v)}" class="da-grid"/><text x="${P.l - 8}" y="${y(v) + 4}" class="da-ax" text-anchor="end">${v > 0 ? '+' : ''}${Math.round(v * 100)}%</text>`);
+  out.push(`<line x1="${x(tg)}" x2="${x(tg)}" y1="${P.t}" y2="${H - P.b}" class="da-ref" style="stroke:var(--good)"/><line x1="${P.l}" x2="${W - P.r}" y1="${y(0)}" y2="${y(0)}" class="da-axis0"/>`);
+  out.push(`<text x="${P.l + 10}" y="${P.t + 18}" class="da-q-lbl hot">Growing but short · fix first</text><text x="${W - P.r - 10}" y="${P.t + 18}" class="da-q-lbl" text-anchor="end">Growing and stocked</text>`);
+  out.push(`<text x="${P.l + 10}" y="${H - P.b - 10}" class="da-q-lbl">Fading and short</text><text x="${W - P.r - 10}" y="${H - P.b - 10}" class="da-q-lbl" text-anchor="end">Fading but stocked</text>`);
+  out.push(`<text x="${(P.l + W - P.r) / 2}" y="${H - 4}" class="da-ax" text-anchor="middle">Availability today →</text><text x="14" y="${(P.t + H - P.b) / 2}" class="da-ax" text-anchor="middle" transform="rotate(-90 14 ${(P.t + H - P.b) / 2})">Sales momentum →</text>`);
+  const sorted = [...rows].sort((a, b) => b.g90 - a.g90);
+  for (const r of [...sorted].reverse()) {
+    const rad = 4 + 20 * Math.sqrt(r.g90 / gmax), st = status(r.p);
+    out.push(`<circle cx="${x(r.p)}" cy="${y(r.mom)}" r="${rad.toFixed(1)}" class="da-dot" style="fill:${SVG_STATUS[st]};stroke:${SVG_STATUS[st]}" ${r.acct ? `data-open-sup="${esc(r.acct)}"` : ''}><title>${esc(`${r.label}\nAvailability ${pctTxt(r.p)} · momentum ${r.mom >= 0 ? '+' : ''}${Math.round(r.mom * 100)}% · GMV 90D ${kwd(r.g90)} KWD`)}</title></circle>`);
+  }
+  // Name the biggest bubbles, skipping any label that would overlap one already placed.
+  const boxes = [];
+  for (const r of sorted.slice(0, 14)) {
+    const txt = clip(r.label, 22), w = txt.length * 6.3, cx = x(r.p), cy = y(r.mom) - 6 - 20 * Math.sqrt(r.g90 / gmax);
+    const bx = { x0: cx - w / 2, x1: cx + w / 2, y0: cy - 11, y1: cy + 2 };
+    if (bx.y0 < P.t || boxes.some((q) => bx.x0 < q.x1 && bx.x1 > q.x0 && bx.y0 < q.y1 && bx.y1 > q.y0)) continue;
+    boxes.push(bx);
+    out.push(`<text x="${cx}" y="${cy}" class="da-dot-lbl" text-anchor="middle">${esc(txt)}</text>`);
+    if (boxes.length >= 8) break;
+  }
+  return `<svg class="da-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Suppliers by availability and sales momentum">${out.join('')}</svg>`;
+}
+
+// How few suppliers carry the business: running share of sales qty and GMV.
+function svgPareto(curves) {
+  const W = 1000, H = 280, P = { l: 46, r: 24, t: 14, b: 36 };
+  const iw = W - P.l - P.r, ih = H - P.t - P.b;
+  const N = Math.max(...curves.map((c) => c.vals.length), 1);
+  const x = (i) => P.l + (i / N) * iw, y = (v) => P.t + ih - v * ih;
+  const out = [];
+  for (let v = 0; v <= 1.0001; v += 0.25) out.push(`<line x1="${P.l}" x2="${W - P.r}" y1="${y(v)}" y2="${y(v)}" class="da-grid"/><text x="${P.l - 8}" y="${y(v) + 4}" class="da-ax" text-anchor="end">${Math.round(v * 100)}%</text>`);
+  for (const v of [0.5, 0.8, 0.9]) out.push(`<line x1="${P.l}" x2="${W - P.r}" y1="${y(v)}" y2="${y(v)}" class="da-ref" style="stroke:#C9C3D3"/>`);
+  const tick = N > 120 ? 25 : N > 50 ? 10 : 5;
+  for (let i = 0; i <= N; i += tick) out.push(`<text x="${x(i)}" y="${H - 14}" class="da-ax" text-anchor="middle">${i}</text>`);
+  out.push(`<text x="${W - P.r}" y="${H - 1}" class="da-ax" text-anchor="end">suppliers, biggest first →</text>`);
+  curves.forEach((c, ci) => {
+    out.push(`<polyline points="${[[x(0), y(0)], ...c.vals.map((v, i) => [x(i + 1), y(v)])].map((q) => q.map((z) => z.toFixed(1)).join(',')).join(' ')}" fill="none" style="stroke:${c.color}" stroke-width="2.4"/>`);
+    for (const t of [0.5, 0.8, 0.9]) {
+      const i = c.vals.findIndex((v) => v >= t - 1e-9);
+      if (i < 0) continue;
+      out.push(`<circle cx="${x(i + 1)}" cy="${y(c.vals[i])}" r="4.5" style="fill:${c.color}"><title>${esc(`${i + 1} suppliers make ${Math.round(t * 100)}% of ${c.name}`)}</title></circle><text x="${x(i + 1) + 8}" y="${y(c.vals[i]) + (ci ? 16 : -8)}" class="da-lbl" style="fill:${c.color}">${i + 1}</text>`);
+    }
+  });
+  return `<svg class="da-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Concentration of sales across suppliers">${out.join('')}</svg>`;
+}
+
+/* ---------- The page ---------- */
+function deepModel() {
+  const H = DATA.hist;
+  const S = NET.hasSales;
+  const all = NET.LST.filter((l) => (DA.store < 0 || l.s === DA.store) && (!DA.cat || l.cat === DA.cat));
+  const supAll = [...ovAgg(all, (l) => l.p).values()];
+  supAll.forEach((r) => { r.label = (NET.byAcct.get(r.k) || {}).name || r.k; });
+  const cq = ovCum(supAll, 'qty'), cg = ovCum(supAll, 'gmv');
+  if (!(S && supAll.some((r) => r.gmv > 0)) && DA.scope === 'gmv') DA.scope = 'qty';
+  const scope = S ? DA.scope : 'all';
+  const keep = scope === 'all' ? null : new Set(supAll.filter((r) => r[scope + 'Top']).map((r) => r.k));
+  const list = keep ? all.filter((l) => keep.has(l.p)) : all;
+  let cells = [];
+  if (H) {
+    const names = DATA.names || new Map([...DATA.suppliers].map(([a, n]) => [nameKey(n), a]));
+    const want = DA.store >= 0 ? new Set([DATA.stores[DA.store]]) : new Set(NET.active.map((k) => DATA.stores[k]));
+    for (const c of H.cells) if (c.acct === undefined) c.acct = names.get(nameKey(c.name)) || null;
+    cells = H.cells.filter((c) => want.has(c.store) && (!DA.cat || c.cat === DA.cat) && (!keep || (c.acct && keep.has(c.acct))));
+  }
+  const deep = list.some((l) => l.g90 > 0 || l.last >= 0);
+  return { H, S, all, supAll, cq, cg, scope, keep, list, cells, deep, nD: H ? H.days.length : 0 };
+}
+
+const DA_DL_LABEL = { runsup: 'Suppliers', runout: 'Listings', ghostsup: 'Suppliers', ghost: 'Listings' };
+function daCard(id, title, sub, body, dlKey) {
+  const keys = dlKey ? dlKey.split(' ') : [];
+  const dl = keys.length ? `<div class="cx-dl">${keys.map((k) => `${keys.length > 1 ? `<span class="da-dl-l">${DA_DL_LABEL[k] || ''}</span>` : ''}<button type="button" class="cx-btn" data-da-dl="${k}-xlsx" title="Download as Excel">${ICON_XLS}Excel</button><button type="button" class="cx-btn" data-da-dl="${k}-pdf" title="Download as PDF">${ICON_PDF}PDF</button>`).join('')}</div>` : '';
+  return `<section class="cx-card da-sec" id="da-${id}"><div class="cx-card-h"><div><h3>${title}</h3><p>${sub}</p></div>${dl}</div><div class="cx-card-b">${body}</div></section>`;
+}
+const daHow = (txt) => `<p class="da-how"><b>How to read it</b> ${txt}</p>`;
+const daMore = (key, shown, total, step = 50) => (total > shown ? `<button type="button" class="ov-link da-more" data-da-more="${key}">Show ${Math.min(step, total - shown)} more of ${fmtN(total - shown)}</button>` : '');
+const supLink = (acct, label) => (acct ? `<button type="button" class="da-sup" data-open-sup="${esc(acct)}" title="Open ${esc(label)}’s report">${esc(label)}</button>` : `<span class="da-sup na">${esc(label)}</span>`);
+const avCell = (p, inn, n) => (p == null ? '<span class="na">—</span>' : ovCell({ p, inn: inn ?? 0, n: n ?? 0 }));
+const ptsCell = (x, title = '') => `<td class="num da-pts ${ptsCls(x)}"${title ? ` title="${esc(title)}"` : ''}>${pts(x)}</td>`;
+
+function renderDeep() {
+  const host = els.deep;
+  if (!NET || !NET.LST.length) { host.innerHTML = ''; return; }
+  if (DA.store >= 0 && !NET.active.includes(DA.store)) DA.store = -1;
+  const y0 = window.scrollY;
+  const M = deepModel();
+  const { H, S, list, cells, nD, deep } = M;
+  const days = H ? H.days : [];
+  const a = kuwaitParts(DATA.asOf);
+  const t = ovTotal(list);
+  DAX = {};
+
+  // ---- Shared figures ----
+  const hs = H && cells.length ? histSeries(cells, nD) : null;
+  const inn = list.filter((l) => l.in);
+  const withRate = inn.map((l) => ({ l, du: dailyUnits(l) })).filter((x) => x.du > 0).map((x) => ({ ...x, cover: x.l.stk / x.du }));
+  const run3 = withRate.filter((x) => x.cover <= LEAD_DAYS).sort((p, q) => q.l.g90 - p.l.g90 || p.cover - q.cover);
+  const run7 = withRate.filter((x) => x.cover > LEAD_DAYS && x.cover <= 7);
+  const ghosts = inn.filter(isGhost).sort((p, q) => q.gmv - p.gmv || q.stk - p.stk);
+  const never = ghosts.filter((l) => l.last < 0).length;
+  const selling = list.filter((l) => l.in && l.last >= 0 && l.last < GHOST_DAYS).length;
+  const sellingP = list.length ? selling / list.length : 0;
+  const g90T = list.reduce((x, l) => x + l.g90, 0);
+  const run3G = run3.reduce((x, r) => x + r.l.g90, 0);
+
+  // Per supplier history (accounts, or names the main source does not know).
+  const supHist = [];
+  if (hs) {
+    for (const [k, cs] of groupBy(cells, (c) => c.acct || 'n:' + c.name)) {
+      const acct = k.startsWith('n:') ? null : k;
+      const hsS = histSeries(cs, nD);
+      const label = acct ? (NET.byAcct.get(acct) || {}).name || cs[0].name : cs[0].name;
+      const sr = acct ? M.supAll.find((r) => r.k === acct) : null;
+      supHist.push({ k, acct, label, hs: hsS, qty: sr ? sr.qty : 0, gmv: sr ? sr.gmv : 0, qtyShare: sr ? sr.qtyShare : 0 });
+    }
+  }
+  const onTarget = (v) => v != null && Math.floor(v * 1000 + 1e-7) / 10 >= settings.target;
+  supHist.forEach((s) => {
+    const v = s.hs.p.filter((x) => x != null);
+    s.days = v.length; s.on = v.filter(onTarget).length;
+    s.min = v.length ? Math.min(...v) : 0; s.max = v.length ? Math.max(...v) : 0;
+    // Swing and direction use real (like-for-like) change only: removing listings is not a supplier swinging.
+    let c = 0, lo = 0, hi = 0;
+    for (const r of s.hs.real) { c += r; lo = Math.min(lo, c); hi = Math.max(hi, c); }
+    s.swing = hi - lo;
+    s.verdict = !v.length ? '' : s.on === v.length ? 'Steady on target' : s.hs.realT >= 0.05 ? 'Improving' : s.hs.realT <= -0.05 ? 'Slipping' : s.swing >= 0.1 ? 'Volatile' : s.on === 0 ? 'Never on target' : 'Mixed';
+  });
+  const steady = supHist.filter((s) => s.verdict === 'Steady on target').length;
+  const neverOn = supHist.filter((s) => s.days && s.on === 0).length;
+
+  // ---- Header and filters ----
+  const opt = (v, label, sel) => `<option value="${esc(v)}"${sel ? ' selected' : ''}>${esc(label)}</option>`;
+  const catSales = new Map();
+  for (const l of NET.LST) catSales.set(l.cat, (catSales.get(l.cat) || 0) + l.rate + 1e-9);
+  const cats = [...catSales.entries()].sort((x, z) => z[1] - x[1]).map((e) => e[0]);
+  const G = S && M.supAll.some((r) => r.gmv > 0);
+  const segB = (v, label) => `<button type="button" data-da-scope="${v}" aria-pressed="${M.scope === v}">${label}</button>`;
+  const scopeTxt = M.scope === 'all' ? `All ${fmtN(M.supAll.length)} suppliers` : `The ${fmtN(M.keep.size)} suppliers that make 90% of ${METRIC[M.scope]}`;
+  const where = [DA.store >= 0 ? DATA.stores[DA.store] : 'All stores', DA.cat || 'All categories'].join(' · ');
+  const nav = [['story', 'The story'], ['trend', 'Trend'], ['heat', 'Heat map'], ['movers', 'Movers'], ['reliab', 'Reliability'], ['runout', 'Run-out'], ['ghost', 'Ghost stock'], ['momentum', 'Momentum'], ['cats', 'Categories'], ['conc', 'Concentration']];
+
+  // ---- 1. The story ----
+  const facts = [];
+  if (hs && nD > 1) {
+    const d0 = dayLabel(days[0]), d1 = dayLabel(days[nD - 1]);
+    const bigDay = hs.rem.reduce((bi, v, i) => (v > hs.rem[bi] ? i : bi), 0);
+    facts.push({ cls: Math.abs(hs.rangeT) > Math.abs(hs.realT) ? 'warn' : ptsCls(hs.realT) === 'down' ? 'crit' : 'good', html:
+      `In the daily history, availability went from ${pctTxt(hs.p[0])} on ${d0} to <b>${pctTxt(hs.p[nD - 1])}</b> on ${d1} (<b>${pts(hs.totT)}</b>). `
+      + (Math.abs(hs.rangeT) >= 0.002
+        ? `But <b>${pts(hs.rangeT)}</b> of that came from the range changing (${fmtN(hs.remT)} listings removed${hs.rem[bigDay] > 0 ? (hs.rem[bigDay] === hs.remT ? `, all on ${dayLabel(days[bigDay])}` : `, ${fmtN(hs.rem[bigDay])} of them on ${dayLabel(days[bigDay])}`) : ''}). Like for like, availability moved <b>${pts(hs.realT)}</b>: ${signedN(hs.lflT)} listings in stock.`
+        : `Like for like that is <b>${pts(hs.realT)}</b>: ${signedN(hs.lflT)} listings in stock.`) });
+  }
+  if (deep && withRate.length) {
+    facts.push({ cls: run3.length ? 'crit' : 'good', html: `<b>${fmtN(run3.length)}</b> listings in stock today will run out within the ${LEAD_DAYS}-day delivery time${run3.length ? `. They made <b>${kwd(run3G)} KWD</b> in the last 90 days (${share1(g90T ? run3G / g90T : 0)} of GMV 90D): order these today` : ''}. Another <b>${fmtN(run7.length)}</b> run out within a week.` });
+  }
+  if (deep && inn.length) {
+    facts.push({ cls: ghosts.length / inn.length > 0.2 ? 'warn' : 'good', html: `<b>${fmtN(ghosts.length)}</b> of the ${fmtN(inn.length)} listings in stock (${share1(ghosts.length / inn.length)}) have not sold for ${GHOST_DAYS}+ days; <b>${fmtN(never)}</b> have never sold. Counting only stock that sells, availability is <b>${pctTxt(sellingP)}</b>, not ${pctTxt(t.p)}.` });
+  }
+  if (supHist.length) {
+    facts.push({ cls: steady / supHist.length < 0.25 ? 'crit' : 'warn', html: `${steady ? `Only <b>${fmtN(steady)}</b> of ${fmtN(supHist.length)} suppliers` : `<b>Not one</b> of the ${fmtN(supHist.length)} suppliers`} held the ${settings.target}% target on every day since ${dayLabel(days[0])}; <b>${fmtN(neverOn)}</b> never reached it once.` });
+  }
+  if (deep) {
+    const oos = list.filter((l) => !l.in), hot = oos.filter((l) => l.last >= 0 && l.last < 7);
+    if (oos.length) facts.push({ cls: 'warn', html: `<b>${fmtN(hot.length)}</b> of the ${fmtN(oos.length)} empty listings were still selling in the last 7 days: they ran out recently, so customers are still looking for them.` });
+  }
+  if (S && M.supAll.length > 4) {
+    const p80 = [...M.supAll].sort((p, q) => q.qty - p.qty); let c = 0, n80 = 0; const T = M.cq.T;
+    for (const r of p80) { c += r.qty; n80++; if (c / T >= 0.8 - 1e-12) break; }
+    facts.push({ cls: 'info', html: `<b>${fmtN(n80)}</b> suppliers (${share1(n80 / M.supAll.length)} of them) make 80% of sales qty. Their shelves decide what customers see.` });
+  }
+  const tile = (lbl, v, s, cls = '') => `<div class="cx-card cx-tile"><div class="cx-lbl">${lbl}</div><div class="v ${cls}">${v}</div><div class="s">${s}</div></div>`;
+  const story = `<div class="cx-tiles da-tiles">
+      ${tile('Availability today', pctTxt(t.p), `${chip(status(t.p))} ${fmtN(t.inn)} of ${fmtN(t.n)} listings`, status(t.p))}
+      ${hs ? tile('Real change', pts(hs.realT), `like for like since ${dayLabel(days[0])} · ${signedN(hs.lflT)} in stock`, ptsCls(hs.realT) === 'down' ? 'crit' : ptsCls(hs.realT) === 'up' ? 'good' : '') : ''}
+      ${hs ? tile('Range effect', pts(hs.rangeT), `${fmtN(hs.remT)} listings removed · ${fmtN(hs.addT)} added`, '') : ''}
+      ${deep ? tile(`Run out in ${LEAD_DAYS} days`, fmtN(run3.length), `${kwd(run3G)} KWD GMV 90D · order today`, run3.length ? 'crit' : 'good') : ''}
+      ${deep ? tile('Ghost stock', fmtN(ghosts.length), `in stock, no sale ${GHOST_DAYS}+ days · ${share1(inn.length ? ghosts.length / inn.length : 0)} of stock`, 'warn') : ''}
+    </div>
+    <ol class="da-facts">${facts.map((f, i) => `<li class="${f.cls}"><span class="n">${i + 1}</span><p>${f.html}</p></li>`).join('')}</ol>`;
+
+  // ---- 2. Trend ----
+  let trend = '<p class="da-empty">The daily history is not loaded. Reload from Tableau to read “Supplier Availability History”.</p>';
+  if (hs) {
+    const COLORS = ['#1B1530', '#2F6FDE', '#13A38B', '#E08A00', '#7A4CD9', '#8A8296'];
+    const series = [{ name: DA.store >= 0 ? DATA.stores[DA.store] : 'All stores', vals: hs.p, color: 'var(--cx-pink)', w: 3.5 }];
+    if (DA.store < 0) {
+      NET.active.forEach((k, i) => {
+        const cs = cells.filter((c) => c.store === DATA.stores[k]);
+        if (cs.length) series.push({ name: DATA.stores[k], vals: histSeries(cs, nD).p, color: COLORS[i % COLORS.length], w: 1.6 });
+      });
+    }
+    const rows = days.map((d, i) => ({ d, L: hs.L[i], I: hs.I[i], p: hs.p[i], ch: hs.ch[i], real: hs.real[i], range: hs.range[i], rem: hs.rem[i], add: hs.add[i] }));
+    DAX.daily = () => ({ name: 'Daily trend', title: 'Availability by day: real change and range change',
+      cols: [{ h: 'Day', k: 't' }, { h: 'Listings', k: 'int' }, { h: 'In stock', k: 'int' }, { h: 'Availability', k: 'pct', avail: true }, { h: 'Change (pts)', k: 'pts' }, { h: 'Real change (pts)', k: 'pts' }, { h: 'Range change (pts)', k: 'pts' }, { h: 'Listings removed', k: 'int' }, { h: 'Listings added', k: 'int' }],
+      body: rows.map((r, i) => [dayLabel(r.d), r.L, r.I, r.p, i ? r.ch : '', i ? r.real : '', i ? r.range : '', i ? r.rem : '', i ? r.add : '']),
+      foot: [`${dayLabel(days[0])} → ${dayLabel(days[nD - 1])}`, '', '', '', hs.totT, hs.realT, hs.rangeT, hs.remT, hs.addT] });
+    trend = `<div class="da-chart">${svgLines(days, series)}${svgListings(days, hs)}</div>
+      ${nD > 1 ? `<h4 class="da-h4">From ${dayLabel(days[0])} to ${dayLabel(days[nD - 1])}: what really moved</h4><div class="da-chart">${svgBridge(hs.p[0], hs.realT, hs.rangeT, hs.p[nD - 1], days[0], days[nD - 1])}</div>` : ''}
+      ${daHow(`<b>Real change</b> counts only suppliers, stores and categories whose listings stayed the same from one day to the next, so it shows shelves filling or emptying. <b>Range change</b> is the rest: when out-of-stock listings are removed, availability rises without a single product arriving.`)}
+      <div class="ov-wide"><table class="ovt ovm da-t"><thead><tr><th>Day</th><th class="r">Listings</th><th class="r">In stock</th><th class="c">Availability</th><th class="r">Change</th><th class="r">Real</th><th class="r">Range</th><th class="r">Removed</th><th class="r">Added</th></tr></thead>
+      <tbody>${rows.map((r, i) => `<tr><td><b>${dayLabel(r.d)}</b></td><td class="num">${fmtN(r.L)}</td><td class="num">${fmtN(r.I)}</td><td>${avCell(r.p, r.I, r.L)}</td>${i ? ptsCell(r.ch) + ptsCell(r.real) + ptsCell(r.range) : '<td class="num dim">start</td><td></td><td></td>'}<td class="num${r.rem > r.L * 0.01 ? ' da-hot' : ''}">${i ? fmtN(r.rem) : ''}</td><td class="num">${i ? fmtN(r.add) : ''}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>${dayLabel(days[0])} → ${dayLabel(days[nD - 1])}</td><td></td><td></td><td></td>${ptsCell(hs.totT)}${ptsCell(hs.realT)}${ptsCell(hs.rangeT)}<td class="num">${fmtN(hs.remT)}</td><td class="num">${fmtN(hs.addT)}</td></tr></tfoot></table></div>`;
+  }
+
+  // ---- 3. Heat map ----
+  let heat = '';
+  if (hs) {
+    let rowsH = [];
+    if (DA.heat === 'store') {
+      for (const k of NET.active) { const cs = cells.filter((c) => c.store === DATA.stores[k]); if (cs.length) rowsH.push({ label: DATA.stores[k], hs: histSeries(cs, nD) }); }
+    } else if (DA.heat === 'cat') {
+      const gm = new Map(); for (const l of list) gm.set(l.cat, (gm.get(l.cat) || 0) + l.gmv);
+      for (const [c, cs] of groupBy(cells, (x) => x.cat)) rowsH.push({ label: c, hs: histSeries(cs, nD), w: gm.get(c) || 0 });
+      rowsH.sort((p, q) => q.w - p.w);
+    } else {
+      rowsH = [...supHist].sort((p, q) => q.qty - p.qty || q.hs.L[nD - 1] - p.hs.L[nD - 1]).slice(0, DA.more.get('heat') || 25).map((s) => ({ label: s.label, acct: s.acct, hs: s.hs }));
+    }
+    const totalRows = DA.heat === 'sup' ? supHist.length : rowsH.length;
+    DAX.heat = () => ({ name: 'Heat map', title: `Availability by day · ${{ store: 'stores', cat: 'categories', sup: 'suppliers' }[DA.heat]}`,
+      cols: [{ h: { store: 'Store', cat: 'Category', sup: 'Supplier' }[DA.heat], k: 't', wide: true }, ...days.map((d) => ({ h: dayLabel(d), k: 'pct', avail: true })), { h: 'Real change (pts)', k: 'pts' }, { h: 'Range change (pts)', k: 'pts' }],
+      body: rowsH.map((r) => [r.label, ...r.hs.p, r.hs.realT, r.hs.rangeT]) });
+    const hb = (v, label) => `<button type="button" data-da-heat="${v}" aria-pressed="${DA.heat === v}">${label}</button>`;
+    heat = `<div class="da-toolbar"><div class="cx-seg">${hb('store', 'Stores')}${hb('cat', 'Categories')}${hb('sup', 'Suppliers by sales qty')}</div></div>
+      <div class="ov-wide"><table class="ovt ovm da-t da-heat"><thead><tr><th class="sp">${{ store: 'Store', cat: 'Category', sup: 'Supplier' }[DA.heat]}</th>${days.map((d) => `<th class="c">${dayLabel(d)}</th>`).join('')}<th class="c">Trend</th><th class="r">Real</th><th class="r">Range</th></tr></thead>
+      <tbody>${rowsH.map((r) => `<tr><td class="sp">${DA.heat === 'sup' ? supLink(r.acct, r.label) : `<b>${esc(r.label)}</b>`}</td>${r.hs.p.map((v, i) => `<td>${avCell(v, r.hs.I[i], r.hs.L[i])}</td>`).join('')}<td class="c">${svgSpark(r.hs.p)}</td>${ptsCell(r.hs.realT)}${ptsCell(r.hs.rangeT)}</tr>`).join('')}</tbody></table></div>
+      ${DA.heat === 'sup' ? daMore('heat', rowsH.length, totalRows, 25) : ''}
+      ${daHow('Each cell is that day’s availability. A column that turns red together points at a delivery day that went wrong; a row that stays red is a supplier, store or category that never recovers.')}`;
+  }
+
+  // ---- 4. Movers ----
+  let movers = '';
+  if (supHist.length && nD > 1) {
+    const down = supHist.filter((s) => s.hs.lflT < 0).sort((p, q) => p.hs.lflT - q.hs.lflT || q.qty - p.qty).slice(0, 10);
+    const up = supHist.filter((s) => s.hs.lflT > 0).sort((p, q) => q.hs.lflT - p.hs.lflT || q.qty - p.qty).slice(0, 10);
+    const delisted = supHist.filter((s) => s.hs.remT > 0).sort((p, q) => q.hs.remT - p.hs.remT).slice(0, 10);
+    const mRow = (s, i) => `<tr><td class="rk">${i + 1}</td><td class="sp">${supLink(s.acct, s.label)}</td><td class="c">${svgSpark(s.hs.p)}</td><td class="num">${s.hs.p[0] == null ? '—' : pctTxt(s.hs.p[0])} → <b>${s.hs.p[nD - 1] == null ? '—' : pctTxt(s.hs.p[nD - 1])}</b></td><td class="num da-pts ${ptsCls(s.hs.lflT)}"><b>${signedN(s.hs.lflT)}</b></td>${ptsCell(s.hs.realT)}${ptsCell(s.hs.rangeT, `${fmtN(s.hs.remT)} removed · ${fmtN(s.hs.addT)} added`)}${S ? `<td class="num">${share1(s.qtyShare || 0)}</td>` : ''}</tr>`;
+    const mHead = `<thead><tr><th class="rk">#</th><th class="sp">Supplier</th><th class="c">Daily</th><th class="r">${dayLabel(days[0])} → ${dayLabel(days[nD - 1])}</th><th class="r" title="Listings in stock gained or lost, like for like">In stock (like for like)</th><th class="r">Real</th><th class="r">Range</th>${S ? '<th class="r">Share of sales qty</th>' : ''}</tr></thead>`;
+    const mvRows = [...down.map((s) => ['Slipping', s]), ...up.map((s) => ['Recovering', s])];
+    DAX.movers = () => ({ name: 'Movers', title: `Suppliers that moved most since ${dayLabel(days[0])} (like for like)`,
+      cols: [{ h: 'Direction', k: 't' }, { h: 'Supplier', k: 't', wide: true }, { h: dayLabel(days[0]), k: 'pct', avail: true }, { h: dayLabel(days[nD - 1]), k: 'pct', avail: true }, { h: 'In stock change (like for like)', k: 'int' }, { h: 'Real change (pts)', k: 'pts' }, { h: 'Range change (pts)', k: 'pts' }, { h: 'Listings removed', k: 'int' }, ...(S ? [{ h: 'Share of sales qty', k: 'pct' }] : [])],
+      body: mvRows.map(([d, s]) => [d, s.label, s.hs.p[0], s.hs.p[nD - 1], s.hs.lflT, s.hs.realT, s.hs.rangeT, s.hs.remT, ...(S ? [s.qtyShare || 0] : [])]) });
+    movers = `<div>
+        <div><h4 class="da-h4 down">Slipping: most listings lost from shelves</h4><div class="ov-wide"><table class="ovt ovm da-t">${mHead}<tbody>${down.map(mRow).join('') || '<tr><td colspan="8" class="dim">No supplier lost stock like for like.</td></tr>'}</tbody></table></div></div>
+        <div><h4 class="da-h4 up">Recovering: most listings back on shelves</h4><div class="ov-wide"><table class="ovt ovm da-t">${mHead}<tbody>${up.map(mRow).join('') || '<tr><td colspan="8" class="dim">No supplier gained stock like for like.</td></tr>'}</tbody></table></div></div>
+      </div>
+      ${delisted.length ? `<h4 class="da-h4">Biggest range changes: availability that moved because listings were removed</h4><div class="da-pills">${delisted.map((s) => `<span class="da-pill">${supLink(s.acct, s.label)}<b>−${fmtN(s.hs.remT)}</b> listings · ${pts(s.hs.rangeT)}</span>`).join('')}</div>` : ''}
+      ${daHow('Ranked by listings in stock gained or lost <b>like for like</b>, so a supplier only climbs this list by filling (or emptying) real shelves. Removing listings shows under <b>Range</b> and never counts as recovery.')}`;
+  }
+
+  // ---- 5. Reliability ----
+  let reliab = '';
+  if (supHist.length) {
+    const order = [...supHist].sort((p, q) => q.qty - p.qty || q.hs.L[nD - 1] - p.hs.L[nD - 1]);
+    const lim = DA.more.get('reliab') || 30;
+    const vc = (v) => ({ 'Steady on target': 'good', 'Never on target': 'crit', Volatile: 'warn', Slipping: 'crit', Improving: 'good', Mixed: 'warn' }[v] || '');
+    const counts = {}; for (const s of supHist) counts[s.verdict] = (counts[s.verdict] || 0) + 1;
+    DAX.reliab = () => ({ name: 'Reliability', title: `Supplier reliability: days on the ${settings.target}% target`,
+      cols: [{ h: 'Supplier', k: 't', wide: true }, ...(S ? [{ h: 'Sales qty', k: 'int' }] : []), ...days.map((d) => ({ h: dayLabel(d), k: 'pct', avail: true })), { h: 'Days on target', k: 't' }, { h: 'Lowest', k: 'pct', avail: true }, { h: 'Real change (pts)', k: 'pts' }, { h: 'Swing, like for like (pts)', k: 'pts' }, { h: 'Verdict', k: 't' }],
+      body: order.map((s) => [s.label, ...(S ? [s.qty] : []), ...s.hs.p, `${s.on} of ${s.days}`, s.min, s.hs.realT, s.swing, s.verdict]) });
+    reliab = `<div class="da-pills">${['Steady on target', 'Improving', 'Mixed', 'Volatile', 'Slipping', 'Never on target'].filter((v) => counts[v]).map((v) => `<span class="da-pill ${vc(v)}"><i></i>${v} <b>${fmtN(counts[v])}</b></span>`).join('')}</div>
+      <div class="ov-wide"><table class="ovt ovm da-t da-heat"><thead><tr><th class="rk">#</th><th class="sp">Supplier</th>${S ? '<th class="r">Sales qty</th>' : ''}${days.map((d) => `<th class="c">${dayLabel(d)}</th>`).join('')}<th class="c">Days on target</th><th class="r">Real</th><th class="r" title="Biggest like-for-like rise and fall between days, in points">Swing</th><th>Verdict</th></tr></thead>
+      <tbody>${order.slice(0, lim).map((s, i) => `<tr><td class="rk">${i + 1}</td><td class="sp">${supLink(s.acct, s.label)}</td>${S ? `<td class="num">${units(s.qty)}</td>` : ''}${s.hs.p.map((v, j) => `<td>${avCell(v, s.hs.I[j], s.hs.L[j])}</td>`).join('')}<td class="c"><span class="da-on">${Array.from({ length: s.days }, (_, j) => `<i class="${j < s.on ? 'on' : ''}"></i>`).join('')}</span> <b>${s.on}/${s.days}</b></td>${ptsCell(s.hs.realT)}<td class="num">${dec1(s.swing * 100)}</td><td><span class="da-v ${vc(s.verdict)}">${s.verdict}</span></td></tr>`).join('')}</tbody></table></div>
+      ${daMore('reliab', Math.min(lim, order.length), order.length)}
+      ${daHow(`Biggest sellers first. <b>Steady</b> = on target every day. <b>Improving / Slipping</b> = 5+ points of real change since ${dayLabel(days[0])}. <b>Volatile</b> = like-for-like swings of 10+ points, usually a delivery rhythm problem. <b>Never on target</b> = not one day at ${settings.target}%. Removing listings never changes a verdict.`)}`;
+  }
+
+  // ---- 6. Run-out ----
+  let runout = '<p class="da-empty">Needs Last Sale Date, GMV 90D and Current Stock: reload from Tableau.</p>';
+  if (deep) {
+    const bySup = [...groupBy([...run3, ...run7], (x) => x.l.p)].map(([acct, xs]) => ({ acct, label: (NET.byAcct.get(acct) || {}).name || acct, n3: xs.filter((x) => x.cover <= LEAD_DAYS).length, n7: xs.filter((x) => x.cover > LEAD_DAYS).length, g: xs.filter((x) => x.cover <= LEAD_DAYS).reduce((s, x) => s + x.l.g90, 0), stores: new Set(xs.map((x) => x.l.s)).size }))
+      .filter((r) => r.n3).sort((p, q) => q.g - p.g);
+    const lim = DA.more.get('runout') || 25;
+    const store = (k) => DATA.stores[k];
+    DAX.runsup = () => ({ name: 'Order today by supplier', title: `Suppliers to call today: stock runs out within ${LEAD_DAYS} days`,
+      cols: [{ h: 'Supplier', k: 't', wide: true }, { h: `Listings ≤ ${LEAD_DAYS} days`, k: 'int' }, { h: 'Listings 4–7 days', k: 'int' }, { h: 'GMV 90D at risk (KWD)', k: 'money' }, { h: 'Stores', k: 'int' }],
+      body: bySup.map((r) => [r.label, r.n3, r.n7, r.g, r.stores]) });
+    DAX.runout = () => ({ name: 'Run-out', title: `Listings that run out within ${LEAD_DAYS} days`,
+      cols: [{ h: 'Item code', k: 't' }, { h: 'Product', k: 't', wide: true }, { h: 'Supplier', k: 't', wide: true }, { h: 'Store', k: 't' }, { h: 'Stock', k: 'int' }, { h: 'Sells per day', k: 'dec' }, { h: 'Days of cover', k: 'dec' }, { h: 'GMV 90D (KWD)', k: 'money' }],
+      body: run3.map((x) => [x.l.it.code, x.l.it.name, (NET.byAcct.get(x.l.p) || {}).name || x.l.p, store(x.l.s), x.l.stk, x.du, x.cover, x.l.g90]) });
+    // Cover histogram: how many in-stock listings have how many days left.
+    const bands = [[-1, 1, 'up to 1 day'], [1, 3, '1–3 days'], [3, 7, '3–7 days'], [7, 14, '1–2 weeks'], [14, 30, '2–4 weeks'], [30, 90, '1–3 months'], [90, Infinity, '3+ months']];
+    const bc = bands.map(([lo, hi]) => withRate.filter((x) => x.cover > lo && x.cover <= hi).length);
+    const bmax = Math.max(...bc, 1);
+    runout = `<div class="da-cover">${bands.map(([lo, , lbl], i) => `<div class="da-cv ${lo < LEAD_DAYS ? 'crit' : lo < 7 ? 'warn' : ''}"><b>${fmtN(bc[i])}</b><span style="height:${Math.max(3, (bc[i] / bmax) * 90)}px"></span><em>${lbl}</em></div>`).join('')}</div>
+      <p class="da-note">Days of cover for the ${fmtN(withRate.length)} listings in stock that sold in the last 90 days. Red: gone before a delivery ordered today can arrive.</p>
+      <div class="da-two wide-l">
+        <div><h4 class="da-h4">Call these suppliers today</h4><div class="ov-wide"><table class="ovt ovm da-t"><thead><tr><th class="rk">#</th><th class="sp">Supplier</th><th class="r">≤ ${LEAD_DAYS} days</th><th class="r">4–7 days</th><th class="r">GMV 90D</th></tr></thead>
+          <tbody>${bySup.slice(0, 15).map((r, i) => `<tr><td class="rk">${i + 1}</td><td class="sp">${supLink(r.acct, r.label)}</td><td class="num da-hot">${fmtN(r.n3)}</td><td class="num">${fmtN(r.n7)}</td><td class="num">${kwd(r.g)}</td></tr>`).join('') || '<tr><td colspan="5" class="dim">Nothing runs out within the delivery time.</td></tr>'}</tbody></table></div>
+          ${bySup.length > 15 ? `<p class="da-note">${fmtN(bySup.length - 15)} more suppliers in the download.</p>` : ''}</div>
+        <div><h4 class="da-h4">Listings to order today, biggest GMV 90D first</h4><div class="ov-wide"><table class="ovt ovm da-t"><thead><tr><th class="sp">Product</th><th>Store</th><th class="r">Stock</th><th class="r">Sells/day</th><th class="r">Days left</th><th class="r">GMV 90D</th></tr></thead>
+          <tbody>${run3.slice(0, lim).map((x) => `<tr><td class="sp"><span class="pcode">${esc(x.l.it.code)}</span> ${esc(x.l.it.name)}<span class="psub">${esc((NET.byAcct.get(x.l.p) || {}).name || x.l.p)}</span></td><td>${esc(store(x.l.s))}</td><td class="num">${fmtN(x.l.stk)}</td><td class="num">${dec1(x.du)}</td><td class="num da-hot"><b>${dec1(x.cover)}</b></td><td class="num">${kwd(x.l.g90)}</td></tr>`).join('')}</tbody></table></div>
+          ${daMore('runout', Math.min(lim, run3.length), run3.length)}</div>
+      </div>
+      ${daHow(`Sells per day = GMV of the last 90 days ÷ the product’s average price ÷ 90 (or its age, if younger). Days of cover = current stock ÷ sells per day. With a ${LEAD_DAYS}-day delivery time, anything under ${LEAD_DAYS} days is empty before the next delivery unless it is ordered now.`)}`;
+  }
+
+  // ---- 7. Ghost stock ----
+  let ghost = '<p class="da-empty">Needs Last Sale Date: reload from Tableau.</p>';
+  if (deep) {
+    const buckets = [['Sold in the last 7 days', (l) => l.last >= 0 && l.last < 7, 'good'], ['8–30 days ago', (l) => l.last >= 7 && l.last < GHOST_DAYS, 'ok'], ['30–90 days ago', (l) => l.last >= GHOST_DAYS && l.last < 90, 'warn'], ['90+ days ago', (l) => l.last >= 90, 'crit'], ['Never sold', (l) => l.last < 0, 'dark']];
+    const bn = buckets.map(([, f]) => inn.filter(f).length);
+    const bySup = [...groupBy(inn, (l) => l.p)].map(([acct, ls]) => { const g = ls.filter(isGhost); return { acct, label: (NET.byAcct.get(acct) || {}).name || acct, inn: ls.length, g: g.length, never: g.filter((l) => l.last < 0).length, units: g.reduce((s, l) => s + l.stk, 0), gmv: g.reduce((s, l) => s + l.gmv, 0) }; })
+      .filter((r) => r.g).sort((p, q) => q.gmv - p.gmv);
+    const lim = DA.more.get('ghost') || 25;
+    DAX.ghostsup = () => ({ name: 'Ghost stock by supplier', title: `Ghost stock by supplier: in stock, no sale for ${GHOST_DAYS}+ days`,
+      cols: [{ h: 'Supplier', k: 't', wide: true }, { h: 'Listings in stock', k: 'int' }, { h: 'Ghost listings', k: 'int' }, { h: 'Ghost share', k: 'pct' }, { h: 'Never sold', k: 'int' }, { h: 'Units on hand', k: 'int' }, { h: 'Lifetime GMV of ghost listings (KWD)', k: 'money' }],
+      body: bySup.map((r) => [r.label, r.inn, r.g, r.g / r.inn, r.never, r.units, r.gmv]) });
+    DAX.ghost = () => ({ name: 'Ghost stock', title: `Ghost stock: in stock, no sale for ${GHOST_DAYS}+ days, biggest past sellers first`,
+      cols: [{ h: 'Item code', k: 't' }, { h: 'Product', k: 't', wide: true }, { h: 'Supplier', k: 't', wide: true }, { h: 'Store', k: 't' }, { h: 'Stock', k: 'int' }, { h: 'Days since last sale', k: 'int' }, { h: 'Lifetime GMV (KWD)', k: 'money' }, { h: 'Lifetime qty', k: 'int' }],
+      body: ghosts.map((l) => [l.it.code, l.it.name, (NET.byAcct.get(l.p) || {}).name || l.p, DATA.stores[l.s], l.stk, l.last < 0 ? 'Never sold' : l.last, l.gmv, l.rate]) });
+    ghost = `<div class="da-stack">${buckets.map(([lbl, , cls], i) => (bn[i] ? `<span class="${cls}" style="flex:${bn[i]}" title="${esc(`${lbl}: ${fmtN(bn[i])} listings (${share1(bn[i] / inn.length)})`)}">${bn[i] / inn.length > 0.07 ? share1(bn[i] / inn.length) : ''}</span>` : '')).join('')}</div>
+      <div class="da-legend">${buckets.map(([lbl, , cls], i) => `<span><i class="${cls}"></i>${lbl} <b>${fmtN(bn[i])}</b></span>`).join('')}</div>
+      <p class="da-note">When each of the ${fmtN(inn.length)} listings in stock last sold. Amber, red and dark are ghost stock: the system says it is on the shelf, but nobody has bought it for a month or more.</p>
+      <div class="da-two wide-l">
+        <div><h4 class="da-h4">Suppliers with the most ghost stock</h4><div class="ov-wide"><table class="ovt ovm da-t"><thead><tr><th class="rk">#</th><th class="sp">Supplier</th><th class="r">Ghost</th><th class="r">Of stock</th><th class="r">Never sold</th></tr></thead>
+          <tbody>${bySup.slice(0, 15).map((r, i) => `<tr><td class="rk">${i + 1}</td><td class="sp">${supLink(r.acct, r.label)}</td><td class="num"><b>${fmtN(r.g)}</b></td><td class="num">${share1(r.g / r.inn)}</td><td class="num">${fmtN(r.never)}</td></tr>`).join('')}</tbody></table></div></div>
+        <div><h4 class="da-h4">Count these shelves first: past best-sellers that stopped selling</h4><div class="ov-wide"><table class="ovt ovm da-t"><thead><tr><th class="sp">Product</th><th>Store</th><th class="r">Stock</th><th class="r">Last sale</th><th class="r">Lifetime GMV</th></tr></thead>
+          <tbody>${ghosts.slice(0, lim).map((l) => `<tr><td class="sp"><span class="pcode">${esc(l.it.code)}</span> ${esc(l.it.name)}<span class="psub">${esc((NET.byAcct.get(l.p) || {}).name || l.p)}</span></td><td>${esc(DATA.stores[l.s])}</td><td class="num">${fmtN(l.stk)}</td><td class="num">${l.last < 0 ? '<span class="dim">never</span>' : `${fmtN(l.last)} days`}</td><td class="num">${kwd(l.gmv)}</td></tr>`).join('')}</tbody></table></div>
+          ${daMore('ghost', Math.min(lim, ghosts.length), ghosts.length)}</div>
+      </div>
+      ${daHow('A product that used to sell well and suddenly stops while “in stock” is the classic sign of stock that is not really there: damaged, in the back room or miscounted. Ranked by lifetime GMV, so the shelves worth most are counted first.')}`;
+  }
+
+  // ---- 8. Momentum ----
+  let momentum = '<p class="da-empty">Needs GMV 90D: reload from Tableau.</p>';
+  let mRows = [];
+  if (deep && S) {
+    for (const [acct, ls] of groupBy(list, (l) => l.p)) {
+      let g90 = 0, d90 = 0, base = 0, n = 0, i2 = 0;
+      for (const l of ls) { g90 += l.g90; d90 += l.d90; n++; if (l.in) i2++; if (l.gmv > 0) base += l.gmv / Math.max(90, l.age >= 0 ? l.age : 90); }
+      if (!(g90 > 0) || !(base > 0)) continue;
+      mRows.push({ k: acct, acct, label: (NET.byAcct.get(acct) || {}).name || acct, p: i2 / n, inn: i2, n, g90, mom: g90 / 90 / base - 1, disc: d90 / g90 });
+    }
+    const hot = mRows.filter((r) => r.mom > 0 && status(r.p) !== 'good').sort((p, q) => q.g90 - p.g90);
+    DAX.momentum = () => ({ name: 'Momentum', title: 'Suppliers by availability and sales momentum',
+      cols: [{ h: 'Supplier', k: 't', wide: true }, { h: 'Availability', k: 'pct', avail: true }, { h: 'Sales momentum', k: 'pct' }, { h: 'GMV 90D (KWD)', k: 'money' }, { h: 'Discount 90D ÷ GMV 90D', k: 'pct' }, { h: 'Quadrant', k: 't' }],
+      body: [...mRows].sort((p, q) => q.g90 - p.g90).map((r) => [r.label, r.p, r.mom, r.g90, r.disc, `${r.mom > 0 ? 'Growing' : 'Fading'} · ${status(r.p) === 'good' ? 'stocked' : 'short'}`]) });
+    momentum = `<div class="da-chart">${svgQuadrant(mRows)}</div>
+      <h4 class="da-h4 down">Growing but short: demand is rising and shelves are below target</h4>
+      <div class="ov-wide"><table class="ovt ovm da-t"><thead><tr><th class="rk">#</th><th class="sp">Supplier</th><th class="c">Availability</th><th class="r">Momentum</th><th class="r">GMV 90D</th><th class="r" title="Discount of the last 90 days as a share of GMV 90D">Discount</th></tr></thead>
+      <tbody>${hot.slice(0, 12).map((r, i) => `<tr><td class="rk">${i + 1}</td><td class="sp">${supLink(r.acct, r.label)}</td><td>${avCell(r.p, r.inn, r.n)}</td><td class="num da-pts up">+${Math.round(r.mom * 100)}%</td><td class="num">${kwd(r.g90)}</td><td class="num">${share1(r.disc)}</td></tr>`).join('') || '<tr><td colspan="6" class="dim">No growing supplier is below target.</td></tr>'}</tbody></table></div>
+      ${daHow('Sales momentum compares GMV per day in the last 90 days with the products’ lifetime average per day: +40% means selling 40% faster than usual. Bubble size is GMV 90D; click one to open that supplier. The pink corner is where empty shelves hurt most: rising demand, low availability.')}`;
+  }
+
+  // ---- 9. Categories ----
+  const catRows = [...groupBy(list, (l) => l.cat)].map(([c, ls]) => {
+    const n = ls.length, i2 = ls.filter((l) => l.in).length, inS = ls.filter((l) => l.in);
+    const gh = inS.filter(isGhost).length;
+    const r3 = inS.filter((l) => { const du = dailyUnits(l); return du > 0 && l.stk / du <= LEAD_DAYS; }).length;
+    let g90 = 0, base = 0;
+    for (const l of ls) { g90 += l.g90; if (l.gmv > 0) base += l.gmv / Math.max(90, l.age >= 0 ? l.age : 90); }
+    const hsC = hs ? histSeries(cells.filter((x) => x.cat === c), nD) : null;
+    return { c, n, inn: i2, p: n ? i2 / n : 0, gmv: ls.reduce((s, l) => s + l.gmv, 0), qty: ls.reduce((s, l) => s + l.rate, 0), gh, ghP: inS.length ? gh / inS.length : 0, r3, mom: base > 0 && g90 > 0 ? g90 / 90 / base - 1 : null, real: hsC ? hsC.realT : null, range: hsC ? hsC.rangeT : null };
+  }).sort((p, q) => q.gmv - p.gmv || q.n - p.n);
+  const gT = catRows.reduce((s, r) => s + r.gmv, 0) || 1, gMax = Math.max(...catRows.map((r) => r.gmv), 1);
+  DAX.cats = () => ({ name: 'Category scorecard', title: 'Category scorecard',
+    cols: [{ h: 'Category', k: 't', wide: true }, ...(S ? [{ h: 'GMV (KWD)', k: 'money' }, { h: 'Share of GMV', k: 'pct' }] : []), { h: 'Availability', k: 'pct', avail: true }, ...(hs ? [{ h: 'Real change (pts)', k: 'pts' }, { h: 'Range change (pts)', k: 'pts' }] : []), ...(deep ? [{ h: `Run out ≤ ${LEAD_DAYS} days`, k: 'int' }, { h: 'Ghost share of stock', k: 'pct' }, { h: 'Sales momentum', k: 'pct' }] : [])],
+    body: catRows.map((r) => [r.c, ...(S ? [r.gmv, r.gmv / gT] : []), r.p, ...(hs ? [r.real, r.range] : []), ...(deep ? [r.r3, r.ghP, r.mom ?? ''] : [])]) });
+  const catsHtml = `<div class="ov-wide"><table class="ovt ovm da-t da-cats"><thead><tr><th class="sp">Category</th>${S ? '<th>Share of GMV</th>' : ''}<th class="c">Availability</th>${hs ? '<th class="r">Real</th><th class="r">Range</th>' : ''}${deep ? `<th class="r">Run out ≤ ${LEAD_DAYS}d</th><th class="r">Ghost</th><th class="r">Momentum</th>` : ''}</tr></thead>
+    <tbody>${catRows.map((r) => `<tr data-da-cat="${esc(r.c)}" tabindex="0" title="Focus the whole page on ${esc(r.c)}"><td class="sp"><b>${esc(r.c)}</b></td>${S ? `<td class="da-barc"><span style="width:${(r.gmv / gMax) * 100}%"></span><em>${share1(r.gmv / gT)}</em></td>` : ''}<td>${avCell(r.p, r.inn, r.n)}</td>${hs ? (r.real == null ? '<td></td><td></td>' : ptsCell(r.real) + ptsCell(r.range)) : ''}${deep ? `<td class="num${r.r3 ? ' da-hot' : ''}">${fmtN(r.r3)}</td><td class="num">${share1(r.ghP)}</td><td class="num da-pts ${r.mom == null ? '' : r.mom > 0 ? 'up' : 'down'}">${r.mom == null ? '—' : `${r.mom > 0 ? '+' : ''}${Math.round(r.mom * 100)}%`}</td>` : ''}</tr>`).join('')}</tbody></table></div>
+    ${daHow(`Every lens on one line per category, biggest GMV first. ${DA.cat ? 'Showing one category: pick “All categories” above to compare them.' : 'Click a category to focus the whole page on it.'}`)}`;
+
+  // ---- 10. Concentration ----
+  let conc = '';
+  if (S && M.supAll.length > 2) {
+    const curve = (m) => { const T = M.supAll.reduce((s, r) => s + r[m], 0) || 1; let c = 0; return [...M.supAll].sort((p, q) => q[m] - p[m]).map((r) => (c += r[m]) / T); };
+    const cq2 = curve('qty'), cg2 = G ? curve('gmv') : null;
+    const at = (cv, x) => cv.findIndex((v) => v >= x - 1e-9) + 1;
+    const N = M.supAll.length;
+    const top10 = Math.max(1, Math.round(N * 0.1));
+    conc = `<div class="da-chart">${svgPareto([{ name: 'sales qty', vals: cq2, color: 'var(--cx-pink)' }, ...(cg2 ? [{ name: 'GMV', vals: cg2, color: '#1B1530' }] : [])])}</div>
+      <div class="da-legend"><span><i style="background:var(--cx-pink)"></i>Sales qty</span>${cg2 ? '<span><i style="background:#1B1530"></i>GMV</span>' : ''}</div>
+      <div class="da-conc">${[0.5, 0.8, 0.9].map((x) => `<div><b>${at(cq2, x)}</b><span>suppliers make ${Math.round(x * 100)}% of sales qty${cg2 ? ` · <b>${at(cg2, x)}</b> make ${Math.round(x * 100)}% of GMV` : ''}</span></div>`).join('')}<div><b>${share1(cq2[top10 - 1])}</b><span>of sales qty comes from the top 10% (${top10}) of the ${fmtN(N)} suppliers</span></div></div>
+      ${daHow('The steeper the curve, the fewer suppliers carry the business. The dots mark 50%, 80% and 90%: fixing availability for the suppliers left of the 80% dot moves most of what customers buy.')}`;
+  }
+
+  host.innerHTML = `<section class="page ov cx da">
+    <header class="cx-head">
+      <img class="cx-logo" src="${LOGO.pink}" alt="Circle" width="156" height="30">
+      <div>
+        <div class="cx-eyebrow">${settings.company ? esc(settings.company) + ' · ' : ''}Supplier availability</div>
+        <h1>Deep analysis</h1>
+        <p>Stock position ${a ? `${a.date} · ${a.weekday} ${a.time} Kuwait time` : '—'}${H ? ` · Daily history ${dayLabel(days[0])} – ${dayLabel(days[nD - 1])}` : ''} · ${esc(scopeTxt)} · ${esc(where)}</p>
+      </div>
+    </header>
+    <div class="cx-card cx-filters">
+      ${S ? `<div class="ov-f"><span class="l">Suppliers</span><div class="cx-seg" role="group" aria-label="Which suppliers">${segB('qty', 'Top suppliers (90% of sales qty)')}${G ? segB('gmv', 'Top suppliers (90% of GMV)') : ''}${segB('all', `All ${fmtN(M.supAll.length)} suppliers`)}</div></div>` : ''}
+      <div class="ov-f"><label for="da-store">Store</label><select id="da-store" data-daf="store">${opt(-1, 'All stores', DA.store < 0)}${NET.active.map((k) => opt(k, DATA.stores[k], DA.store === k)).join('')}</select></div>
+      <div class="ov-f"><label for="da-cat">Category</label><select id="da-cat" data-daf="cat">${opt('', 'All categories', !DA.cat)}${cats.map((c) => opt(c, c, DA.cat === c)).join('')}</select></div>
+    </div>
+    <nav class="da-nav" aria-label="Sections">${nav.map(([id, l]) => `<button type="button" data-da-jump="${id}">${l}</button>`).join('')}</nav>
+    ${daCard('story', 'The story in numbers', 'What the data says today, worked out from both Tableau sources', story)}
+    ${daCard('trend', 'Availability trend', hs ? `Every day since ${dayLabel(days[0])}, with each change split into real change and range change` : 'Daily history', trend, hs ? 'daily' : '')}
+    ${hs ? daCard('heat', 'Heat map', 'Availability per day: find the day, store or category where it went wrong', heat, 'heat') : ''}
+    ${movers ? daCard('movers', 'Movers', `Who filled and who emptied shelves since ${dayLabel(days[0])}, like for like`, movers, 'movers') : ''}
+    ${reliab ? daCard('reliab', 'Supplier reliability', `How many days each supplier held the ${settings.target}% target`, reliab, 'reliab') : ''}
+    ${daCard('runout', `Run-out radar · ${LEAD_DAYS}-day delivery time`, 'Stock that is on the shelf today but will be gone before a new order can arrive', runout, deep ? 'runsup runout' : '')}
+    ${daCard('ghost', 'Ghost stock', `On the shelf according to the system, but no sale for ${GHOST_DAYS}+ days`, ghost, deep ? 'ghostsup ghost' : '')}
+    ${daCard('momentum', 'Momentum vs availability', 'Where demand is rising and where shelves are failing it', momentum, deep && S ? 'momentum' : '')}
+    ${daCard('cats', 'Category scorecard', 'Availability, trend, run-out, ghost stock and momentum per category', catsHtml, 'cats')}
+    ${conc ? daCard('conc', 'Concentration', 'How few suppliers carry most of the sales', conc) : ''}
+    <p class="da-foot">Sources: Tableau “Supplier’s Availability Data” (stock, Lifetime Qty Sold, Lifetime GMV, GMV 90D, Total Discount 90D, Last Sale Date) and “Supplier Availability History” (listings and in-stock per day, supplier, store and category, from ${HISTORY.start.split('-').reverse().join('/')}; the days before are one backfilled copy and are left out). Tiers ${esc(settings.excludedTiers.join(', ') || 'none')} are excluded. Today’s figures come from the live stock position; the daily history is read once a day, so its last day can differ slightly.</p>
+  </section>`;
+  window.scrollTo(0, y0);
+}
+
+async function daDownload(kind, btn) {
+  const i = kind.lastIndexOf('-');
+  const key = kind.slice(0, i), fmt = kind.slice(i + 1);
+  const make = DAX[key];
+  if (!make) return;
+  const label = btn.innerHTML;
+  btn.disabled = true;
+  btn.textContent = 'Preparing…';
+  try {
+    const tbl = make();
+    const a = kuwaitParts(DATA.asOf) || {};
+    const scope = DA.scope === 'all' || !NET.hasSales ? 'All suppliers' : `Top suppliers (90% of ${METRIC[DA.scope]})`;
+    const sub = [scope, DA.store >= 0 ? DATA.stores[DA.store] : 'All stores', DA.cat || 'All categories', `Stock position ${a.date || ''} ${a.time || ''}`.trim()].join(' · ');
+    const blob = fmt === 'xlsx' ? await ovXlsx(tbl, tbl.title, sub) : await ovPdf(tbl, tbl.title, sub);
+    await saveBlob(blob, `${a.ymd || 'report'} Deep analysis - ${tbl.name}.${fmt}`);
+    btn.innerHTML = label;
+  } catch (err) {
+    btn.textContent = 'Download failed';
+    btn.title = err.message || String(err);
+    setTimeout(() => { btn.innerHTML = label; btn.title = ''; }, 4000);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+
 /* ================= Screen: sidebar, stage ================= */
 let current = null;
 let currentPages = [];
@@ -1775,9 +2528,10 @@ const els = {
   list: $('#sup-list'), search: $('#sup-search'), sort: $('#sup-sort'), net: $('#net'),
   pages: $('#pages'), note: $('#stage-note'), stage: $('#stage'), offscreen: $('#offscreen'),
   selCount: $('#sel-count'), exportSel: $('#btn-export-sel'), exportSelText: $('#btn-export-sel-text'),
-  pillText: $('#data-pill-text'), pill: $('#data-pill'), ov: $('#overview'),
+  pillText: $('#data-pill-text'), pill: $('#data-pill'), ov: $('#overview'), deep: $('#deep'),
 };
-let view = 'overview';   // 'overview' (all suppliers) or 'supplier' (one supplier's report pages)
+let view = 'overview';   // 'overview' (all suppliers), 'deep' (deep analysis) or 'supplier' (one supplier's report pages)
+let backView = 'overview';   // where a supplier's "back" button returns to
 els.sort.value = store.get('sort2', 'sales');
 
 function renderNet() {
@@ -1851,7 +2605,7 @@ function showSupplier(acct) {
   currentPages = paginate(m, els.pages);
   for (const p of currentPages) { const f = document.createElement('div'); f.className = 'frame'; p.replaceWith(f); f.append(p); }
   fitPages();
-  els.note.innerHTML = `<button class="btn small stage-back" type="button" data-overview>← All suppliers</button><span><strong>${esc(m.name)}</strong> · ${currentPages.length} ${plural(currentPages.length, 'page', 'pages')}</span><span>${pct0(m.r)}% available · ${fmtN(m.oosN)} listings out${NET.hasSales ? ` · sales qty ${units(m.sales)}` : ''} · rank ${m.rank} of ${m.rankOf}</span>`;
+  els.note.innerHTML = `${backView === 'deep' ? '<button class="btn small stage-back" type="button" data-deep>← Deep analysis</button>' : '<button class="btn small stage-back" type="button" data-overview>← All suppliers</button>'}<span><strong>${esc(m.name)}</strong> · ${currentPages.length} ${plural(currentPages.length, 'page', 'pages')}</span><span>${pct0(m.r)}% available · ${fmtN(m.oosN)} listings out${NET.hasSales ? ` · sales qty ${units(m.sales)}` : ''} · rank ${m.rank} of ${m.rankOf}</span>`;
   for (const li of els.list.querySelectorAll('.sup')) li.classList.toggle('is-active', li.dataset.acct === acct);
   try { history.replaceState(null, '', '#s' + acct); } catch { /* not allowed in some frames */ }
   return currentPages.length;
@@ -1859,13 +2613,15 @@ function showSupplier(acct) {
 
 function setView(v) {
   view = v;
-  const ov = v === 'overview';
+  const ov = v === 'overview', dp = v === 'deep';
   els.ov.hidden = !ov;
-  els.pages.hidden = ov;
-  els.note.hidden = ov;
-  $('.app').classList.toggle('ov-mode', ov);
-  $('#btn-export').disabled = ov;
-  $('#btn-export').title = ov ? 'Open a supplier to export its report images' : '';
+  els.deep.hidden = !dp;
+  els.pages.hidden = ov || dp;
+  els.note.hidden = ov || dp;
+  $('.app').classList.toggle('ov-mode', ov || dp);
+  $('#btn-export').disabled = ov || dp;
+  $('#btn-export').title = ov || dp ? 'Open a supplier to export its report images' : '';
+  $('#btn-deep').setAttribute('aria-pressed', String(dp));
   const b = els.net.querySelector('[data-overview]');
   if (b) b.classList.toggle('primary', ov);
   if (ov) for (const li of els.list.querySelectorAll('.sup')) li.classList.remove('is-active');
@@ -1873,7 +2629,8 @@ function setView(v) {
 // Open a supplier's report at the top of its pages; the overview remembers
 // where it was so "All suppliers" brings you back to the same row.
 function openSupplier(acct) {
-  if (view === 'overview') ovScrollY = window.scrollY;
+  if (view === 'overview') { ovScrollY = window.scrollY; backView = 'overview'; }
+  if (view === 'deep') { deepScrollY = window.scrollY; backView = 'deep'; }
   showSupplier(acct);
   const top = els.stage.getBoundingClientRect().top + window.scrollY - 64;
   window.scrollTo(0, Math.max(0, top));
@@ -1884,6 +2641,13 @@ function showOverview() {
   renderOverview();
   if (back) window.scrollTo(0, ovScrollY);
   try { history.replaceState(null, '', '#overview'); } catch { /* not allowed in some frames */ }
+}
+function showDeep() {
+  const back = view !== 'deep';
+  setView('deep');
+  renderDeep();
+  if (back) window.scrollTo(0, deepScrollY);
+  try { history.replaceState(null, '', '#deep'); } catch { /* not allowed in some frames */ }
 }
 
 function updatePill() {
@@ -1921,6 +2685,7 @@ function refreshAll(keepCurrent = true) {
   updateSelection();
   updatePill();
   if (view === 'overview') showOverview();
+  else if (view === 'deep') showDeep();
   else showSupplier(keepCurrent && current ? current : store.get('current', null));
 }
 
@@ -1943,7 +2708,39 @@ els.net.addEventListener('click', (e) => {
   renderList();
 });
 els.search.addEventListener('input', renderList);
-document.addEventListener('click', (e) => { if (e.target.closest('[data-overview]')) showOverview(); });
+document.addEventListener('click', (e) => {
+  if (e.target.closest('[data-overview]')) { backView = 'overview'; showOverview(); }
+  else if (e.target.closest('[data-deep]')) { if (view === 'deep') return; if (view === 'overview') deepScrollY = 0; showDeep(); }
+});
+els.deep.addEventListener('click', (e) => {
+  const dlb = e.target.closest('[data-da-dl]');
+  if (dlb) { daDownload(dlb.dataset.daDl, dlb); return; }
+  const sc = e.target.closest('[data-da-scope]');
+  if (sc) { DA.scope = sc.dataset.daScope; renderDeep(); return; }
+  const hb = e.target.closest('[data-da-heat]');
+  if (hb) { DA.heat = hb.dataset.daHeat; renderDeep(); return; }
+  const more = e.target.closest('[data-da-more]');
+  if (more) { const k = more.dataset.daMore; DA.more.set(k, (DA.more.get(k) || (k === 'heat' ? 25 : k === 'reliab' ? 30 : 25)) + (k === 'heat' ? 25 : 50)); renderDeep(); return; }
+  const jump = e.target.closest('[data-da-jump]');
+  if (jump) { const el = document.getElementById('da-' + jump.dataset.daJump); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--topbar-h')) || 57) - 12, behavior: 'smooth' }); return; }
+  const sup = e.target.closest('[data-open-sup]');
+  if (sup) { openSupplier(sup.dataset.openSup); return; }
+  const cat = e.target.closest('[data-da-cat]');
+  if (cat) { DA.cat = DA.cat === cat.dataset.daCat ? '' : cat.dataset.daCat; DA.more.clear(); renderDeep(); }
+});
+els.deep.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const cat = e.target.closest('[data-da-cat]');
+  if (cat) { e.preventDefault(); cat.click(); }
+});
+els.deep.addEventListener('change', (e) => {
+  const f = e.target.dataset.daf;
+  if (f === 'store') DA.store = Number(e.target.value);
+  else if (f === 'cat') DA.cat = e.target.value;
+  else return;
+  DA.more.clear();
+  renderDeep();
+});
 els.ov.addEventListener('click', (e) => {
   const dlb = e.target.closest('[data-ov-dl]');
   if (dlb) { ovDownload(dlb.dataset.ovDl, dlb); return; }
@@ -2297,7 +3094,10 @@ function pivotQuery(stores, asOfYmd) {
       + `+','+IFNULL(STR(INT(ROUND(MAX(IF ${w} THEN [Lifetime Qty Sold] END),0))),'0')`
       + `+','+IFNULL(STR(INT(ROUND(MAX(IF ${w} THEN [Current Stock] END),0))),'0')`
       + `+','+IFNULL(STR(MIN(IF ${w} THEN DATEDIFF('day',[First Sale Date],#${asOfYmd}#) END)),'')`
-      + `+','+IFNULL(STR(ROUND(MAX(IF ${w} THEN [Lifetime GMV] END),2)),'0'),'-')`;
+      + `+','+IFNULL(STR(ROUND(MAX(IF ${w} THEN [Lifetime GMV] END),2)),'0')`
+      + `+','+IFNULL(STR(MIN(IF ${w} THEN DATEDIFF('day',[Last Sale Date],#${asOfYmd}#) END)),'')`
+      + `+','+IFNULL(STR(ROUND(MAX(IF ${w} THEN [GMV 90D] END),2)),'0')`
+      + `+','+IFNULL(STR(ROUND(MAX(IF ${w} THEN [Total Discount 90D] END),2)),'0'),'-')`;
   };
   return {
     fields: [
@@ -2309,6 +3109,22 @@ function pivotQuery(stores, asOfYmd) {
     ],
     filters: [{ field: { fieldCaption: 'Supplier Account' }, filterType: 'QUANTITATIVE_NUMERICAL', quantitativeFilterType: 'MIN', min: 1 }],
   };
+}
+// "Supplier Availability History": one row per day, supplier, store and category.
+// Trends start on 28 Sep 2026 (the days before are one backfilled copy); at most the last 60 days.
+const HISTORY = { datasourceLuid: '7dee73bd-bb03-496e-8480-c9cc7f9a677b', start: '2026-09-28', maxDays: 60 };
+function historyDatesQuery() {
+  return { fields: [{ fieldCaption: 'd', calculation: 'STR(DATE([Date]))', sortPriority: 1 }, { fieldCaption: 'SKU', function: 'SUM' }] };
+}
+function historyDays(rows) {
+  return [...new Set(rows.map((r) => String(r.d || '').slice(0, 10)).filter((d) => d >= HISTORY.start))].sort().slice(-HISTORY.maxDays);
+}
+function historyQuery(days) {
+  const part = (d) => `IFNULL(STR(SUM(IF DATE([Date])=#${d}# THEN [SKU] END)),'0')+','+IFNULL(STR(SUM(IF DATE([Date])=#${d}# THEN [In Stock] END)),'0')`;
+  return { fields: [
+    { fieldCaption: 'Supplier Name', fieldAlias: 's' }, { fieldCaption: 'Store', fieldAlias: 't' }, { fieldCaption: 'Category', fieldAlias: 'k' },
+    { fieldCaption: 'h', calculation: days.map(part).join("+'|'+") },
+  ] };
 }
 // The newest sale date is the stock day. Read today: stamp the read time; an older extract: that day's close.
 function asOfFromDay(ymd) {
@@ -2325,10 +3141,10 @@ const LIVE_ERR = {
   approval_required: 'Your organisation needs to approve this Tableau query.',
   server_unavailable: 'Tableau Cloud did not answer. Try Reload from Tableau again.',
 };
-async function tableauQuery(mcp, query, fresh, retried) {
+async function tableauQuery(mcp, query, fresh, retried, luid = TABLEAU.datasourceLuid) {
   try {
     const cache = fresh ? { refresh: true, staleTime: 300000, gcTime: 3600000 } : { staleTime: 300000, gcTime: 3600000 };
-    const res = await mcp.callTool(TABLEAU.server, TABLEAU.tool, { datasourceLuid: TABLEAU.datasourceLuid, query }, { cache });
+    const res = await mcp.callTool(TABLEAU.server, TABLEAU.tool, { datasourceLuid: luid, query }, { cache });
     let pl = res.payload;
     if (typeof pl === 'string') { try { pl = JSON.parse(pl); } catch { throw { code: 'tool_error', message: pl.slice(0, 240) }; } }
     const rows = pl && (Array.isArray(pl.data) ? pl.data : Array.isArray(pl) ? pl : null);
@@ -2337,7 +3153,7 @@ async function tableauQuery(mcp, query, fresh, retried) {
   } catch (err) {
     if (err && err.retryable && !retried) {
       await new Promise((r) => setTimeout(r, (err.retryAfterMs || 1200) + Math.random() * 800));
-      return tableauQuery(mcp, query, fresh, true);
+      return tableauQuery(mcp, query, fresh, true, luid);
     }
     throw err;
   }
@@ -2358,7 +3174,14 @@ async function loadLive(fresh) {
     if (!day || !stores.length) throw { code: 'tool_error', message: 'Tableau returned no stores with stock.' };
     const rows = await tableauQuery(mcp, pivotQuery(stores, day), fresh);
     const dead = meta.filter((r) => r.Store && !(Number(r.inS) > 0)).map((r) => r.Store);
+    // History is a bonus: if it cannot be read, keep the history that came with the snapshot.
+    let hist = DATA && DATA.hist;
+    try {
+      const days = historyDays(await tableauQuery(mcp, historyDatesQuery(), fresh, false, HISTORY.datasourceLuid));
+      if (days.length) hist = parseHistory({ days, rows: await tableauQuery(mcp, historyQuery(days), fresh, false, HISTORY.datasourceLuid) }) || hist;
+    } catch { /* history unavailable: the rest of the report still works */ }
     DATA = fromPivot({ asOf: asOfFromDay(day), stores, deadStores: dead, rows }, 'live');
+    DATA.hist = hist;
     refreshAll(true);
     return { ok: true, message: `Read ${fmtN(rows.length)} items live from Tableau.` };
   } catch (err) {
@@ -2542,6 +3365,7 @@ async function boot() {
   } catch { /* fall back to system fonts */ }
   const hash = (location.hash.match(/^#s(\w+)$/) || [])[1];
   if (hash) { store.set('current', hash); view = 'supplier'; }
+  else if (location.hash === '#deep') view = 'deep';
   refreshAll(false);
   // Then read today's data from Tableau; the saved data stays up until it arrives.
   if (!document.body.classList.contains('capture')) loadLive(false);

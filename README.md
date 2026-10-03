@@ -31,8 +31,41 @@ availability per store and in all stores.
 - The view uses the Circle look of Allocation Control: light page, white
   cards, magenta for what is selected.
 
+## Deep analysis
+
+The **Deep analysis** button (top bar, after Export images) opens one page that
+combines today's stock and sales with the daily "Supplier Availability History"
+source. It has the same supplier, store and category filters as the overview,
+and every table downloads as Excel or PDF.
+
+- **The story in numbers**: plain sentences worked out from the data.
+- **Availability trend**: every day since 28 Sep 2026 (the days before are one
+  backfilled copy and are left out). Each day's change is split in two:
+  - *real change*: in-stock change on supplier/store/category cells whose
+    listings did not change;
+  - *range change*: the rest, i.e. listings removed or added.
+  A bridge chart shows the same split from the first day to today.
+- **Heat map**: availability per day by store, category or supplier.
+- **Movers**: suppliers that gained or lost the most listings in stock, like
+  for like, plus the biggest range changes.
+- **Supplier reliability**: days on the target, real change, like-for-like
+  swing, and a verdict (steady, improving, mixed, volatile, slipping, never on
+  target).
+- **Run-out radar**: listings in stock that run out within the 3-day delivery
+  time, with a list of suppliers to call today.
+  - Sells per day = GMV 90D ÷ the lifetime average price ÷ 90 (or the
+    product's age, if younger).
+  - Days of cover = current stock ÷ sells per day.
+- **Ghost stock**: listings in stock with no sale for 30+ days (or never).
+  They are ranked by lifetime GMV, so the shelves worth most are counted first.
+- **Momentum vs availability**: suppliers plotted by availability and sales
+  momentum (GMV per day over the last 90 days vs the lifetime average), sized by
+  GMV 90D. Also shows Discount 90D ÷ GMV 90D.
+- **Category scorecard** and **Concentration** (how many suppliers make 50, 80
+  and 90% of sales qty and GMV).
+
 When opened in Claude with the Tableau Cloud connector, the report reads
-"Supplier's Availability Data" live (Load data → Reload from Tableau to
+"Supplier's Availability Data" and "Supplier Availability History" live (Load data → Reload from Tableau to
 refresh). Otherwise it shows the snapshot built into the copy.
 
 ## What a supplier receives
@@ -114,14 +147,18 @@ Images go to `reports/<stock date>/`.
 
 ## Refreshing the built-in snapshot from Tableau
 
-The report runs two VizQL Data Service queries (stores, then one row per
-supplier item with stock and sales per store). To build a copy with them
-inside:
+The report runs four VizQL Data Service queries. Two go to "Supplier's
+Availability Data": the stores, then one row per supplier item with stock,
+sales, GMV 90D, discount and last sale per store. Two go to "Supplier
+Availability History": the days, then one row per supplier, store and category
+with listings and in-stock for each day. To build a copy with them inside:
 
 ```sh
 python3 tools/build_snapshot.py --meta-query                  # run it, save the result as meta.json
 python3 tools/build_snapshot.py --pivot-query meta.json       # run it, save the result as pivot.json
-python3 tools/build_snapshot.py --meta meta.json pivot.json
+python3 tools/build_snapshot.py --history-dates-query         # run it, save the result as hdates.json
+python3 tools/build_snapshot.py --history-query hdates.json   # run it, save the result as history.json
+python3 tools/build_snapshot.py --meta meta.json pivot.json --history hdates.json history.json
 ```
 
 This writes `dist/supplier-availability-report.html` with the data inside,

@@ -145,7 +145,10 @@ def pivot_query(stores, day):
                 f"+','+IFNULL(STR(INT(ROUND(MAX(IF {w} THEN [Lifetime Qty Sold] END),0))),'0')"
                 f"+','+IFNULL(STR(INT(ROUND(MAX(IF {w} THEN [Current Stock] END),0))),'0')"
                 f"+','+IFNULL(STR(MIN(IF {w} THEN DATEDIFF('day',[First Sale Date],#{day}#) END)),'')"
-                f"+','+IFNULL(STR(ROUND(MAX(IF {w} THEN [Lifetime GMV] END),2)),'0'),'-')")
+                f"+','+IFNULL(STR(ROUND(MAX(IF {w} THEN [Lifetime GMV] END),2)),'0')"
+                f"+','+IFNULL(STR(MIN(IF {w} THEN DATEDIFF('day',[Last Sale Date],#{day}#) END)),'')"
+                f"+','+IFNULL(STR(ROUND(MAX(IF {w} THEN [GMV 90D] END),2)),'0')"
+                f"+','+IFNULL(STR(ROUND(MAX(IF {w} THEN [Total Discount 90D] END),2)),'0'),'-')")
     return {
         "fields": [
             {"fieldCaption": "Supplier Account", "fieldAlias": "a"}, {"fieldCaption": "Supplier Name", "fieldAlias": "sn"},
@@ -157,6 +160,34 @@ def pivot_query(stores, day):
         "filters": [{"field": {"fieldCaption": "Supplier Account"}, "filterType": "QUANTITATIVE_NUMERICAL",
                      "quantitativeFilterType": "MIN", "min": 1}],
     }
+
+
+HISTORY_LUID = "7dee73bd-bb03-496e-8480-c9cc7f9a677b"
+
+
+def history_dates_query():
+    return {"fields": [{"fieldCaption": "d", "calculation": "STR(DATE([Date]))", "sortPriority": 1},
+                       {"fieldCaption": "SKU", "function": "SUM"}, {"fieldCaption": "In Stock", "function": "SUM"}]}
+
+
+def history_query(dates):
+    """Same query as historyQuery() in the report: one row per supplier, store and category,
+    with 'listings,inStock' per day joined by '|'."""
+    def part(d):
+        w = f"DATE([Date])=#{d}#"
+        return (f"IFNULL(STR(SUM(IF {w} THEN [SKU] END)),'0')+','+"
+                f"IFNULL(STR(SUM(IF {w} THEN [In Stock] END)),'0')")
+    return {"fields": [
+        {"fieldCaption": "Supplier Name", "fieldAlias": "s"}, {"fieldCaption": "Store", "fieldAlias": "t"},
+        {"fieldCaption": "Category", "fieldAlias": "k"},
+        {"fieldCaption": "h", "calculation": "+'|'+".join(part(d) for d in dates)},
+    ]}
+
+
+def history_days(rows, start="2026-09-28", max_days=60):
+    """Same as historyDays() in the report: trends start on 28 Sep 2026 (the days
+    before are one backfilled copy), at most the last 60 days."""
+    return sorted({str(r["d"])[:10] for r in rows if str(r["d"])[:10] >= start})[-max_days:]
 
 
 def meta_info(meta_rows):
@@ -186,6 +217,13 @@ def main():
     if sys.argv[1:2] == ["--meta-query"]:
         print(json.dumps({"datasourceLuid": LUID, "query": meta_query()}, indent=1))
         return
+    if sys.argv[1:2] == ["--history-dates-query"]:
+        print(json.dumps({"datasourceLuid": HISTORY_LUID, "query": history_dates_query()}, indent=1))
+        return
+    if sys.argv[1:2] == ["--history-query"]:
+        days = history_days(rows_of(sys.argv[2]))
+        print(json.dumps({"datasourceLuid": HISTORY_LUID, "query": history_query(days)}, indent=1))
+        return
     if sys.argv[1:2] == ["--pivot-query"]:
         day, stores, _ = meta_info(rows_of(sys.argv[2]))
         print(json.dumps({"datasourceLuid": LUID, "query": pivot_query(stores, day)}, indent=1))
@@ -193,6 +231,8 @@ def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("result", help="JSON result of the pivot query, or of tools/tableau-query.json")
     p.add_argument("--meta", help="JSON result of the meta query (current format, with sales)")
+    p.add_argument("--history", nargs=2, metavar=("DATES", "ROWS"),
+                   help="JSON results of the history dates query and the history query")
     p.add_argument("--as-of", help="Stock snapshot time, ISO 8601 (older format only)")
     p.add_argument("--source", default="Tableau Cloud · Supplier's Availability Data")
     p.add_argument("--template", default=str(TEMPLATE), help="Report HTML to copy")
@@ -206,6 +246,11 @@ def main():
         snapshot = {"v": 2, "asOf": as_of_from_day(day), "source": args.source, "stores": stores,
                     "deadStores": dead, "rows": rows}
         summary = f"{len(rows):,} items, stores {', '.join(stores)}, stock day {day}"
+        if args.history:
+            days = history_days(rows_of(args.history[0]))
+            hrows = [[r.get(k) for k in ("s", "t", "k", "h")] for r in rows_of(args.history[1])]
+            snapshot["hist"] = {"days": days, "rows": hrows}
+            summary += f", history {days[0]}..{days[-1]} ({len(hrows):,} rows)"
     else:
         if not args.as_of:
             p.error("--as-of is required for the older format")
