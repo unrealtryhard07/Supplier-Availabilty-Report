@@ -39,54 +39,52 @@ source (from 28 Sep 2026; the days before are one backfilled copy and are left
 out). It has the same supplier, store and category filters as the overview, and
 every table downloads as Excel (every row) or PDF (first 300 rows).
 
-The page is split into five numbered chapters, one per audience, plus
-**Everything**. Each chapter opens with a banner showing three headline numbers.
-Sections are numbered (2.1, 2.2, …) so they are easy to point to in a meeting.
+Everything is on one page: 27 numbered sections in five parts, with a jump
+link to each part at the top.
 
-1. **Executive summary (CEO)**
+1. **Where we stand**
    - Decisions for today, each with an owner.
-   - One card per leader.
    - The story in numbers.
-   - The availability pulse with a bridge chart.
-2. **Fix plan (Replenishment Director)**
+   - Availability trend: real change vs range change (listings removed or added).
+   - Four ways to read availability.
+2. **Why shelves are empty**
    - Path to target: a staircase from today to the target, cheapest fix first.
+     It stops at the target.
    - Root cause of every empty shelf. Each one gets exactly one cause, checked
      in this order:
      - *no sale in 90+ days* → review or delist;
      - *move from another store* → transfer;
      - *empty in every store* → chase the supplier;
-     - *too little ordered* (other stores have it, none to spare) → raise the
-       order quantity.
-   - Availability forecast for the next 10 days, with and without this week's
-     order.
-   - ABC service levels: A = 80% of GMV 90D at 95%, B = next 15% at 90%,
-     C = the rest at the normal target.
-   - Suspected phantom stock: in stock, but a zero-sale run that long has under
-     a 1% chance at the product's own sales rate (a Poisson test).
+     - *too little ordered* → raise the order quantity.
    - Who causes the gaps.
-   - Order mix: suppliers short and overstocked at once.
-3. **Replenishment (Replenishment team)**
-   - Weekly order plan by supplier, with a line-by-line Excel. Each line orders
-     up to 3 days of delivery + 7 days until next week's order, minus stock.
+   - Suspected phantom stock: a Poisson test on each product's own sales rate.
+   - How long shelves stay empty.
+   - ABC classes: A = 80% of GMV 90D, B = next 15%, C = rest. All are held to
+     the normal target.
+3. **What to do this week**
+   - Weekly order plan, with a line-by-line Excel. Each line orders up to 3 days
+     of delivery + 7 days until next week's order, minus stock.
    - Run-out radar.
+   - Availability forecast if nothing arrives.
+   - Store transfers.
+   - Best-sellers on empty shelves.
+   - Order mix.
+4. **Stores and suppliers**
+   - Store league table.
    - Supplier scorecard (A–E).
    - Reliability.
+   - Movers.
+   - Heat map.
+5. **Stock and demand**
    - Ghost stock.
    - Overstock.
-4. **Operations (COO)**
-   - Store league table.
-   - Store transfers.
-   - Trend with real vs range change.
-   - Heat map.
-   - How long shelves stay empty.
-   - Movers.
-5. **Commercial (CMO)**
-   - Four ways to read availability.
-   - Best-sellers on empty shelves.
    - Momentum vs availability.
    - Availability by tier.
    - Category scorecard.
    - Concentration.
+
+The Circle logo appears in the top bar and on PDF downloads, not inside page
+headers.
 
 Definitions:
 
