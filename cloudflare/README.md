@@ -59,8 +59,9 @@ new token and replace the two secrets.
    `supplier-availabilty-report`. It builds on every push. `wrangler.jsonc` in
    the repository tells it what to build. Keep the dashboard build settings at
    their defaults: no build command, deploy command `npx wrangler deploy`.
-2. **Storage & Databases → KV → Create namespace**, named
-   `supplier-report-data`. Copy its **ID** into `wrangler.jsonc`:
+2. **KV (done).** The namespace `supplier-report-data`
+   (`438542ad9f984b78accb7922830c4dae`) is bound as `SAR_DATA` in `wrangler.jsonc`.
+   To use another namespace, put its ID there:
 
    ```jsonc
    "kv_namespaces": [
