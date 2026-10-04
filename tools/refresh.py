@@ -49,7 +49,9 @@ class Tableau:
         try:
             res = _post(f"{self.server}/api/{API_VERSION}/auth/signin", body, {})
         except urllib.error.HTTPError as e:
-            raise SystemExit(f"Tableau sign-in failed (HTTP {e.code}). Check TABLEAU_SERVER, TABLEAU_SITE and the token.")
+            detail = e.read().decode(errors="replace")[:300]   # Tableau's error code and summary, no credentials
+            raise SystemExit(f"Tableau sign-in failed (HTTP {e.code}): {detail}\n"
+                             f"Signed in to {self.server}, site '{site}'. Check TABLEAU_SERVER, TABLEAU_SITE and the token.")
         self.token = res["credentials"]["token"]
 
     def query(self, luid, query, tries=3):
@@ -99,7 +101,7 @@ def main():
     if args.from_files:
         meta, pivot, hdates, history = (bs.rows_of(f) for f in args.from_files)
     else:
-        env = {k: os.environ.get(k, "") for k in ("TABLEAU_SERVER", "TABLEAU_SITE", "TABLEAU_PAT_NAME", "TABLEAU_PAT_SECRET")}
+        env = {k: os.environ.get(k, "").strip() for k in ("TABLEAU_SERVER", "TABLEAU_SITE", "TABLEAU_PAT_NAME", "TABLEAU_PAT_SECRET")}
         missing = [k for k, v in env.items() if not v and k != "TABLEAU_SITE"]
         if missing:
             raise SystemExit("Missing settings: " + ", ".join(missing))
