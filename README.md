@@ -202,7 +202,7 @@ a company email login, free.
   (`tools/refresh.py`, `.github/workflows/refresh-data.yml`).
 - The data goes to Cloudflare KV.
 - The page (`tools/build_site.py`) loads it from `/data.json`, served only to
-  signed-in people by `cloudflare/functions/data.json.js`.
+  signed-in people by `functions/data.json.js`.
 - Open pages pick up new data on their own.
 
 ## Keep supplier data out of this repository

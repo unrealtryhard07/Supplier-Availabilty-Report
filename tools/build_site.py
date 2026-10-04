@@ -3,7 +3,7 @@
 
     python3 tools/build_site.py            # writes cloudflare/public/index.html
 
-The page loads /data.json when it opens (served by cloudflare/functions/data.json.js
+The page loads /data.json when it opens (served by functions/data.json.js
 from Cloudflare KV, behind Cloudflare Access) and checks for a newer one every
 10 minutes. tools/refresh.py writes that data every hour.
 """
