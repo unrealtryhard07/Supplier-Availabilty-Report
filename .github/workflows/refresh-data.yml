@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # The data holds every supplier's stock and sales. This repository is
       # public, so the job prints counts only and never uploads it as an artifact.
@@ -37,6 +37,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ vars.CF_KV_NAMESPACE_ID }}
         run: |
+          CLOUDFLARE_API_TOKEN=$(printf '%s' "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')
           code=$(curl -sS -o "$RUNNER_TEMP/kv.json" -w '%{http_code}' -X PUT \
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/data" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
@@ -45,6 +46,14 @@ jobs:
           if [ "$code" != "200" ]; then
             echo "Cloudflare KV upload failed (HTTP $code):"
             python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print([e.get('message') for e in d.get('errors', [])])" "$RUNNER_TEMP/kv.json" || true
+            # Tell a bad token apart from one without KV permission on this account.
+            for v in "user/tokens/verify" "accounts/${CLOUDFLARE_ACCOUNT_ID}/tokens/verify"; do
+              st=$(curl -sS -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" "https://api.cloudflare.com/client/v4/$v" \
+                | python3 -c "import json,sys; print((json.load(sys.stdin).get('result') or {}).get('status', 'not recognised'))" || true)
+              echo "Token check ($v): $st"
+            done
+            echo "'active' above = the token works but lacks Account · Workers KV Storage · Edit on this account."
+            echo "'not recognised' on both = CLOUDFLARE_API_TOKEN is not a valid API token value."
             exit 1
           fi
           echo "Uploaded."
