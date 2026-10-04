@@ -1,10 +1,12 @@
-// GET /data.json: the report's data, read from Cloudflare KV (binding SAR_DATA,
-// key "data"), written every hour by .github/workflows/refresh-data.yml.
+// Worker for the hosted report. Static assets (the page) are served by
+// Cloudflare directly; this script only answers GET /data.json: the report's
+// data, read from Cloudflare KV (binding SAR_DATA, key "data"), written every
+// hour by .github/workflows/refresh-data.yml.
 //
 // The data holds every supplier's stock and sales, so it is only served to
 // requests that came through Cloudflare Access:
 //  - always: the Access token header must be there (no Access in front = 403);
-//  - with ACCESS_TEAM_DOMAIN and ACCESS_AUD set (Pages → Settings → Variables),
+//  - with ACCESS_TEAM_DOMAIN and ACCESS_AUD set (Worker → Settings → Variables and Secrets),
 //    the token's signature, audience, issuer and expiry are checked too.
 
 const json = (body, status = 200) => new Response(body, {
@@ -46,10 +48,19 @@ async function accessAllowed(request, env) {
   }
 }
 
-export async function onRequestGet({ request, env }) {
+export async function dataResponse(request, env) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return json('{"error":"Method not allowed"}', 405);
   if (!(await accessAllowed(request, env))) return json('{"error":"Sign in through Cloudflare Access to see this report."}', 403);
-  if (!env.SAR_DATA) return json('{"error":"The SAR_DATA KV binding is missing in the Pages project settings."}', 500);
+  if (!env.SAR_DATA) return json('{"error":"The SAR_DATA KV binding is missing: add the KV namespace ID to wrangler.jsonc."}', 500);
   const body = await env.SAR_DATA.get('data');
   if (!body) return json('{"error":"No data yet: run the Refresh report data workflow once."}', 503);
   return json(body);
 }
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    if (url.pathname === '/data.json') return dataResponse(request, env);
+    return env.ASSETS.fetch(request);
+  },
+};

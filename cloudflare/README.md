@@ -1,16 +1,16 @@
 # Hosting the report for everyone (free, refreshed hourly)
 
-This sets the report up on Cloudflare Pages behind a company login. The data is
+This runs the report as a Cloudflare Worker behind a company login. The data is
 refreshed **every hour from 08:00 to 20:00 Kuwait time**.
 
 ```
 GitHub Actions, hourly 08:07–20:07 Kuwait
   └─ tools/refresh.py ── reads Tableau (Personal Access Token)
        └─ uploads data.json to Cloudflare KV
-Cloudflare Pages, built from this GitHub repository on every push to main
-  https://<project>.pages.dev, behind Cloudflare Access (company email login)
-  ├─ index.html: the report with no data inside (tools/build_site.py)
-  └─ /data.json: served from KV by functions/data.json.js, only to signed-in people
+Cloudflare Worker "supplier-availabilty-report", built from GitHub on every push (wrangler.jsonc)
+  https://supplier-availabilty-report.<account>.workers.dev, behind Cloudflare Access
+  ├─ the page: static assets built by tools/build_site.mjs, no data inside
+  └─ /data.json: worker/index.js reads it from KV, only for signed-in people
 ```
 
 The page loads `data.json` when it opens. While it stays open it checks for new
@@ -21,6 +21,7 @@ missing during the day.
 **Cost.** Everything below fits the free plans:
 
 - GitHub Actions minutes are free for public repositories.
+- Workers free plan: 100,000 requests a day. Static pages don't count.
 - Cloudflare KV free plan: 1,000 writes a day; this uses 13.
 - Cloudflare Access is free for up to 50 users.
 
@@ -29,10 +30,10 @@ missing during the day.
 - No data is committed.
 - The workflow logs show counts only.
 - Tokens live in GitHub encrypted secrets.
-- The data function refuses any request that did not come through Cloudflare
-  Access, even before Access is set up.
+- `/data.json` refuses any request that did not come through Cloudflare Access,
+  even before Access is set up.
 
-## One-time setup (about 20 minutes)
+## Setup
 
 ### 1. Tableau
 
@@ -46,8 +47,7 @@ missing during the day.
    - Server = `https://prod-xx.online.tableau.com`
    - Site = `SITE`
 3. For hourly data, the "Supplier's Availability Data" extract must also refresh
-   hourly in Tableau (Data source → Extract refreshes). Otherwise every hourly
-   run reads the same numbers.
+   hourly in Tableau (Data source → Extract refreshes).
 
 Tokens expire after a period of no use or after a maximum lifetime your admin
 sets. When one expires, the refresh fails and the pill turns amber. Create a
@@ -55,44 +55,43 @@ new token and replace the two secrets.
 
 ### 2. Cloudflare
 
-1. **Workers & Pages → Create → Pages → Connect to Git.** Pick this repository
-   and set:
-   - Production branch: `main`
-   - Framework preset: `None`
-   - Build command: `python3 tools/build_site.py`
-   - Build output directory: `cloudflare/public`
-   - Root directory: leave empty (the repository root)
-
-   Cloudflare then rebuilds the page on every push. The `functions/` folder at
-   the root becomes the `/data.json` endpoint automatically. Pushes to other
-   branches become preview deployments at `<branch>.<project>.pages.dev`.
+1. **Worker (done).** It was created from this GitHub repository and is named
+   `supplier-availabilty-report`. It builds on every push. `wrangler.jsonc` in
+   the repository tells it what to build. Keep the dashboard build settings at
+   their defaults: no build command, deploy command `npx wrangler deploy`.
 2. **Storage & Databases → KV → Create namespace**, named
-   `supplier-report-data`. Copy its **ID**.
-3. In the Pages project open **Settings → Bindings → Add → KV namespace**.
-   - Variable name `SAR_DATA`, namespace `supplier-report-data`.
-   - Add it for Production (and Preview if you want previews to show data).
-4. Copy your **Account ID** from the Workers & Pages overview (right-hand side).
-5. **My Profile → API Tokens → Create Token → Custom token**:
+   `supplier-report-data`. Copy its **ID** into `wrangler.jsonc`:
+
+   ```jsonc
+   "kv_namespaces": [
+     { "binding": "SAR_DATA", "id": "<the ID>" }
+   ],
+   ```
+
+   The ID is not a secret: it is useless without an API token. Bindings must be
+   in this file, because every deploy replaces bindings set in the dashboard.
+3. Copy your **Account ID** from the Workers & Pages overview (right-hand side).
+4. **My Profile → API Tokens → Create Token → Custom token**:
    - Permission: *Account · Workers KV Storage · Edit*.
    - Account resources: your account.
    - Copy the token. It can only write the data, nothing else.
-6. **Zero Trust** (pick a team name; choose the Free plan; Cloudflare may ask for
-   a card to activate it).
-   1. Go to **Access → Applications → Add an application → Self-hosted**.
-   2. Domains: `<project>.pages.dev` **and** `*.<project>.pages.dev`. The second
-      one covers preview deployments.
-   3. Policy: **Allow**, Include → *Emails ending in* `@yourcompany.com`, or list
-      the people.
-   4. Login method: **One-time PIN**, a code sent by email.
-   5. After saving, copy the application's **Audience (AUD) tag**.
-7. Back in the Pages project, open **Settings → Variables and Secrets** and add
-   (Production, and Preview too):
+5. **Company login.**
+   1. Open the Worker → **Settings → Domains & Routes**.
+   2. Next to `workers.dev`, choose **Enable Cloudflare Access**. Do the same for
+      **Preview URLs**.
+   3. Open **Manage Cloudflare Access**. Set the policy to *Allow* → *Emails
+      ending in* `@yourcompany.com`, or list the people. Use the **One-time
+      PIN** login method.
+   4. Copy the application's **Audience (AUD) tag**.
+
+   Cloudflare may ask you to pick a Zero Trust team name and the Free plan the
+   first time.
+6. In the Worker open **Settings → Variables and Secrets** and add:
    - `ACCESS_TEAM_DOMAIN` = `yourteam.cloudflareaccess.com`
    - `ACCESS_AUD` = the AUD tag
 
-   With these set, the function checks the signature of every login token, not
-   just that one is there. Bindings and variables apply from the next
-   deployment: use **Deployments → … → Retry deployment** once after adding them.
+   With these, `/data.json` also checks each login token's signature, audience
+   and expiry. `keep_vars` in `wrangler.jsonc` stops deploys from removing them.
 
 ### 3. GitHub
 
@@ -102,27 +101,27 @@ In the repository open **Settings → Secrets and variables → Actions**.
 |---|---|---|
 | Secret | `TABLEAU_PAT_NAME` | token name from step 1 |
 | Secret | `TABLEAU_PAT_SECRET` | token secret from step 1 |
-| Secret | `CLOUDFLARE_API_TOKEN` | KV token from step 2.5 |
+| Secret | `CLOUDFLARE_API_TOKEN` | KV token from step 2.4 |
 | Variable | `TABLEAU_SERVER` | e.g. `https://prod-xx.online.tableau.com` |
 | Variable | `TABLEAU_SITE` | your site name |
-| Variable | `CLOUDFLARE_ACCOUNT_ID` | from step 2.4 |
+| Variable | `CLOUDFLARE_ACCOUNT_ID` | from step 2.3 |
 | Variable | `CF_KV_NAMESPACE_ID` | from step 2.2 |
 
 Scheduled workflows only run from the default branch, so this work must be on
-`main`. That also triggers the first Cloudflare build.
+`main`.
 
 ### 4. First run
 
-1. Merge into `main`. Cloudflare builds and publishes the page; watch it under
-   the project's **Deployments**.
+1. Merge into `main`. Cloudflare builds and deploys the Worker; watch it under
+   the Worker's **Deployments** or **Builds**.
 2. **Actions → Refresh report data → Run workflow.** This loads the first data.
-3. Open `https://<project>.pages.dev`, sign in with your company email, and the
+3. Open the `workers.dev` address, sign in with your company email, and the
    report appears.
 
 After that, everything is automatic:
 
 - The data refreshes every hour from 08:07 to 20:07 Kuwait time.
-- The page rebuilds whenever something is pushed to `main`.
+- The page redeploys whenever something is pushed to `main`.
 
 ## Changing the schedule
 
@@ -143,5 +142,5 @@ GitHub may start scheduled runs a few minutes late at busy times.
 | Amber pill: "hourly update has not arrived" | The refresh workflow failed | Open Actions → the failed run. "sign-in failed" means a token problem: renew the Tableau token. |
 | "Sign in through Cloudflare Access" | Opened without logging in, or not on the allowed list | Add the person in the Access policy |
 | "No data yet" | The refresh has never run | Run *Refresh report data* once |
-| "SAR_DATA KV binding is missing" | Step 2.3 was skipped | Add the binding, then retry the latest deployment |
-| The site shows Cloudflare’s 404 page | Wrong build settings | Build command `python3 tools/build_site.py`, output `cloudflare/public` (step 2.1) |
+| "SAR_DATA KV binding is missing" | No KV ID in `wrangler.jsonc` | Step 2.2, then push |
+| Cloudflare build fails | Build settings changed in the dashboard | Clear the build command; keep the deploy command `npx wrangler deploy` |

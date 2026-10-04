@@ -195,14 +195,15 @@ so it opens ready to use with no file to load.
 
 ## Hosting for everyone (refreshed hourly)
 
-`cloudflare/README.md` explains how to put the report on Cloudflare Pages behind
-a company email login, free.
+`cloudflare/README.md` explains how the report runs as a free Cloudflare Worker
+behind a company email login.
 
 - GitHub Actions reads Tableau every hour from 08:00 to 20:00 Kuwait time
   (`tools/refresh.py`, `.github/workflows/refresh-data.yml`).
 - The data goes to Cloudflare KV.
-- The page (`tools/build_site.py`) loads it from `/data.json`, served only to
-  signed-in people by `functions/data.json.js`.
+- Cloudflare builds the page from this repository on every push
+  (`wrangler.jsonc`, `tools/build_site.mjs`).
+- `worker/index.js` serves `/data.json` only to signed-in people.
 - Open pages pick up new data on their own.
 
 ## Keep supplier data out of this repository
