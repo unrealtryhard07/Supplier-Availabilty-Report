@@ -1,8 +1,18 @@
 #!/usr/bin/env python3
 """Build a copy of the report with a data snapshot embedded.
 
-Input is the JSON result of the VizQL query in tools/tableau-query.json
-(one row per supplier item, per-store status pivoted into strings).
+The report reads Tableau live when it is opened in Claude with the Tableau
+Cloud connector; the snapshot is what it shows until that read arrives, or
+when live access is not available.
+
+Current format (with sales): run the two queries the report itself runs,
+then build.
+
+    python3 tools/build_snapshot.py --meta-query > q1.json        # run it, save as meta.json
+    python3 tools/build_snapshot.py --pivot-query meta.json > q2.json  # run it, save as pivot.json
+    python3 tools/build_snapshot.py --meta meta.json pivot.json
+
+Older format (no sales): the JSON result of tools/tableau-query.json.
 
     python3 tools/build_snapshot.py result.json --as-of 2026-09-24T12:21:04Z
 
@@ -10,9 +20,9 @@ The repository copy of supplier-availability-report.html stays data-free
 (this repository is public). The filled-in copy is written to
 dist/supplier-availability-report.html, which git ignores.
 
-Only what the report needs is embedded: stock status per store, and a coarse
-1-9 demand band per store derived from "Items in Book" (used to order the
-out-of-stock list). Stock quantities and raw sales figures are left out.
+The current format embeds stock status, lifetime sales, current stock and
+days since first sale per store, so the built copy is internal: never send it
+to a supplier.
 """
 import argparse
 import collections
@@ -113,17 +123,139 @@ def to_script_json(snapshot):
     return text.replace("<", "\\u003c")
 
 
+LUID = "a7ab1f36-6a15-4c2c-8e7a-4ea0f74a1320"
+
+
+def meta_query():
+    return {"fields": [
+        {"fieldCaption": "Store"},
+        {"fieldCaption": "inS", "calculation": "SUM(IF [Items in Stock]='Yes' THEN 1 ELSE 0 END)"},
+        {"fieldCaption": "asOf", "calculation": "MAX([Last Sale Date])"},
+    ]}
+
+
+def pivot_query(stores, day):
+    """Same query as pivotQuery() in the report."""
+    def lit(x):
+        return '"' + str(x).replace('"', '""') + '"'
+
+    def part(st):
+        w = f"[Store]={lit(st)}"
+        return (f"IFNULL(MAX(IF {w} THEN (IF [Items in Stock]='Yes' THEN 'Y' ELSE 'N' END) END)"
+                f"+','+IFNULL(STR(INT(ROUND(MAX(IF {w} THEN [Lifetime Qty Sold] END),0))),'0')"
+                f"+','+IFNULL(STR(INT(ROUND(MAX(IF {w} THEN [Current Stock] END),0))),'0')"
+                f"+','+IFNULL(STR(MIN(IF {w} THEN DATEDIFF('day',[First Sale Date],#{day}#) END)),'')"
+                f"+','+IFNULL(STR(ROUND(MAX(IF {w} THEN [Lifetime GMV] END),2)),'0')"
+                f"+','+IFNULL(STR(MIN(IF {w} THEN DATEDIFF('day',[Last Sale Date],#{day}#) END)),'')"
+                f"+','+IFNULL(STR(ROUND(MAX(IF {w} THEN [GMV 90D] END),2)),'0')"
+                f"+','+IFNULL(STR(ROUND(MAX(IF {w} THEN [Total Discount 90D] END),2)),'0'),'-')")
+    return {
+        "fields": [
+            {"fieldCaption": "Supplier Account", "fieldAlias": "a"}, {"fieldCaption": "Supplier Name", "fieldAlias": "sn"},
+            {"fieldCaption": "Item Code", "fieldAlias": "c"}, {"fieldCaption": "Category (Sheet1)", "fieldAlias": "k"},
+            {"fieldCaption": "Sub-Category (Sheet1)", "fieldAlias": "u"}, {"fieldCaption": "Rank", "fieldAlias": "t"},
+            {"fieldCaption": "n", "calculation": "MIN([Item Name])"},
+            {"fieldCaption": "p", "calculation": "+'|'+".join(part(s) for s in stores)},
+        ],
+        "filters": [{"field": {"fieldCaption": "Supplier Account"}, "filterType": "QUANTITATIVE_NUMERICAL",
+                     "quantitativeFilterType": "MIN", "min": 1}],
+    }
+
+
+HISTORY_LUID = "7dee73bd-bb03-496e-8480-c9cc7f9a677b"
+
+
+def history_dates_query():
+    return {"fields": [{"fieldCaption": "d", "calculation": "STR(DATE([Date]))", "sortPriority": 1},
+                       {"fieldCaption": "SKU", "function": "SUM"}, {"fieldCaption": "In Stock", "function": "SUM"}]}
+
+
+def history_query(dates):
+    """Same query as historyQuery() in the report: one row per supplier, store and category,
+    with 'listings,inStock' per day joined by '|'."""
+    def part(d):
+        w = f"DATE([Date])=#{d}#"
+        return (f"IFNULL(STR(SUM(IF {w} THEN [SKU] END)),'0')+','+"
+                f"IFNULL(STR(SUM(IF {w} THEN [In Stock] END)),'0')")
+    return {"fields": [
+        {"fieldCaption": "Supplier Name", "fieldAlias": "s"}, {"fieldCaption": "Store", "fieldAlias": "t"},
+        {"fieldCaption": "Category", "fieldAlias": "k"},
+        {"fieldCaption": "h", "calculation": "+'|'+".join(part(d) for d in dates)},
+    ]}
+
+
+def history_days(rows, start="2026-09-28", max_days=60):
+    """Same as historyDays() in the report: trends start on 28 Sep 2026 (the days
+    before are one backfilled copy), at most the last 60 days."""
+    return sorted({str(r["d"])[:10] for r in rows if str(r["d"])[:10] >= start})[-max_days:]
+
+
+def meta_info(meta_rows):
+    day = max(str(r.get("asOf") or "")[:10] for r in meta_rows)
+    stores = [r["Store"] for r in meta_rows if r.get("Store") and float(r.get("inS") or 0) > 0]
+    dead = [r["Store"] for r in meta_rows if r.get("Store") and not float(r.get("inS") or 0) > 0]
+    return day, stores, dead
+
+
+def as_of_from_day(day):
+    """Newest sale date = the stock day: today -> now, an older day -> that day's close (Kuwait)."""
+    import datetime as dt
+    kuwait = dt.timezone(dt.timedelta(hours=3))
+    now = dt.datetime.now(kuwait)
+    if now.strftime("%Y-%m-%d") == day:
+        return now.astimezone(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    close = dt.datetime.fromisoformat(day + "T23:59:00").replace(tzinfo=kuwait)
+    return close.astimezone(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def rows_of(path):
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    return data["data"] if isinstance(data, dict) else data
+
+
 def main():
+    if sys.argv[1:2] == ["--meta-query"]:
+        print(json.dumps({"datasourceLuid": LUID, "query": meta_query()}, indent=1))
+        return
+    if sys.argv[1:2] == ["--history-dates-query"]:
+        print(json.dumps({"datasourceLuid": HISTORY_LUID, "query": history_dates_query()}, indent=1))
+        return
+    if sys.argv[1:2] == ["--history-query"]:
+        days = history_days(rows_of(sys.argv[2]))
+        print(json.dumps({"datasourceLuid": HISTORY_LUID, "query": history_query(days)}, indent=1))
+        return
+    if sys.argv[1:2] == ["--pivot-query"]:
+        day, stores, _ = meta_info(rows_of(sys.argv[2]))
+        print(json.dumps({"datasourceLuid": LUID, "query": pivot_query(stores, day)}, indent=1))
+        return
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("result", help="JSON result of the VizQL query ({\"data\": [...]})")
-    p.add_argument("--as-of", required=True, help="Stock snapshot time, ISO 8601 (the extract refresh time)")
+    p.add_argument("result", help="JSON result of the pivot query, or of tools/tableau-query.json")
+    p.add_argument("--meta", help="JSON result of the meta query (current format, with sales)")
+    p.add_argument("--history", nargs=2, metavar=("DATES", "ROWS"),
+                   help="JSON results of the history dates query and the history query")
+    p.add_argument("--as-of", help="Stock snapshot time, ISO 8601 (older format only)")
     p.add_argument("--source", default="Tableau Cloud · Supplier's Availability Data")
     p.add_argument("--template", default=str(TEMPLATE), help="Report HTML to copy")
     p.add_argument("--out", default=str(DEFAULT_OUT), help="Where to write the filled-in report")
     args = p.parse_args()
 
-    rows = json.loads(Path(args.result).read_text(encoding="utf-8"))["data"]
-    snapshot = build(rows, args.as_of, args.source)
+    if args.meta:
+        day, stores, dead = meta_info(rows_of(args.meta))
+        keys = ["a", "sn", "c", "k", "u", "t", "n", "p"]
+        rows = [[r.get(k) for k in keys] for r in rows_of(args.result)]
+        snapshot = {"v": 2, "asOf": as_of_from_day(day), "source": args.source, "stores": stores,
+                    "deadStores": dead, "rows": rows}
+        summary = f"{len(rows):,} items, stores {', '.join(stores)}, stock day {day}"
+        if args.history:
+            days = history_days(rows_of(args.history[0]))
+            hrows = [[r.get(k) for k in ("s", "t", "k", "h")] for r in rows_of(args.history[1])]
+            snapshot["hist"] = {"days": days, "rows": hrows}
+            summary += f", history {days[0]}..{days[-1]} ({len(hrows):,} rows)"
+    else:
+        if not args.as_of:
+            p.error("--as-of is required for the older format")
+        snapshot = build(rows_of(args.result), args.as_of, args.source)
+        summary = f"{len(snapshot['items']):,} items, {len(snapshot['sup'])} suppliers, {len(snapshot['cat'])} categories"
     payload = to_script_json(snapshot)
 
     html = Path(args.template).read_text(encoding="utf-8")
@@ -134,11 +266,7 @@ def main():
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(html, encoding="utf-8")
 
-    print(
-        f"{len(snapshot['items']):,} items, {len(snapshot['sup'])} suppliers, "
-        f"{len(snapshot['cat'])} categories -> {out} ({len(payload) / 1024:,.0f} KB of data)",
-        file=sys.stderr,
-    )
+    print(f"{summary} -> {out} ({len(payload) / 1024:,.0f} KB of data)", file=sys.stderr)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,101 @@
 # Supplier Availability Report
 
-A daily availability report for each supplier, built to be sent as images.
-Open `supplier-availability-report.html` in Chrome or Edge, load today's
-stock, pick a supplier, and export the pages as PNG files.
+A daily availability report for each supplier, built to be sent as images,
+with a priorities view of all suppliers for the team. Open
+`supplier-availability-report.html` in Chrome or Edge (or the published copy in
+Claude), pick a supplier, and export the pages as PNG files.
+
+## All suppliers view
+
+The report opens on **All suppliers**: suppliers with **Sales qty** (Lifetime
+Qty Sold), **GMV** (Lifetime GMV, KWD), the cumulative contribution of each
+(running total from the biggest down, with the row's own share under it), and
+availability per store and in all stores.
+
+- Choose **Top suppliers (90% of sales qty)**, **Top suppliers (90% of GMV)**
+  or **All suppliers**. A top group is every supplier up to and including the
+  one that takes the running total past 90%.
+- Click any column header to sort (again to reverse). Click a supplier to open
+  its report; "← All suppliers" brings you back to the same place.
+- **Categories** below, with the same columns and sorting. Click a category for
+  its sub-categories and a sub-category for its products (OUT per store).
+  Cumulative contribution runs within each level; hover a row for its share of
+  all sales qty and GMV.
+- Filter by store or category. Four figures on top: availability, how many
+  suppliers make 90% of sales qty and of GMV, and the critical and
+  below-target supplier-store cells.
+- **Excel** and **PDF** buttons on each table download it as it is on screen
+  (scope, filters, sort). The categories Excel holds every category,
+  sub-category and product; the categories PDF holds categories and
+  sub-categories plus the products you have opened.
+- The view uses the Circle look of Allocation Control: light page, white
+  cards, magenta for what is selected.
+
+## Deep analysis
+
+The **Deep analysis** button (top bar, after Export images) opens one page that
+combines today's stock and sales with the daily "Supplier Availability History"
+source (from 28 Sep 2026; the days before are one backfilled copy and are left
+out). It has the same supplier, store and category filters as the overview, and
+every table downloads as Excel (every row) or PDF (first 300 rows).
+
+Everything is on one page: 27 numbered sections in five parts, with a jump
+link to each part at the top.
+
+1. **Where we stand**
+   - Decisions for today, each with an owner.
+   - The story in numbers.
+   - Availability trend: real change vs range change (listings removed or added).
+   - Four ways to read availability.
+2. **Why shelves are empty**
+   - Path to target: a staircase from today to the target, cheapest fix first.
+     It stops at the target.
+   - Root cause of every empty shelf. Each one gets exactly one cause, checked
+     in this order:
+     - *no sale in 90+ days* → review or delist;
+     - *move from another store* → transfer;
+     - *empty in every store* → chase the supplier;
+     - *too little ordered* → raise the order quantity.
+   - Who causes the gaps.
+   - Suspected phantom stock: a Poisson test on each product's own sales rate.
+   - How long shelves stay empty.
+   - ABC classes: A = 80% of GMV 90D, B = next 15%, C = rest. All are held to
+     the normal target.
+3. **What to do this week**
+   - Weekly order plan, with a line-by-line Excel. Each line orders up to 3 days
+     of delivery + 7 days until next week's order, minus stock.
+   - Run-out radar.
+   - Availability forecast if nothing arrives.
+   - Store transfers.
+   - Best-sellers on empty shelves.
+   - Order mix.
+4. **Stores and suppliers**
+   - Store league table.
+   - Supplier scorecard (A–E).
+   - Reliability.
+   - Movers.
+   - Heat map.
+5. **Stock and demand**
+   - Ghost stock.
+   - Overstock.
+   - Momentum vs availability.
+   - Availability by tier.
+   - Category scorecard.
+   - Concentration.
+
+The Circle logo appears in the top bar, in the header of every supplier's
+report pages, and on PDF downloads. The overview and Deep analysis headers have
+no logo.
+
+Definitions:
+
+- **Sells per day** = GMV 90D ÷ the lifetime average price ÷ 90 (or the
+  product's age, if younger).
+- **Days of cover** = current stock ÷ sells per day.
+
+When opened in Claude with the Tableau Cloud connector, the report reads
+"Supplier's Availability Data" and "Supplier Availability History" live (Load data → Reload from Tableau to
+refresh). Otherwise it shows the snapshot built into the copy.
 
 ## What a supplier receives
 
@@ -11,22 +104,20 @@ detail. Every export also includes the complete out-of-stock list as a CSV
 file the supplier can open in Excel. (Settings can switch to all pages.)
 
 - **Verdict band** in red (Critical), amber (Below target) or green
-  (On target), with one plain sentence, e.g. *"84 of your 480 store listings
-  are out of stock right now. Restock 60 listings to reach the 95% target."*
+  (On target), with one plain sentence, e.g. *"120 of your 258 products are
+  out of stock in at least one store."*
 - **Overall availability**: the headline figure, with a bar against the target.
-- **What we need from you**: a delivery deadline and your contact details
-  (set once in Settings).
 - **Six key figures** in plain words: products, products with gaps, products
-  missing everywhere, empty shelves, top sellers in stock, and rank.
-- **Where you are losing**: categories as bars against the target.
-- **Restock these first**: the eight most urgent products, top sellers first.
+  missing everywhere, weakest store, top sellers in stock, and rank.
+- **Where you are losing**: categories as bars against the target, biggest
+  sellers first.
 - **Availability by store**: one card per store. Each square is one listing
   and red squares are empty shelves.
 - **Availability by category and store**: the same grid as the old Excel report.
   Category and sub-category come from the Google Sheet. Cells are colored by
   status and show `% available` and `in stock / listed`.
 - **Out-of-stock action list**: every SKU that is out somewhere. SKUs missing
-  in every store come first, then best-selling tiers first. `OUT` marks the
+  in every store come first, then the best sellers. `OUT` marks the
   exact stores to restock.
 
 Pages are 1080 px wide (exported at 2160 px) and never taller than 1620 px, so
@@ -45,10 +136,10 @@ headers repeat on every page.
 - Suppliers are grouped by **Supplier Account**. Where the sheet spells one
   account two ways (e.g. `Co` and `CO.`), both share one report under the
   most used spelling.
-- Percentages are rounded **down**, so 94.96% shows as 94.9% (amber), never
-  as a green 95%.
-- Defaults: target 95%, critical below 80% (your old red line). Both are
-  under Settings.
+- Percentages are rounded **down**, so 84.96% shows as 84.9% (amber), never
+  as a green 85%.
+- Status: On target 85% and above, Below target 80–84.99%, Critical under
+  80%. Both lines are under Settings.
 
 ## Daily routine
 
@@ -85,15 +176,35 @@ Images go to `reports/<stock date>/`.
 
 ## Refreshing the built-in snapshot from Tableau
 
-`tools/tableau-query.json` is the VizQL Data Service query that pulls one row
-per supplier item from the published data source. Save its JSON result, then:
+The report runs four VizQL Data Service queries. Two go to "Supplier's
+Availability Data": the stores, then one row per supplier item with stock,
+sales, GMV 90D, discount and last sale per store. Two go to "Supplier
+Availability History": the days, then one row per supplier, store and category
+with listings and in-stock for each day. To build a copy with them inside:
 
 ```sh
-python3 tools/build_snapshot.py result.json --as-of 2026-09-24T12:21:04Z
+python3 tools/build_snapshot.py --meta-query                  # run it, save the result as meta.json
+python3 tools/build_snapshot.py --pivot-query meta.json       # run it, save the result as pivot.json
+python3 tools/build_snapshot.py --history-dates-query         # run it, save the result as hdates.json
+python3 tools/build_snapshot.py --history-query hdates.json   # run it, save the result as history.json
+python3 tools/build_snapshot.py --meta meta.json pivot.json --history hdates.json history.json
 ```
 
 This writes `dist/supplier-availability-report.html` with the data inside,
 so it opens ready to use with no file to load.
+
+## Hosting for everyone (refreshed hourly)
+
+`cloudflare/README.md` explains how the report runs as a free Cloudflare Worker
+behind a company email login.
+
+- GitHub Actions reads Tableau every hour from 08:00 to 20:00 Kuwait time
+  (`tools/refresh.py`, `.github/workflows/refresh-data.yml`).
+- The data goes to Cloudflare KV.
+- Cloudflare builds the page from this repository on every push
+  (`wrangler.jsonc`, `tools/build_site.mjs`).
+- `worker/index.js` serves `/data.json` only to signed-in people.
+- Open pages pick up new data on their own.
 
 ## Keep supplier data out of this repository
 
@@ -102,3 +213,24 @@ data. `dist/` (the filled-in copy) and `reports/` (rendered images) are in
 `.gitignore` because they contain every supplier's stock position. Never send
 the filled-in HTML or its link to a supplier: it contains all suppliers. Send
 the exported images.
+
+## Tableau version
+
+`tools/build_tableau_workbook.py` generates the same report as a Tableau
+workbook on the published data source "Supplier's Availability Data": a
+**Supplier Report** dashboard (the one-image summary) and a **Detail**
+dashboard (category grid and full out-of-stock list), with a supplier picker.
+Page 1 lists the 15 most urgent products; the Detail page has all of them.
+To send a supplier their report, pick them in the Supplier box, then use
+**Download → Image** (or PDF) on each dashboard.
+It is published on Tableau Cloud as *Supplier Availability Report* in the
+Commercial Department project. To rebuild it:
+
+```sh
+TABLEAU_SERVER=<pod>.online.tableau.com TABLEAU_SITE=<site> \
+DEFAULT_SUPPLIER="<supplier to open on>" python3 tools/build_tableau_workbook.py
+```
+
+The output goes to `tableau/` (git-ignored) and is published with Tableau's
+REST API or the Tableau MCP publish tool. Target %, critical % and delivery
+days are workbook parameters.
