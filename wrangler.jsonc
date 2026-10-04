@@ -17,8 +17,9 @@
   // ACCESS_TEAM_DOMAIN and ACCESS_AUD are set in the dashboard (Settings → Variables
   // and Secrets); keep_vars stops a deploy from removing them.
   "keep_vars": true,
+  // supplier-report-data: written hourly by .github/workflows/refresh-data.yml
   "kv_namespaces": [
-    // { "binding": "SAR_DATA", "id": "<KV namespace ID>" }
+    { "binding": "SAR_DATA", "id": "438542ad9f984b78accb7922830c4dae" }
   ],
   "observability": { "enabled": true }
 }
